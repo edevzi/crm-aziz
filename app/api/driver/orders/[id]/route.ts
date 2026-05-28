@@ -27,7 +27,34 @@ export async function PUT(
     const updateData: any = {};
     if (status) updateData.status = status;
     if (paymentType) updateData.paymentType = paymentType;
-    if (photoUrl) updateData.photoUrl = photoUrl;
+    let photoUrlToSave = photoUrl;
+    if (photoUrl && photoUrl.startsWith('data:image/')) {
+      try {
+        const token = process.env.BLOB_READ_WRITE_TOKEN;
+        if (token) {
+          const mimeTypeMatch = photoUrl.match(/^data:(image\/[a-zA-Z0-9.-]+);base64,/);
+          const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : 'image/jpeg';
+          const extension = mimeType.split('/')[1] || 'jpeg';
+          const base64Data = photoUrl.replace(/^data:image\/[a-z]+;base64,/, "");
+          const buffer = Buffer.from(base64Data, 'base64');
+          
+          const { put } = await import('@vercel/blob');
+          const blob = await put(`order-${orderId}-${Date.now()}.${extension}`, buffer, {
+            contentType: mimeType,
+            access: 'public',
+            token: token,
+          });
+          photoUrlToSave = blob.url;
+          console.log('Successfully uploaded photo to Vercel Blob:', blob.url);
+        } else {
+          console.warn('BLOB_READ_WRITE_TOKEN is missing. Storing photo as base64 directly.');
+        }
+      } catch (err) {
+        console.error('Error uploading to Vercel Blob:', err);
+      }
+    }
+
+    if (photoUrlToSave) updateData.photoUrl = photoUrlToSave;
     if (paymentStatus) {
       if (paymentStatus === 'entered') {
         return NextResponse.json({ error: 'Drivers cannot confirm payment receipt' }, { status: 400 });

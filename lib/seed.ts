@@ -149,39 +149,62 @@ async function seed() {
           referralPercent = 10; // 10% referral fee
         }
 
-        // Realistic status distribution:
-        // Everything in the past (daysBack > 1) is completed/closed.
-        // Orders today/yesterday (daysBack <= 1) have mixed active statuses.
         let status: OrderStatus = 'completed';
         let paymentStatus: 'pending' | 'received' | 'entered' = 'entered';
         let isClosed = true;
+        let updatedAt = createdAt;
 
-        if (daysBack <= 1) {
-          const statusCycle = counter % 6;
-          if (statusCycle === 0) {
+        if (daysBack === 0) {
+          const todayCycle = counter % 7;
+          if (todayCycle === 0) {
             status = 'new';
             paymentStatus = (payType !== 'cash') ? 'entered' : 'pending';
             isClosed = false;
-          } else if (statusCycle === 1) {
+          } else if (todayCycle === 1) {
             status = 'assigned';
             paymentStatus = (payType !== 'cash') ? 'entered' : 'pending';
             isClosed = false;
-          } else if (statusCycle === 2) {
+          } else if (todayCycle === 2) {
             status = 'in_progress';
             paymentStatus = (payType !== 'cash') ? 'entered' : 'pending';
             isClosed = false;
-          } else if (statusCycle === 3) {
+          } else if (todayCycle === 3) {
+            // Overdue container (placed 3 hours ago)
             status = 'container_placed';
             paymentStatus = (payType !== 'cash') ? 'entered' : 'pending';
             isClosed = false;
-          } else if (statusCycle === 4) {
+            updatedAt = new Date(Date.now() - 3 * 60 * 60 * 1000); // 3 hours ago (overdue!)
+          } else if (todayCycle === 4) {
+            // Active container (placed 30 minutes ago)
+            status = 'container_placed';
+            paymentStatus = (payType !== 'cash') ? 'entered' : 'pending';
+            isClosed = false;
+            updatedAt = new Date(Date.now() - 30 * 60 * 1000); // 30 minutes ago (active!)
+          } else if (todayCycle === 5) {
             status = 'picked_up';
-            paymentStatus = (payType !== 'cash') ? 'entered' : 'received';
+            paymentStatus = (payType !== 'cash') ? 'entered' : 'pending';
             isClosed = false;
           } else {
             status = 'completed';
             paymentStatus = 'entered';
             isClosed = true;
+          }
+        } else if (daysBack === 1) {
+          const statusCycle = counter % 3;
+          if (statusCycle === 0) {
+            status = 'completed';
+            paymentStatus = 'entered';
+            isClosed = true;
+          } else if (statusCycle === 1) {
+            status = 'completed';
+            paymentStatus = 'entered';
+            isClosed = true;
+          } else {
+            // Yesterday's overdue container
+            status = 'container_placed';
+            paymentStatus = (payType !== 'cash') ? 'entered' : 'pending';
+            isClosed = false;
+            updatedAt = new Date(Date.now() - 26 * 60 * 60 * 1000); // Placed yesterday (overdue!)
           }
         }
 
@@ -209,7 +232,7 @@ async function seed() {
           isClosed,
           operatorId: opUser.id,
           createdAt,
-          updatedAt: createdAt
+          updatedAt: updatedAt
         }).returning();
 
         // Only log transactions and expenses if the order is completed

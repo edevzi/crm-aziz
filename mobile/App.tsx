@@ -51,6 +51,11 @@ import {
   MapPin as LucideMapPin,
   Gift as LucideGift,
   Wallet as LucideWallet,
+  UserCircle as LucideUserCircle,
+  Car as LucideCar,
+  TrendingUp as LucideTrendingUp,
+  PackageCheck as LucidePackageCheck,
+  ChevronDown as LucideChevronDown,
 } from 'lucide-react-native';
 import {
   t,
@@ -72,27 +77,31 @@ import {
   stopBackgroundLocationTracking,
 } from './locationTask';
 
-const Warehouse = LucideWarehouse as React.ComponentType<{ color?: string; size?: number }>;
+const Warehouse = LucideWarehouse as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 const User = LucideUser as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 const Lock = LucideLock as React.ComponentType<{ color?: string; size?: number; style?: object }>;
-const LogOut = LucideLogOut as React.ComponentType<{ color?: string; size?: number }>;
-const Settings = LucideSettings as React.ComponentType<{ color?: string; size?: number }>;
-const ClipboardList = LucideClipboardList as React.ComponentType<{ color?: string; size?: number }>;
-const Calendar = LucideCalendar as React.ComponentType<{ color?: string; size?: number }>;
-const CheckCircle = LucideCheckCircle as React.ComponentType<{ color?: string; size?: number }>;
-const Phone = LucidePhone as React.ComponentType<{ color?: string; size?: number }>;
-const RefreshCw = LucideRefreshCw as React.ComponentType<{ color?: string; size?: number }>;
-const X = LucideX as React.ComponentType<{ color?: string; size?: number }>;
+const LogOut = LucideLogOut as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const Settings = LucideSettings as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const ClipboardList = LucideClipboardList as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const Calendar = LucideCalendar as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const CheckCircle = LucideCheckCircle as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const Phone = LucidePhone as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const RefreshCw = LucideRefreshCw as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const X = LucideX as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 const AlertCircle = LucideAlertCircle as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 const Navigation = LucideNavigation as React.ComponentType<{ color?: string; size?: number; style?: object }>;
-const ChevronRight = LucideChevronRight as React.ComponentType<{ color?: string; size?: number }>;
-const ChevronLeft = LucideChevronLeft as React.ComponentType<{ color?: string; size?: number }>;
-const Home = LucideHome as React.ComponentType<{ color?: string; size?: number }>;
-const Banknote = LucideBanknote as React.ComponentType<{ color?: string; size?: number }>;
-const CreditCard = LucideCreditCard as React.ComponentType<{ color?: string; size?: number }>;
-const Smartphone = LucideSmartphone as React.ComponentType<{ color?: string; size?: number }>;
+const ChevronRight = LucideChevronRight as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const ChevronLeft = LucideChevronLeft as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const Home = LucideHome as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const Banknote = LucideBanknote as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const CreditCard = LucideCreditCard as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const Smartphone = LucideSmartphone as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 const Clock = LucideClock as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 const MapPin = LucideMapPin as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const UserCircle = LucideUserCircle as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const Car = LucideCar as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const TrendingUp = LucideTrendingUp as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const PackageCheck = LucidePackageCheck as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -160,7 +169,8 @@ const WORKFLOW_RANK: Record<string, number> = {
   picked_up: 4,
 };
 
-const WORKING_STATUSES = new Set(['assigned', 'in_progress', 'container_placed', 'picked_up']);
+const TRIP_STATUSES = new Set(['in_progress', 'picked_up']);
+const WORKING_STATUSES = new Set(['assigned', 'in_progress', 'picked_up']);
 
 function getWorkflowRank(status: string): number {
   return WORKFLOW_RANK[status] ?? -1;
@@ -168,8 +178,7 @@ function getWorkflowRank(status: string): number {
 
 const PaymentTypeIcon = ({ type, size = 16, color = '#64748b' }: { type: string, size?: number, color?: string }) => {
   if (type === 'cash') return <Banknote size={size} color={color} />;
-  if (type === 'card') return <CreditCard size={size} color={color} />;
-  if (type === 'online') return <Smartphone size={size} color={color} />;
+  if (type === 'card' || type === 'online') return <CreditCard size={size} color={color} />;
   return null;
 };
 
@@ -177,19 +186,29 @@ function filterActiveOrders(list: Order[]): Order[] {
   return list.filter(o => o.status !== 'completed');
 }
 
-/** Focus = order driver is executing (highest workflow stage, then earliest schedule). */
 function computeFocusOrder(list: Order[]): Order | null {
   const active = filterActiveOrders(list);
   if (active.length === 0) return null;
 
-  const working = active.filter(o => WORKING_STATUSES.has(o.status));
-  const pool = working.length > 0 ? working : active;
+  // Active trip order is one that is in progress or picked up
+  const activeTrip = active.filter(o => TRIP_STATUSES.has(o.status));
+  if (activeTrip.length > 0) {
+    return activeTrip.sort((a, b) => getWorkflowRank(b.status) - getWorkflowRank(a.status))[0];
+  }
 
-  return [...pool].sort((a, b) => {
-    const rankDiff = getWorkflowRank(b.status) - getWorkflowRank(a.status);
-    if (rankDiff !== 0) return rankDiff;
-    return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
-  })[0];
+  // If no active trip, but there is an assigned order, return the earliest assigned order
+  const assigned = active.filter(o => o.status === 'assigned');
+  if (assigned.length > 0) {
+    return assigned.sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0];
+  }
+
+  // Otherwise, return the earliest new order
+  const newOrders = active.filter(o => o.status === 'new');
+  if (newOrders.length > 0) {
+    return newOrders.sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0];
+  }
+
+  return null;
 }
 
 function formatAddressDisplay(address: string, locale: string): string {
@@ -205,7 +224,7 @@ function formatAddressDisplay(address: string, locale: string): string {
 
 function sortQueueOrders(list: Order[], focusId: number | null): Order[] {
   return filterActiveOrders(list)
-    .filter(o => o.id !== focusId)
+    .filter(o => o.id !== focusId && o.status !== 'container_placed')
     .sort((a, b) => {
       const aWorking = WORKING_STATUSES.has(a.status) ? 0 : 1;
       const bWorking = WORKING_STATUSES.has(b.status) ? 0 : 1;
@@ -214,21 +233,28 @@ function sortQueueOrders(list: Order[], focusId: number | null): Order[] {
     });
 }
 
-/** After accept (assigned+), other orders are queue-only until focus completes */
 function hasBlockingWorkflow(focus: Order | null): boolean {
-  return focus != null && focus.status !== 'new';
+  return focus != null && (focus.status === 'in_progress' || focus.status === 'picked_up');
 }
 
 function canRunWorkflowOnOrder(order: Order, focus: Order | null): boolean {
   if (!focus || focus.id === order.id) return true;
-  if (!hasBlockingWorkflow(focus)) return true;
-  return false;
+  // Starting a trip (assigned -> in_progress) or picking up a container (container_placed -> picked_up)
+  // is blocked if there's already another order actively in progress or picked up.
+  if (order.status === 'assigned' || order.status === 'container_placed') {
+    if (focus.status === 'in_progress' || focus.status === 'picked_up') {
+      return false;
+    }
+  }
+  return true;
 }
 
 function queueActionMode(order: Order, focus: Order | null): 'full' | 'accept_only' | 'locked' {
   if (!focus || focus.id === order.id) return 'full';
   if (order.status === 'new') return 'accept_only';
-  if (hasBlockingWorkflow(focus)) return 'locked';
+  if ((focus.status === 'in_progress' || focus.status === 'picked_up') && order.status !== 'container_placed') {
+    return 'locked';
+  }
   return 'full';
 }
 
@@ -248,6 +274,7 @@ type Order = {
   rentalDuration: string;
   operatorNote?: string;
   updatedAt: string;
+  photoUrl?: string | null;
 };
 
 function startOfDay(d: Date): Date {
@@ -306,16 +333,15 @@ const ContainerTimer = ({ updatedAt }: { updatedAt?: string }) => {
   const sStr = String(seconds).padStart(2, '0');
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: bgColor, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, marginTop: 10, marginBottom: 12, alignSelf: 'flex-start' }}>
-      <Clock size={16} color={color} style={{ marginRight: 6 }} />
-      <Text style={{ fontSize: 16, fontWeight: '700', color: color }}>
+    <View style={[styles.timerContainer, { backgroundColor: bgColor }]}>
+      <Clock size={14} color={color} style={{ marginRight: 6 }} />
+      <Text style={[styles.timerText, { color }]}>
         {hStr}:{mStr}:{sStr} {isLate ? '(Опоздание)' : ''}
       </Text>
     </View>
   );
 };
 
-/** Bump when DB seed resets driver IDs — forces mobile re-login */
 const SESSION_VERSION = '3';
 
 const STEP_KEYS: TranslationKey[] = ['stepAccept', 'stepOnWay', 'stepContainer', 'stepPayment'];
@@ -344,12 +370,12 @@ function getPrimaryButtonKey(status: string): TranslationKey | null {
 
 function getPrimaryActionColor(status: string): string {
   switch (status) {
-    case 'new': return '#2563eb';
-    case 'assigned': return '#d97706';
-    case 'in_progress': return '#ea580c';
-    case 'container_placed': return '#0d9488';
-    case 'picked_up': return '#059669';
-    default: return '#4f46e5';
+    case 'new': return '#2563EB';
+    case 'assigned': return '#F59E0B';
+    case 'in_progress': return '#EA580C';
+    case 'container_placed': return '#0D9488';
+    case 'picked_up': return '#10B981';
+    default: return '#4F46E5';
   }
 }
 
@@ -382,7 +408,7 @@ function AlertModal({
     <Modal animationType="fade" transparent visible={visible} onRequestClose={onClose}>
       <View style={styles.alertOverlay}>
         <View style={styles.alertBox}>
-          <AlertCircle size={48} color="#4f46e5" style={{ marginBottom: 16 }} />
+          <AlertCircle size={44} color="#4F46E5" style={{ marginBottom: 16 }} />
           <Text style={styles.alertTitle}>{title}</Text>
           <Text style={styles.alertMessage}>{message}</Text>
           {onOpenSettings ? (
@@ -402,9 +428,6 @@ function AlertModal({
   );
 }
 
-const Gift = LucideGift;
-const Wallet = LucideWallet;
-
 function AppInner() {
   const insets = useSafeAreaInsets();
 
@@ -420,27 +443,22 @@ function AppInner() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'history' | 'calendar'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'calendar' | 'history' | 'profile'>('home');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [navModalOrder, setNavModalOrder] = useState<Order | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(startOfDay(new Date()));
+  const [displayedMonth, setDisplayedMonth] = useState<Date>(() => startOfDay(new Date()));
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
-  /** Stays on current job until completed — accepting another order does not switch hero card */
   const [pinnedFocusId, setPinnedFocusId] = useState<number | null>(null);
-  const [expandedHistoryDates, setExpandedHistoryDates] = useState<Set<string>>(new Set());
 
   const [historyFilter, setHistoryFilter] = useState<'day' | 'week' | 'month'>('day');
+  const [historyOffset, setHistoryOffset] = useState<number>(0);
   const [selectedHistoryIndex, setSelectedHistoryIndex] = useState<number>(6);
 
   const knownOrderIds = useRef<Set<number>>(new Set());
   const initialFetchDone = useRef(false);
-  const calendarScrollRef = useRef<ScrollView>(null);
-  const CALENDAR_PAST_DAYS = 14;
-  const CALENDAR_FUTURE_DAYS = 28;
-  const CALENDAR_DAY_WIDTH = 58;
-  const CALENDAR_DAY_GAP = 8;
 
   const [isTrackingGps, setIsTrackingGps] = useState(false);
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
@@ -479,12 +497,6 @@ function AppInner() {
     } catch {
       return dateStr;
     }
-  }, []);
-
-  const formatDateShort = useCallback((d: Date) => {
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    return `${day}.${month}`;
   }, []);
 
   const clearSession = useCallback(async () => {
@@ -553,8 +565,6 @@ function AppInner() {
     loadPersistedData();
   }, [clearSession, validateDriverSession, showAlert]);
 
-
-
   useEffect(() => {
     let anim: Animated.CompositeAnimation | null = null;
     if (isTrackingGps) {
@@ -581,7 +591,7 @@ function AppInner() {
           body: JSON.stringify({ driverId: driver.id, latitude, longitude }),
         });
       } catch {
-        /* retry on next tick */
+        /* retry */
       }
     },
     [driver, getApiUrl]
@@ -598,8 +608,6 @@ function AppInner() {
       console.error('Failed to save push token:', error);
     }
   }, []);
-
-  const isActiveTransit = orders.some(o => o.status === 'in_progress' || o.status === 'picked_up');
 
   useEffect(() => {
     let active = true;
@@ -675,23 +683,36 @@ function AppInner() {
     };
   }, [isLoggedIn, driver, locale, showAlert, postLocation]);
 
+  const pushTokenSentRef = useRef(false);
+
   useEffect(() => {
-    if (isLoggedIn && driver) {
+    if (isLoggedIn && driver && !pushTokenSentRef.current) {
+      pushTokenSentRef.current = true;
       const setupPush = async () => {
         const token = await registerForPushNotificationsAsync(locale);
         if (token) {
-          await savePushToken(driver.id, token, getApiUrl());
+          try {
+            await fetch(`${getApiUrl()}/driver/push-token`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ driverId: driver.id, expoPushToken: token }),
+            });
+          } catch { /* ignore */ }
         }
       };
       setupPush();
-
-      const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-        // Handle notification tap
-        console.log("Notification tapped:", response);
-      });
-      return () => subscription.remove();
     }
-  }, [isLoggedIn, driver, locale, getApiUrl, savePushToken]);
+    if (!isLoggedIn) {
+      pushTokenSentRef.current = false;
+    }
+  }, [isLoggedIn, driver]);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification tapped:', response);
+    });
+    return () => subscription.remove();
+  }, []);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -716,7 +737,6 @@ function AppInner() {
       initialFetchDone.current = false;
       await AsyncStorage.setItem('@driver_data', JSON.stringify(data));
       await AsyncStorage.setItem('@session_version', SESSION_VERSION);
-
 
       const perms = await requestFullLocationAccess();
       if (!perms.foreground) {
@@ -778,6 +798,7 @@ function AppInner() {
       console.error(error);
       showAlert(t(locale, 'loginError'), t(locale, 'loadErrorRetry'));
     } finally {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setLoading(false);
       setRefreshing(false);
     }
@@ -821,32 +842,31 @@ function AppInner() {
     }
   };
 
-  const handleCompleteOrder = async (orderId: number, payType: string) => {
+  const handlePickupContainer = (order: Order) => {
     if (updatingOrderId !== null) return;
-    const order = orders.find(o => o.id === orderId);
-    if (order && !canRunWorkflowOnOrder(order, focusOrder)) {
+    if (!canRunWorkflowOnOrder(order, focusOrder)) {
       showAlert(t(locale, 'lockedAction'), t(locale, 'finishCurrentFirst'));
       return;
     }
 
     Alert.alert(
       "Фото-отчет",
-      "Пожалуйста, прикрепите фото (например, чек или установленный контейнер) для завершения заказа.",
+      "Прикрепите фото контейнера для подтверждения получения.",
       [
         {
           text: "Сделать фото",
-          onPress: () => promptPhotoCapture(orderId, payType)
+          onPress: () => promptPickupPhotoCapture(order)
         },
         {
           text: "Пропустить",
           style: "cancel",
-          onPress: () => completeOrderWithPhoto(orderId, payType, null)
+          onPress: () => pickupContainerWithPhoto(order, null)
         }
       ]
     );
   };
 
-  const promptPhotoCapture = async (orderId: number, payType: string) => {
+  const promptPickupPhotoCapture = async (order: Order) => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       showAlert("Ошибка", "Нет доступа к камере");
@@ -866,52 +886,132 @@ function AppInner() {
         );
         if (manipResult.base64) {
           const base64Img = `data:image/jpeg;base64,${manipResult.base64}`;
-          completeOrderWithPhoto(orderId, payType, base64Img);
+          pickupContainerWithPhoto(order, base64Img);
         } else {
-          completeOrderWithPhoto(orderId, payType, null);
+          pickupContainerWithPhoto(order, null);
         }
       } catch (err) {
         console.error('Image compression failed:', err);
-        completeOrderWithPhoto(orderId, payType, null);
+        pickupContainerWithPhoto(order, null);
       }
     }
   };
 
-  const completeOrderWithPhoto = async (orderId: number, payType: string, photoBase64: string | null) => {
-    setUpdatingOrderId(orderId);
+  const pickupContainerWithPhoto = async (order: Order, photoBase64: string | null) => {
+    setUpdatingOrderId(order.id);
+    const isBeznal = order.paymentType === 'card' || order.paymentType === 'online';
+
     try {
-      const payload: any = {
-        status: 'completed',
-        paymentType: payType,
-        paymentStatus: 'received',
-      };
+      const payload: any = {};
       if (photoBase64) {
         payload.photoUrl = photoBase64;
       }
 
-      const response = await fetch(`${getApiUrl()}/driver/orders/${orderId}`, {
+      if (isBeznal) {
+        payload.status = 'completed';
+        payload.paymentStatus = 'received';
+      } else {
+        payload.status = 'picked_up';
+        payload.paymentStatus = 'pending';
+      }
+
+      const response = await fetch(`${getApiUrl()}/driver/orders/${order.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error(t(locale, 'completeError'));
+      if (!response.ok) throw new Error("Не удалось обновить статус заказа");
 
       setOrders(prev =>
         prev.map(o =>
-          o.id === orderId
-            ? { ...o, status: 'completed', paymentType: payType, paymentStatus: 'received' }
+          o.id === order.id
+            ? {
+                ...o,
+                status: payload.status,
+                paymentStatus: payload.paymentStatus,
+                photoUrl: photoBase64 || o.photoUrl,
+              }
             : o
         )
       );
 
-      setSelectedOrder(null);
-      if (pinnedFocusId === orderId) setPinnedFocusId(null);
+      if (selectedOrder?.id === order.id) {
+        setSelectedOrder(prev =>
+          prev
+            ? {
+                ...prev,
+                status: payload.status,
+                paymentStatus: payload.paymentStatus,
+                photoUrl: photoBase64 || prev.photoUrl,
+              }
+            : null
+        );
+      }
 
-      showAlert(t(locale, 'orderCompletedTitle'), t(locale, 'orderCompletedMessage'));
+      if (payload.status === 'completed') {
+        setSelectedOrder(null);
+        if (pinnedFocusId === order.id) setPinnedFocusId(null);
+        showAlert("Готово", "Заказ успешно завершен, безналичная оплата получена!");
+      } else {
+        showAlert("Забрал контейнер", "Контейнер успешно забран. Пожалуйста, примите наличные средства от клиента.");
+      }
     } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : t(locale, 'completeError');
-      showAlert(t(locale, 'loginError'), msg);
+      const msg = error instanceof Error ? error.message : "Ошибка при переходе";
+      showAlert("Ошибка", msg);
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const handleReceivedCash = async (order: Order) => {
+    setUpdatingOrderId(order.id);
+    try {
+      const response = await fetch(`${getApiUrl()}/driver/orders/${order.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentStatus: 'received' }),
+      });
+
+      if (!response.ok) throw new Error("Не удалось подтвердить оплату");
+
+      setOrders(prev =>
+        prev.map(o => (o.id === order.id ? { ...o, paymentStatus: 'received' } : o))
+      );
+
+      setSelectedOrder(prev => (prev?.id === order.id ? { ...prev, paymentStatus: 'received' } : prev));
+
+      showAlert("Наличные получены", "Оплата подтверждена. Теперь вы можете завершить заказ.");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Ошибка подтверждения оплаты";
+      showAlert("Ошибка", msg);
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const handleFinalizeCashOrder = async (order: Order) => {
+    setUpdatingOrderId(order.id);
+    try {
+      const response = await fetch(`${getApiUrl()}/driver/orders/${order.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      });
+
+      if (!response.ok) throw new Error("Не удалось завершить заказ");
+
+      setOrders(prev =>
+        prev.map(o => (o.id === order.id ? { ...o, status: 'completed' } : o))
+      );
+
+      setSelectedOrder(null);
+      if (pinnedFocusId === order.id) setPinnedFocusId(null);
+
+      showAlert("Успешно", "Заказ успешно завершен!");
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Ошибка завершения заказа";
+      showAlert("Ошибка", msg);
     } finally {
       setUpdatingOrderId(null);
     }
@@ -981,75 +1081,71 @@ function AppInner() {
     }
   };
 
-  const calendarDays = useMemo(() => {
-    const days: Date[] = [];
-    const base = startOfDay(new Date());
-    for (let i = -CALENDAR_PAST_DAYS; i <= CALENDAR_FUTURE_DAYS; i++) {
-      const d = new Date(base);
-      d.setDate(base.getDate() + i);
-      days.push(d);
+  // Calendar Monthly Grid generator logic
+  const calendarGridDays = useMemo(() => {
+    const year = displayedMonth.getFullYear();
+    const month = displayedMonth.getMonth(); // 0-indexed
+
+    // First day of month
+    const firstDay = new Date(year, month, 1);
+    let startDayOfWeek = firstDay.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+    // Adjust to Monday first (0 = Mon, 6 = Sun)
+    startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    const prevMonthTotalDays = new Date(year, month, 0).getDate();
+
+    const grid: { date: Date; isCurrentMonth: boolean; key: string }[] = [];
+
+    // Prev month days filler
+    for (let i = startDayOfWeek - 1; i >= 0; i--) {
+      const dayNum = prevMonthTotalDays - i;
+      const d = new Date(year, month - 1, dayNum);
+      grid.push({ date: d, isCurrentMonth: false, key: `prev-${dayNum}` });
     }
-    return days;
+
+    // Current month days
+    for (let i = 1; i <= totalDays; i++) {
+      const d = new Date(year, month, i);
+      grid.push({ date: d, isCurrentMonth: true, key: `curr-${i}` });
+    }
+
+    // Next month filler days (fill up to 42 slots for perfect 6 rows)
+    const remainingSlots = 42 - grid.length;
+    for (let i = 1; i <= remainingSlots; i++) {
+      const d = new Date(year, month + 1, i);
+      grid.push({ date: d, isCurrentMonth: false, key: `next-${i}` });
+    }
+
+    return grid;
+  }, [displayedMonth]);
+
+  const shiftMonth = useCallback((delta: number) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setDisplayedMonth(prev => {
+      const next = new Date(prev);
+      next.setMonth(prev.getMonth() + delta, 1);
+      return next;
+    });
   }, []);
 
-  const calendarDayIndex = useCallback((day: Date) => {
-    const base = startOfDay(new Date());
-    return Math.round((startOfDay(day).getTime() - base.getTime()) / 86400000) + CALENDAR_PAST_DAYS;
+  const handleSelectCalendarDate = useCallback((date: Date) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setSelectedCalendarDate(startOfDay(date));
   }, []);
 
-  const scrollCalendarToDay = useCallback(
-    (day: Date) => {
-      requestAnimationFrame(() => {
-        const idx = calendarDayIndex(day);
-        calendarScrollRef.current?.scrollTo({
-          x: Math.max(0, idx * (CALENDAR_DAY_WIDTH + CALENDAR_DAY_GAP) - 56),
-          animated: true,
-        });
-      });
-    },
-    [calendarDayIndex]
-  );
-
-  const scrollCalendarToToday = useCallback(() => {
-    scrollCalendarToDay(new Date());
-  }, [scrollCalendarToDay]);
-
-  const goToCalendarToday = useCallback(() => {
-
+  const handleGoToCalendarToday = useCallback(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const today = startOfDay(new Date());
     setSelectedCalendarDate(today);
-    scrollCalendarToToday();
-  }, [scrollCalendarToToday]);
-
-  const shiftCalendarWeek = useCallback(
-    (deltaWeeks: number) => {
-      const next = new Date(selectedCalendarDate);
-      next.setDate(next.getDate() + deltaWeeks * 7);
-      const min = calendarDays[0];
-      const max = calendarDays[calendarDays.length - 1];
-      const clamped = startOfDay(next < min ? min : next > max ? max : next);
-
-      setSelectedCalendarDate(clamped);
-      scrollCalendarToDay(clamped);
-    },
-    [selectedCalendarDate, calendarDays, scrollCalendarToDay]
-  );
+    setDisplayedMonth(new Date(today));
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'calendar') {
-      setSelectedCalendarDate(startOfDay(new Date()));
-      scrollCalendarToToday();
+      setDisplayedMonth(new Date(selectedCalendarDate));
     }
-  }, [activeTab, scrollCalendarToToday]);
-
-  const getDayLabel = (d: Date) => {
-    const today = startOfDay(new Date());
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    if (isSameDay(d, today)) return t(locale, 'today');
-    if (isSameDay(d, tomorrow)) return t(locale, 'tomorrow');
-    return formatDateShort(d);
-  };
+  }, [activeTab]);
 
   const ordersForCalendarDay = useMemo(() => {
     const dayOrders = orders.filter(o => isSameDay(new Date(o.scheduledAt), selectedCalendarDate));
@@ -1100,8 +1196,14 @@ function AppInner() {
   );
 
   const todayEarned = useMemo(() => {
+    const today = startOfDay(new Date());
     return historyOrders
-      .filter(o => isSameDay(new Date(o.scheduledAt), startOfDay(new Date())))
+      .filter(o => {
+        // Match by scheduledAt OR updatedAt so orders completed today show up
+        const scheduledDate = new Date(o.scheduledAt);
+        const updatedDate = new Date(o.updatedAt);
+        return isSameDay(scheduledDate, today) || isSameDay(updatedDate, today);
+      })
       .reduce((sum, o) => sum + (Number(o.paymentAmount) || 0), 0);
   }, [historyOrders]);
 
@@ -1109,26 +1211,26 @@ function AppInner() {
     const periods: { label: string, fullLabel: string, dateStart: Date, dateEnd: Date, totalAmount: number, orderCount: number }[] = [];
     
     if (historyFilter === 'day') {
-      // Last 7 days
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
-        d.setDate(d.getDate() - i);
+        d.setDate(d.getDate() - i - (historyOffset * 7));
         const start = startOfDay(d);
         const end = new Date(start);
         end.setDate(end.getDate() + 1);
         
         let label = getWeekdayShort(locale, d);
         let fullLabel = `${d.getDate()} ${getMonthFull(locale, d).toLowerCase()}`;
-        if (i === 0) fullLabel = 'Сегодня';
-        else if (i === 1) fullLabel = 'Вчера';
+        if (historyOffset === 0) {
+          if (i === 0) fullLabel = 'Сегодня';
+          else if (i === 1) fullLabel = 'Вчера';
+        }
         
         periods.push({ label: `${d.getDate()}\n${label}`, fullLabel, dateStart: start, dateEnd: end, totalAmount: 0, orderCount: 0 });
       }
     } else if (historyFilter === 'week') {
-      // Last 4 weeks
       for (let i = 3; i >= 0; i--) {
         const d = new Date();
-        d.setDate(d.getDate() - d.getDay() + 1 - (i * 7)); // Monday start
+        d.setDate(d.getDate() - d.getDay() + 1 - (i * 7) - (historyOffset * 28)); // Monday start
         const start = startOfDay(d);
         const end = new Date(start);
         end.setDate(end.getDate() + 7);
@@ -1137,10 +1239,9 @@ function AppInner() {
         periods.push({ label, fullLabel: `Неделя ${label}`, dateStart: start, dateEnd: end, totalAmount: 0, orderCount: 0 });
       }
     } else if (historyFilter === 'month') {
-      // Last 6 months
       for (let i = 5; i >= 0; i--) {
         const d = new Date();
-        d.setMonth(d.getMonth() - i, 1);
+        d.setMonth(d.getMonth() - i - (historyOffset * 6), 1);
         const start = startOfDay(d);
         const end = new Date(start);
         end.setMonth(end.getMonth() + 1);
@@ -1150,7 +1251,6 @@ function AppInner() {
       }
     }
     
-    // Fill data
     historyOrders.forEach(o => {
       const time = new Date(o.scheduledAt).getTime();
       for (let i = 0; i < periods.length; i++) {
@@ -1163,36 +1263,23 @@ function AppInner() {
     });
     
     return periods;
-  }, [historyFilter, historyOrders, locale]);
+  }, [historyFilter, historyOffset, historyOrders, locale]);
 
   useEffect(() => {
     setSelectedHistoryIndex(historyFilter === 'day' ? 6 : historyFilter === 'week' ? 3 : 5);
+    setHistoryOffset(0);
   }, [historyFilter]);
 
-  const groupedHistory = useMemo(() => {
-    const groups: { dateStr: string; dateObj: Date; orders: Order[]; totalAmount: number }[] = [];
-    const sorted = [...historyOrders].sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
-    sorted.forEach(o => {
-      const d = new Date(o.scheduledAt);
-      const dateStr = formatCalendarDayTitle(locale, d);
-      let g = groups.find(x => x.dateStr === dateStr);
-      if (!g) {
-        g = { dateStr, dateObj: startOfDay(new Date(o.scheduledAt)), orders: [], totalAmount: 0 };
-        groups.push(g);
-      }
-      g.orders.push(o);
-      g.totalAmount += Number(o.paymentAmount) || 0;
-    });
-    return groups;
-  }, [historyOrders, locale]);
-
   const openOrder = (order: Order) => {
-
     setShowOrderDetails(false);
     setSelectedOrder(order);
   };
 
   const runPrimaryAction = (order: Order) => {
+    if (order.status === 'container_placed') {
+      handlePickupContainer(order);
+      return;
+    }
     const next = getNextStatus(order.status);
     if (!next || updatingOrderId !== null) return;
 
@@ -1220,120 +1307,47 @@ function AppInner() {
   const renderStepProgress = (status: string) => {
     const current = getStepIndex(status);
     return (
-      <View style={styles.stepRow}>
-        {STEP_KEYS.map((key, i) => {
-          const stepNum = i + 1;
-          const done = stepNum < current;
-          const active = stepNum === current;
-          return (
-            <View key={key} style={styles.stepItem}>
-              <View style={[styles.stepDot, done && styles.stepDotDone, active && styles.stepDotActive]}>
-                {done ? <CheckCircle size={14} color="#fff" /> : <Text style={[styles.stepDotNum, active && styles.stepDotNumActive]}>{stepNum}</Text>}
+      <View style={styles.stepProgressWrapper}>
+        <View style={styles.stepTrackBackground} />
+        <View style={[
+          styles.stepTrackActive,
+          { width: `${Math.min(100, Math.max(0, (current - 1.5) * 33.33))}%` }
+        ]} />
+        <View style={styles.stepItemRow}>
+          {STEP_KEYS.map((key, i) => {
+            const stepNum = i + 1;
+            const done = stepNum < current;
+            const active = stepNum === current;
+            return (
+              <View key={key} style={styles.stepItemBox}>
+                <View style={[
+                  styles.stepDotCircle,
+                  done && styles.stepDotCircleDone,
+                  active && styles.stepDotCircleActive,
+                ]}>
+                  {done ? (
+                    <CheckCircle size={14} color="#FFF" />
+                  ) : (
+                    <Text style={[styles.stepDotNumberText, active && styles.stepDotNumberTextActive]}>{stepNum}</Text>
+                  )}
+                </View>
+                <Text style={[styles.stepDotLabelText, active && styles.stepDotLabelTextActive]} numberOfLines={1}>
+                  {t(locale, key)}
+                </Text>
               </View>
-              <Text style={[styles.stepLabel, active && styles.stepLabelActive]} numberOfLines={1}>{t(locale, key)}</Text>
-            </View>
-          );
-        })}
+            );
+          })}
+        </View>
       </View>
-    );
-  };
-
-  // Payment options are defined by the operator. Driver just confirms.
-
-  const renderPrimaryButton = (order: Order, large = false) => {
-    const btnKey = getPrimaryButtonKey(order.status);
-    const isUpdating = updatingOrderId === order.id;
-    const btnStyle = large ? styles.heroBtn : styles.quickActionBtn;
-    const txtStyle = large ? styles.heroBtnText : styles.quickActionText;
-    const mode = queueActionMode(order, focusOrder);
-
-    if (order.status === 'picked_up') {
-      if (mode === 'locked') {
-        return (
-          <View style={[large ? styles.heroPayBlock : styles.compactPayRow, styles.lockedBlock]}>
-            <Text style={styles.lockedHint}>{t(locale, 'finishCurrentFirst')}</Text>
-          </View>
-        );
-      }
-
-      const isBeznal = order.paymentType === 'card' || order.paymentType === 'online';
-
-      if (isBeznal) {
-        return (
-          <View style={large ? styles.heroPayBlock : styles.compactPayRow}>
-            <View style={{ backgroundColor: '#10b981', padding: 8, borderRadius: 8, marginBottom: large ? 12 : 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <View style={{ marginRight: 6 }}>
-                <CheckCircle size={18} color="#fff" />
-              </View>
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t(locale, 'paidBeznal')}</Text>
-            </View>
-            <TouchableOpacity
-              style={[large ? styles.heroBtn : styles.quickActionBtn, { backgroundColor: '#059669' }, isUpdating && styles.btnDisabled]}
-              disabled={isUpdating}
-              onPress={() => handleCompleteOrder(order.id, order.paymentType)}
-              activeOpacity={0.85}
-            >
-              {isUpdating ? <ActivityIndicator color="#fff" /> : <Text style={large ? styles.heroBtnText : styles.quickActionText}>{t(locale, 'btnComplete')}</Text>}
-            </TouchableOpacity>
-          </View>
-        );
-      }
-
-      return (
-        <View style={large ? styles.heroPayBlock : styles.compactPayRow}>
-          <Text style={styles.payHint}>{t(locale, 'waitingPayment')}</Text>
-          <TouchableOpacity
-            style={[large ? styles.heroBtn : styles.quickActionBtn, { backgroundColor: '#059669', flexDirection: 'row', gap: 8, justifyContent: 'center' }, isUpdating && styles.btnDisabled]}
-            disabled={isUpdating}
-            onPress={() => handleCompleteOrder(order.id, order.paymentType)}
-            activeOpacity={0.85}
-          >
-            <Banknote size={20} color="#fff" />
-            <Text style={large ? styles.heroBtnText : styles.quickActionText}>Получил наличные</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-
-    if (mode === 'locked') {
-      return (
-        <View style={[btnStyle, styles.lockedBtn]}>
-          <Text style={styles.lockedBtnText}>{t(locale, 'lockedAction')}</Text>
-        </View>
-      );
-    }
-
-    if (mode === 'accept_only' && order.status !== 'new') {
-      return (
-        <View style={[btnStyle, styles.lockedBtn]}>
-          <Text style={styles.lockedBtnText}>{t(locale, 'lockedAction')}</Text>
-        </View>
-      );
-    }
-
-    if (!btnKey) return null;
-
-    return (
-      <TouchableOpacity
-        style={[btnStyle, { backgroundColor: getPrimaryActionColor(order.status) }, isUpdating && styles.btnDisabled]}
-        disabled={isUpdating}
-        onPress={() => runPrimaryAction(order)}
-        activeOpacity={0.8}
-      >
-        {isUpdating ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={txtStyle}>{t(locale, btnKey)}</Text>
-        )}
-      </TouchableOpacity>
     );
   };
 
   const renderStatusBadge = (status: string, compact = false) => {
     const { label, color, bg } = getStatusLabel(locale, status);
     return (
-      <View style={[styles.statusBadge, { backgroundColor: bg }, compact && styles.statusBadgeCompact]}>
-        <Text style={[styles.statusBadgeText, { color }, compact && styles.statusBadgeTextCompact]}>{label}</Text>
+      <View style={[styles.badgeContainer, { backgroundColor: bg }, compact && styles.badgeContainerCompact]}>
+        <View style={[styles.badgeDot, { backgroundColor: color }]} />
+        <Text style={[styles.badgeText, { color }, compact && styles.badgeTextCompact]}>{label}</Text>
       </View>
     );
   };
@@ -1348,54 +1362,59 @@ function AppInner() {
     const isFocus = focusOrder?.id === order.id;
 
     return (
-      <View key={order.id} style={[styles.orderCard, isFocus && styles.orderCardFocus]}>
-        <TouchableOpacity style={styles.orderCardTap} onPress={() => openOrder(order)} activeOpacity={0.85}>
-          <View style={styles.orderCardBody}>
-            <View style={styles.orderCardTop}>
-              <Text style={styles.orderQueue}>
-                {queueIndex != null ? `${t(locale, 'queueNext')} #${queueIndex}` : `#${order.id}`}
-              </Text>
-              {renderStatusBadge(order.status, true)}
+      <View key={order.id} style={[styles.feedCard, isFocus && styles.feedCardActive]}>
+        <TouchableOpacity style={styles.feedCardTapArea} onPress={() => openOrder(order)} activeOpacity={0.9}>
+          <View style={styles.feedCardHeader}>
+            <Text style={styles.feedCardId}>
+              {queueIndex != null ? `${t(locale, 'queueNext')} #${queueIndex}` : `#${order.id}`}
+            </Text>
+            {renderStatusBadge(order.status, true)}
+          </View>
+          
+          <View style={styles.feedCardBody}>
+            <View style={styles.infoLine}>
+              <Clock size={15} color="#4F46E5" style={{ marginRight: 6 }} />
+              <Text style={styles.infoTimeText}>{inCalendar ? scheduledFull : timeOnly}</Text>
             </View>
-            <View style={styles.orderTimeRow}>
-              <Clock size={14} color="#64748b" style={{ marginRight: 4 }} />
-              <Text style={styles.orderTime}>{inCalendar ? scheduledFull : timeOnly}</Text>
+            <View style={styles.infoLine}>
+              <MapPin size={15} color="#94A3B8" style={{ marginTop: 2, marginRight: 6 }} />
+              <Text style={styles.infoAddressText} numberOfLines={2}>{formatAddressDisplay(order.address, locale)}</Text>
             </View>
-            <View style={styles.orderAddressRow}>
-              <MapPin size={14} color="#94a3b8" style={{ marginTop: 2, marginRight: 4 }} />
-              <Text style={styles.orderAddress} numberOfLines={2}>{formatAddressDisplay(order.address, locale)}</Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-              <Text style={styles.orderMeta}>{order.clientName}</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#f1f5f9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
-                <PaymentTypeIcon type={order.paymentType} size={14} color="#475569" />
-                <Text style={{ fontSize: 12, color: '#475569', fontWeight: '500' }}>
-                  {getPaymentLabel(locale, order.paymentType)}: {(order.paymentAmount || 0).toLocaleString()} {t(locale, 'currency')}
+            
+            <View style={styles.feedCardSeparator} />
+            
+            <View style={styles.feedCardFooter}>
+              <Text style={styles.feedCardClient}>{order.clientName}</Text>
+              <View style={styles.paymentBadge}>
+                <PaymentTypeIcon type={order.paymentType} size={12} color="#10B981" />
+                <Text style={styles.paymentBadgeText}>
+                  {(order.paymentAmount || 0).toLocaleString()} {t(locale, 'currency')}
                 </Text>
               </View>
             </View>
           </View>
-          <ChevronRight size={20} color="#cbd5e1" />
         </TouchableOpacity>
         
         {order.status === 'container_placed' && (
-          <View style={{ paddingHorizontal: 12 }}>
+          <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
             <ContainerTimer updatedAt={order.updatedAt} />
           </View>
         )}
 
         {showAction && order.status !== 'completed' && (
-          <View style={styles.orderCardAction}>
+          <View style={styles.feedCardActionBlock}>
             {isPayment && mode === 'locked' ? (
-              <View style={[styles.quickActionBtn, styles.lockedBtn]}>
-                <Text style={styles.lockedBtnText}>{t(locale, 'lockedAction')}</Text>
+              <View style={[styles.cardActionBtn, styles.cardActionBtnLocked]}>
+                <Text style={styles.cardActionBtnLockedText}>{t(locale, 'finishCurrentFirst')}</Text>
               </View>
             ) : isPayment ? (
               <TouchableOpacity
-                style={[styles.quickActionBtn, { backgroundColor: '#059669' }]}
+                style={[styles.cardActionBtn, { backgroundColor: '#10B981', flexDirection: 'row', gap: 6 }]}
                 onPress={() => openOrder(order)}
+                activeOpacity={0.85}
               >
-                <Text style={styles.quickActionText}>{t(locale, 'stepPayment')}</Text>
+                <CreditCard size={15} color="#FFFFFF" />
+                <Text style={styles.cardActionBtnText}>{t(locale, 'stepPayment')}</Text>
               </TouchableOpacity>
             ) : (
               renderPrimaryButton(order, false)
@@ -1406,186 +1425,188 @@ function AppInner() {
     );
   };
 
-
-
-  const renderHeroCard = (order: Order) => {
-    const scheduledFull = formatDate(order.scheduledAt);
-    const timeOnly = scheduledFull.split(' ')[1] || scheduledFull;
-    const datePart = scheduledFull.split(' ')[0] || scheduledFull;
+  const renderPrimaryButton = (order: Order, large = false) => {
     const btnKey = getPrimaryButtonKey(order.status);
-    return (
-      <View style={styles.heroCard}>
-        <View style={styles.heroTopRow}>
-          <Text style={styles.heroLabel}>{t(locale, 'currentOrder')}</Text>
-          {renderStatusBadge(order.status)}
-        </View>
-        {renderStepProgress(order.status)}
-        <View style={styles.heroScheduleBlock}>
-          <Text style={styles.heroScheduleLabel}>{t(locale, 'scheduledAt')}</Text>
-          <Text style={styles.heroTime}>{timeOnly}</Text>
-          <Text style={styles.heroDateSub}>{datePart}</Text>
-        </View>
-        <Text style={styles.heroAddress}>{formatAddressDisplay(order.address, locale)}</Text>
-        <TouchableOpacity style={styles.heroNavBtn} onPress={() => openNavigation(order)} activeOpacity={0.8}>
-          <Navigation size={16} color="#fff" />
-          <Text style={styles.heroNavBtnText}>
-            Навигация
-          </Text>
-        </TouchableOpacity>
-        {order.status === 'container_placed' && (
-          <ContainerTimer updatedAt={order.updatedAt} />
-        )}
-        <View style={styles.heroTimeRow}>
-          <Clock size={16} color="#64748b" style={{ marginRight: 6 }} />
-          <Text style={styles.heroTime}>{timeOnly}</Text>
-          <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: '#cbd5e1', marginHorizontal: 8 }} />
-          <Text style={styles.heroClient}>{order.clientName}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12, backgroundColor: '#f1f5f9', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}>
-          <PaymentTypeIcon type={order.paymentType} size={16} color="#475569" />
-          <Text style={{ fontSize: 13, color: '#475569', fontWeight: '600' }}>{getPaymentLabel(locale, order.paymentType)}: {order.paymentAmount.toLocaleString()} {t(locale, 'currency')}</Text>
-        </View>
-        <View style={styles.heroClientRow}>
-          <Text style={styles.heroClient}>{order.clientName}</Text>
-          <TouchableOpacity style={styles.heroCallBtn} onPress={() => callClient(order.clientPhone)}>
-            <Phone size={18} color="#fff" />
+    const isUpdating = updatingOrderId === order.id;
+    const btnStyle = large ? styles.actionButtonLarge : styles.cardActionBtn;
+    const txtStyle = large ? styles.actionButtonLargeText : styles.cardActionBtnText;
+    const mode = queueActionMode(order, focusOrder);
+
+    if (order.status === 'picked_up') {
+      if (mode === 'locked') {
+        return (
+          <View style={[large ? styles.payLockWrapperLarge : styles.payLockWrapperCompact]}>
+            <Text style={styles.payLockText}>{t(locale, 'finishCurrentFirst')}</Text>
+          </View>
+        );
+      }
+
+      const hasPaid = order.paymentStatus === 'received' || order.paymentStatus === 'entered';
+
+      if (hasPaid) {
+        return (
+          <View style={large ? styles.payOptionBlockLarge : styles.payOptionBlockCompact}>
+            <View style={styles.paidBadgeBanner}>
+              <CheckCircle size={16} color="#FFFFFF" />
+              <Text style={styles.paidBadgeText}>Оплата получена (Наличные)</Text>
+            </View>
+            <TouchableOpacity
+              style={[btnStyle, { backgroundColor: '#10B981' }, isUpdating && styles.buttonDisabled]}
+              disabled={isUpdating}
+              onPress={() => handleFinalizeCashOrder(order)}
+              activeOpacity={0.85}
+            >
+              {isUpdating ? <ActivityIndicator color="#FFFFFF" /> : <Text style={txtStyle}>{t(locale, 'btnComplete')}</Text>}
+            </TouchableOpacity>
+          </View>
+        );
+      }
+
+      return (
+        <View style={large ? styles.payOptionBlockLarge : styles.payOptionBlockCompact}>
+          <Text style={styles.payHintText}>Ожидание оплаты наличными</Text>
+          <TouchableOpacity
+            style={[btnStyle, { backgroundColor: '#F59E0B', flexDirection: 'row', gap: 8, justifyContent: 'center' }, isUpdating && styles.buttonDisabled]}
+            disabled={isUpdating}
+            onPress={() => handleReceivedCash(order)}
+            activeOpacity={0.85}
+          >
+            <Banknote size={18} color="#FFFFFF" />
+            <Text style={txtStyle}>Получил наличные</Text>
           </TouchableOpacity>
         </View>
-        {order.status === 'new' && (
-          <Text style={styles.heroHint}>{t(locale, 'acceptAnytimeHint')}</Text>
-        )}
-        {order.status === 'assigned' && (
-          <Text style={styles.heroHint}>{t(locale, 'earlyTripHint')}</Text>
-        )}
-        {btnKey || order.status === 'picked_up' ? (
-          <Text style={styles.whatToDoLabel}>{t(locale, 'whatToDo')}</Text>
-        ) : null}
-        {renderPrimaryButton(order, true)}
-        <TouchableOpacity style={styles.heroLinkBtn} onPress={() => openOrder(order)}>
-          <Text style={styles.heroLinkText}>{t(locale, 'openOrder')}</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
+      );
+    }
 
-  const renderCalendarTimelineOrder = (order: Order, isLast: boolean) => {
-    const time = formatTimeOnly(order.scheduledAt);
-    const { label, color, bg } = getStatusLabel(locale, order.status);
-    const completed = order.status === 'completed';
+    if (mode === 'locked') {
+      return (
+        <View style={[btnStyle, styles.cardActionBtnLocked]}>
+          <Text style={styles.cardActionBtnLockedText}>{t(locale, 'lockedAction')}</Text>
+        </View>
+      );
+    }
+
+    if (mode === 'accept_only' && order.status !== 'new') {
+      return (
+        <View style={[btnStyle, styles.cardActionBtnLocked]}>
+          <Text style={styles.cardActionBtnLockedText}>{t(locale, 'lockedAction')}</Text>
+        </View>
+      );
+    }
+
+    if (!btnKey) return null;
+
     return (
-      <View key={order.id} style={styles.timelineRow}>
-        <View style={styles.timelineTimeCol}>
-          <Text style={styles.timelineTime}>{time}</Text>
-        </View>
-        <View style={styles.timelineRail}>
-          <View style={[styles.timelineDot, completed && styles.timelineDotDone]} />
-          {!isLast && <View style={styles.timelineLine} />}
-        </View>
-        <TouchableOpacity
-          style={[styles.timelineCard, completed && styles.timelineCardDone]}
-          onPress={() => openOrder(order)}
-          activeOpacity={0.85}
-        >
-          <View style={styles.timelineCardHeader}>
-            <Text style={styles.timelineOrderId}>#{order.id}</Text>
-            <View style={[styles.statusBadge, styles.statusBadgeCompact, { backgroundColor: bg }]}>
-              <Text style={[styles.statusBadgeTextCompact, { color }]}>{label}</Text>
-            </View>
-          </View>
-          <Text style={styles.timelineAddress} numberOfLines={2}>{formatAddressDisplay(order.address, locale)}</Text>
-          <Text style={styles.timelineClient}>{order.clientName}</Text>
-          {order.operatorNote ? (
-            <Text style={styles.timelineNote} numberOfLines={1}>{order.operatorNote}</Text>
-          ) : null}
-          <View style={styles.timelineTapHint}>
-            <Text style={styles.timelineTapHintText}>{t(locale, 'openOrder')}</Text>
-            <ChevronRight size={14} color="#94a3b8" />
-          </View>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={[btnStyle, { backgroundColor: getPrimaryActionColor(order.status) }, isUpdating && styles.buttonDisabled]}
+        disabled={isUpdating}
+        onPress={() => runPrimaryAction(order)}
+        activeOpacity={0.85}
+      >
+        {isUpdating ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <Text style={txtStyle}>{t(locale, btnKey)}</Text>
+        )}
+      </TouchableOpacity>
     );
   };
 
   if (!isLoggedIn) {
     return (
-      <SafeAreaView style={styles.loginContainer}>
+      <SafeAreaView style={styles.darkAuthContainer}>
         <StatusBar barStyle="light-content" backgroundColor="#0B0F19" />
-        <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-          <View style={styles.loginTopBar}>
-            <TouchableOpacity style={styles.settingsBtn} onPress={() => setShowSettings(!showSettings)}>
-              <Settings color="#94a3b8" size={24} />
+        <ScrollView contentContainerStyle={styles.authScroll} keyboardShouldPersistTaps="handled">
+          <View style={styles.authTopBar}>
+            <TouchableOpacity style={styles.authSettingsBtn} onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setShowSettings(!showSettings);
+            }} activeOpacity={0.7}>
+              <Settings color="#64748B" size={18} />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.headerArea}>
-            <View style={styles.logoCircle}>
-              <Warehouse color="#fff" size={40} />
+          <View style={styles.brandContainer}>
+            <View style={styles.brandIconWrapper}>
+              <Warehouse color="#FFFFFF" size={38} />
             </View>
-            <Text style={styles.appTitle}>{t(locale, 'appTitle')}</Text>
-            <Text style={styles.appSub}>{t(locale, 'appSub')}</Text>
+            <Text style={styles.brandTitle}>{t(locale, 'appTitle')}</Text>
+            <Text style={styles.brandSubTitle}>{t(locale, 'appSub')}</Text>
           </View>
 
           {showSettings ? (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{t(locale, 'settings')}</Text>
-              <Text style={styles.label}>{t(locale, 'serverIp')}:</Text>
+            <View style={styles.glassAuthCard}>
+              <Text style={styles.authCardTitle}>{t(locale, 'settings')}</Text>
+              
+              <Text style={styles.inputHeading}>{t(locale, 'serverIp')}</Text>
               <TextInput
-                style={styles.input}
+                style={styles.authInput}
                 value={serverIp}
                 onChangeText={setServerIp}
                 placeholder="crm-aziz.vercel.app"
+                placeholderTextColor="#475569"
                 autoCapitalize="none"
                 autoCorrect={false}
               />
-              <Text style={styles.label}>{t(locale, 'port')}:</Text>
+              
+              <Text style={styles.inputHeading}>{t(locale, 'port')}</Text>
               <TextInput
-                style={styles.input}
+                style={styles.authInput}
                 value={port}
                 onChangeText={setPort}
                 placeholder={t(locale, 'portPlaceholder')}
+                placeholderTextColor="#475569"
                 keyboardType="numeric"
               />
+              
               <TouchableOpacity
-                style={styles.saveBtn}
+                style={styles.authSaveBtn}
                 onPress={async () => {
                   try {
                     await AsyncStorage.setItem('@server_ip', serverIp);
                     await AsyncStorage.setItem('@server_port', port);
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                     setShowSettings(false);
                   } catch {
                     showAlert(t(locale, 'loginError'), t(locale, 'saveSettingsError'));
                   }
                 }}
+                activeOpacity={0.8}
               >
-                <Text style={styles.saveBtnText}>{t(locale, 'save')}</Text>
+                <Text style={styles.authSaveBtnText}>{t(locale, 'save')}</Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>{t(locale, 'signIn')}</Text>
-              <View style={styles.inputContainer}>
-                <User color="#94a3b8" size={20} style={styles.inputIcon} />
+            <View style={styles.glassAuthCard}>
+              <Text style={styles.authCardTitle}>{t(locale, 'signIn')}</Text>
+              
+              <View style={styles.authInputGroup}>
+                <User color="#475569" size={18} style={styles.authInputIcon} />
                 <TextInput
-                  style={styles.textInput}
+                  style={styles.authTextInput}
                   value={username}
                   onChangeText={setUsername}
                   placeholder={t(locale, 'login')}
+                  placeholderTextColor="#475569"
                   autoCapitalize="none"
                 />
               </View>
-              <View style={styles.inputContainer}>
-                <Lock color="#94a3b8" size={20} style={styles.inputIcon} />
+              
+              <View style={styles.authInputGroup}>
+                <Lock color="#475569" size={18} style={styles.authInputIcon} />
                 <TextInput
-                  style={styles.textInput}
+                  style={styles.authTextInput}
                   value={password}
                   onChangeText={setPassword}
                   placeholder={t(locale, 'password')}
+                  placeholderTextColor="#475569"
                   secureTextEntry
                   autoCapitalize="none"
                 />
               </View>
-              <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loading}>
-                {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.loginBtnText}>{t(locale, 'signIn')}</Text>}
+              
+              <TouchableOpacity style={styles.authLoginBtn} onPress={handleLogin} disabled={loading} activeOpacity={0.85}>
+                {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.authLoginBtnText}>{t(locale, 'signIn')}</Text>}
               </TouchableOpacity>
             </View>
           )}
@@ -1610,411 +1631,743 @@ function AppInner() {
     { id: 'home' as const, label: t(locale, 'tabToday'), Icon: Home, count: todayActiveCount },
     { id: 'calendar' as const, label: t(locale, 'calendar'), Icon: Calendar, count: futureActiveCount },
     { id: 'history' as const, label: t(locale, 'history'), Icon: CheckCircle, count: 0 },
+    { id: 'profile' as const, label: 'Профиль', Icon: UserCircle, count: 0 },
   ];
 
-
   return (
-    <SafeAreaView style={styles.mainContainer} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={styles.layoutMainContainer} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <View style={styles.appHeader}>
-        <View style={styles.driverInfoArea}>
-          <Text style={styles.welcomeText}>{driver!.name}</Text>
-          <Text style={styles.plateText}>{driver!.vehiclePlate}</Text>
-        </View>
-        <View style={styles.headerActions}>
-
-          <TouchableOpacity style={styles.actionIconBtn} onPress={() => { fetchOrders(true); }}>
-            <RefreshCw size={20} color="#4f46e5" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerMiniBtn}
-            onPress={async () => {
-
-              await clearSession();
-            }}
-          >
-            <LogOut size={18} color="#ef4444" />
+      {activeTab !== 'profile' && (
+        <View style={styles.topProfileBar}>
+          <View style={styles.driverMetaBlock}>
+            <Text style={styles.driverWelcome}>{driver!.name}</Text>
+            <View style={styles.driverPlateBadgeContainer}>
+              <Car size={13} color="#4F46E5" />
+              <Text style={styles.driverPlateText}>{driver!.vehiclePlate}</Text>
+            </View>
+          </View>
+          <TouchableOpacity style={styles.refreshIconButton} onPress={() => { fetchOrders(true); }} activeOpacity={0.7}>
+            <RefreshCw size={16} color="#4F46E5" />
           </TouchableOpacity>
         </View>
-      </View>
+      )}
 
-      {isTrackingGps ? (
-        <View style={styles.gpsActiveBar}>
-          <View style={styles.pulseContainer}>
-            <Animated.View style={[styles.pulseRing, { opacity: pulseAnim }]} />
-            <View style={styles.pulseDot} />
+      {activeTab !== 'profile' && (
+        <View style={isTrackingGps ? styles.gpsActiveIndicator : styles.gpsInactiveIndicator}>
+          <View style={styles.gpsPulseBox}>
+            {isTrackingGps ? (
+              <Animated.View style={[styles.gpsPulseRing, { opacity: pulseAnim }]} />
+            ) : null}
+            <View style={[styles.gpsPulseDot, { backgroundColor: isTrackingGps ? '#10B981' : '#94A3B8' }]} />
           </View>
-          <Navigation size={14} color="#065f46" style={{ marginRight: 6 }} />
-          <Text style={styles.gpsActiveText}>{t(locale, 'gpsTracking')}</Text>
-        </View>
-      ) : (
-        <View style={styles.gpsIdleBar}>
-          <View style={styles.pulseContainer}>
-            <View style={[styles.pulseDot, { backgroundColor: '#94a3b8' }]} />
-          </View>
-          <Navigation size={14} color="#94a3b8" style={{ marginRight: 6 }} />
-          <Text style={styles.gpsIdleText}>{t(locale, 'gpsIdle')}</Text>
+          <Navigation size={13} color={isTrackingGps ? '#065F46' : '#64748B'} style={{ marginRight: 6 }} />
+          <Text style={isTrackingGps ? styles.gpsActiveText : styles.gpsInactiveText}>
+            {isTrackingGps ? t(locale, 'gpsTracking') : t(locale, 'gpsIdle')}
+          </Text>
         </View>
       )}
 
       <ScrollView
-        style={styles.mainScroll}
-        contentContainerStyle={{ paddingBottom: 24 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchOrders(false)} />}
+        style={styles.layoutMainScroll}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        refreshControl={
+          activeTab !== 'profile'
+            ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            : undefined
+        }
       >
-        {loading ? (
-          <ActivityIndicator size="large" color="#4f46e5" style={{ marginTop: 48 }} />
+        {loading && activeTab !== 'profile' ? (
+          <ActivityIndicator size="large" color="#4F46E5" style={{ marginTop: 60 }} />
         ) : activeTab === 'home' ? (
           <View style={{ flex: 1 }}>
-            <View style={{ backgroundColor: '#fff', paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#e2e8f0', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <Text style={{ fontSize: 14, color: '#64748b', fontWeight: '600' }}>Заработано сегодня:</Text>
-              <Text style={{ fontSize: 18, color: '#10b981', fontWeight: '800' }}>{todayEarned.toLocaleString()} {t(locale, 'currency')}</Text>
-            </View>
-            <View style={{ paddingHorizontal: 20 }}>
-              {focusOrder ? (
-                renderHeroCard(focusOrder)
-              ) : (
-                <View style={styles.emptyHero}>
-                  <CheckCircle size={56} color="#10b981" />
-                  <Text style={styles.emptyTitle}>{t(locale, 'allDone')}</Text>
-                  <Text style={styles.emptySub}>{t(locale, 'allDoneSub')}</Text>
+            {/* Earnings metric card */}
+            <View style={styles.todayEarningsCard}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={styles.earningsIconBg}>
+                  <TrendingUp size={18} color="#10B981" />
                 </View>
-              )}
-              {otherActiveOrders.length > 0 && (
-                <>
-                  <Text style={styles.sectionHeading}>{t(locale, 'otherOrders')}</Text>
-                  {otherActiveOrders.map((o, i) => renderCompactCard(o, i + 2))}
-                </>
-              )}
+                <Text style={styles.earningsTitleText}>Заработано сегодня</Text>
+              </View>
+              <Text style={styles.earningsValueText}>
+                {todayEarned.toLocaleString()} {t(locale, 'currency')}
+              </Text>
+            </View>
+
+            <View style={{ paddingHorizontal: 20 }}>
+              {(() => {
+                const homeOrders = activeOrders;
+
+                // 1. Overdue orders: status === 'container_placed' and elapsed time > 2 hours
+                const overdueContainers = homeOrders.filter(o => {
+                  if (o.status !== 'container_placed') return false;
+                  const start = new Date(o.updatedAt).getTime();
+                  if (isNaN(start)) return false;
+                  return (Date.now() - start) >= 2 * 60 * 60 * 1000;
+                });
+
+                // 2. Placed containers (active): status === 'container_placed' and elapsed time <= 2 hours
+                const activeContainers = homeOrders.filter(o => {
+                  if (o.status !== 'container_placed') return false;
+                  const start = new Date(o.updatedAt).getTime();
+                  if (isNaN(start)) return false;
+                  return (Date.now() - start) < 2 * 60 * 60 * 1000;
+                });
+
+                // 3. New orders: status === 'new'
+                const newOrders = homeOrders.filter(o => o.status === 'new');
+
+                // 4. Assigned orders: status === 'assigned'
+                const assignedOrders = homeOrders.filter(o => o.status === 'assigned');
+
+                // 5. Active trip order (currently in progress or picked up, or earliest assigned if no trip in progress)
+                const activeTripOrder = homeOrders.find(o => o.status === 'in_progress' || o.status === 'picked_up') 
+                  || (assignedOrders.length > 0 ? assignedOrders.sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0] : null);
+
+                // Other next orders: assignedOrders minus activeTripOrder
+                const nextOrders = assignedOrders.filter(o => o.id !== activeTripOrder?.id);
+
+                const hasAnyOrders = overdueContainers.length > 0 || activeTripOrder != null || activeContainers.length > 0 || newOrders.length > 0;
+
+                if (!hasAnyOrders) {
+                  return (
+                    <View style={styles.emptyFeedPlaceholder}>
+                      <CheckCircle size={52} color="#10B981" />
+                      <Text style={styles.emptyFeedTitle}>{t(locale, 'allDone')}</Text>
+                      <Text style={styles.emptyFeedSub}>{t(locale, 'allDoneSub')}</Text>
+                    </View>
+                  );
+                }
+
+                return (
+                  <View style={{ gap: 16 }}>
+                    {/* SECTION 1: Overdue Containers */}
+                    {overdueContainers.length > 0 && (
+                      <View>
+                        <Text style={[styles.feedSectionHeading, { color: '#EF4444', fontWeight: 'bold' }]}>
+                          {"⚠️ Просроченные контейнеры (> 2 ч.)"}
+                        </Text>
+                        {overdueContainers.map((o) => renderCompactCard(o))}
+                      </View>
+                    )}
+
+                    {/* SECTION 2: Active Trip In Progress */}
+                    {activeTripOrder && (
+                      <View style={{ marginTop: 6 }}>
+                        <Text style={styles.feedSectionHeading}>Сейчас в работе / Hozir ishda</Text>
+                        <View style={styles.focusedOrderContainer}>
+                          <View style={styles.focusedOrderHeader}>
+                            <Text style={styles.focusedOrderLabel}>
+                              {activeTripOrder.status === 'in_progress' ? 'Активный рейс (В пути)' : 'Активный рейс (Назначен)'}
+                            </Text>
+                            {renderStatusBadge(activeTripOrder.status)}
+                          </View>
+                          
+                          {renderStepProgress(activeTripOrder.status)}
+
+                          <View style={styles.focusedOrderScheduleBlock}>
+                            <Text style={styles.focusedOrderScheduleLabel}>{t(locale, 'scheduledAt')}</Text>
+                            <Text style={styles.focusedOrderTimeText}>{formatDate(activeTripOrder.scheduledAt)}</Text>
+                          </View>
+
+                          <Text style={styles.focusedOrderAddress}>{formatAddressDisplay(activeTripOrder.address, locale)}</Text>
+
+                          <TouchableOpacity style={styles.focusedOrderNavBtn} onPress={() => openNavigation(activeTripOrder)} activeOpacity={0.8}>
+                            <Navigation size={14} color="#FFFFFF" />
+                            <Text style={styles.focusedOrderNavBtnText}>Открыть навигатор</Text>
+                          </TouchableOpacity>
+
+                          <View style={styles.focusedOrderGridDetails}>
+                            <View style={styles.focusedDetailBadge}>
+                              <PaymentTypeIcon type={activeTripOrder.paymentType} size={14} color="#475569" />
+                              <Text style={styles.focusedDetailBadgeText}>
+                                {getPaymentLabel(locale, activeTripOrder.paymentType)}: {activeTripOrder.paymentAmount.toLocaleString()} {t(locale, 'currency')}
+                              </Text>
+                            </View>
+                            <View style={styles.focusedDetailBadge}>
+                              <Warehouse size={14} color="#475569" />
+                              <Text style={styles.focusedDetailBadgeText}>Размер: {activeTripOrder.containerSizeM3} m³</Text>
+                            </View>
+                          </View>
+
+                          <View style={styles.focusedOrderClientBox}>
+                            <View style={{ flex: 1 }}>
+                              <Text style={styles.focusedClientLabel}>Клиент</Text>
+                              <Text style={styles.focusedClientName}>{activeTripOrder.clientName}</Text>
+                            </View>
+                            <TouchableOpacity style={styles.focusedClientCallBtn} onPress={() => callClient(activeTripOrder.clientPhone)} activeOpacity={0.8}>
+                              <Phone size={16} color="#FFFFFF" />
+                            </TouchableOpacity>
+                          </View>
+
+                          {activeTripOrder.status === 'new' && (
+                            <Text style={styles.focusedOrderHint}>{t(locale, 'acceptAnytimeHint')}</Text>
+                          )}
+                          {activeTripOrder.status === 'assigned' && (
+                            <Text style={styles.focusedOrderHint}>{t(locale, 'earlyTripHint')}</Text>
+                          )}
+
+                          <Text style={styles.focusedOrderWhatToDo}>{t(locale, 'whatToDo')}</Text>
+                          {renderPrimaryButton(activeTripOrder, true)}
+
+                          <TouchableOpacity style={styles.focusedOrderLinkBtn} onPress={() => openOrder(activeTripOrder)} activeOpacity={0.7}>
+                            <Text style={styles.focusedOrderLinkText}>{t(locale, 'openOrder')}</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* SECTION 3: Active Placed Containers */}
+                    {activeContainers.length > 0 && (
+                      <View>
+                        <Text style={[styles.feedSectionHeading, { color: '#F59E0B' }]}>
+                          📦 Установленные контейнеры (активные)
+                        </Text>
+                        {activeContainers.map((o) => renderCompactCard(o))}
+                      </View>
+                    )}
+
+                    {/* SECTION 4: New/Incoming Orders */}
+                    {newOrders.length > 0 && (
+                      <View>
+                        <Text style={[styles.feedSectionHeading, { color: '#3B82F6' }]}>
+                          🆕 Новые заказы
+                        </Text>
+                        {newOrders.map((o) => renderCompactCard(o))}
+                      </View>
+                    )}
+
+                    {/* SECTION 5: Next Scheduled Orders */}
+                    {nextOrders.length > 0 && (
+                      <View>
+                        <Text style={styles.feedSectionHeading}>📋 Следующие заказы</Text>
+                        {nextOrders.map((o, idx) => renderCompactCard(o, idx + 2))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })()}
             </View>
           </View>
         ) : activeTab === 'calendar' ? (
-          <View style={styles.calendarPanel}>
-            <View style={styles.calendarToolbar}>
-              <TouchableOpacity style={styles.calendarNavBtn} onPress={() => shiftCalendarWeek(-1)}>
-                <ChevronLeft size={22} color="#475569" />
+          <View style={[styles.calendarGridPanel]}>
+            {/* Calendar Grid Header: Prev, Month name, Сегодня, Next */}
+            <View style={styles.calendarGridHeader}>
+              <TouchableOpacity style={styles.calendarGridHeaderBtn} onPress={() => shiftMonth(-1)} activeOpacity={0.7}>
+                <ChevronLeft size={18} color="#0F172A" />
               </TouchableOpacity>
-              <View style={styles.calendarToolbarCenter}>
-                <Text style={styles.calendarMonthTitle}>{formatMonthYear(locale, selectedCalendarDate)}</Text>
-                <TouchableOpacity style={styles.calendarTodayBtn} onPress={goToCalendarToday}>
-                  <Text style={styles.calendarTodayBtnText}>{t(locale, 'goToToday')}</Text>
+              
+              <View style={styles.calendarGridHeaderCenter}>
+                <Text style={styles.calendarGridMonthTitle}>{formatMonthYear(locale, displayedMonth)}</Text>
+                <TouchableOpacity style={styles.calendarGridTodayBtn} onPress={handleGoToCalendarToday} activeOpacity={0.7}>
+                  <Text style={styles.calendarGridTodayBtnText}>{t(locale, 'goToToday')}</Text>
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.calendarNavBtn} onPress={() => shiftCalendarWeek(1)}>
-                <ChevronRight size={22} color="#475569" />
+
+              <TouchableOpacity style={styles.calendarGridHeaderBtn} onPress={() => shiftMonth(1)} activeOpacity={0.7}>
+                <ChevronRight size={18} color="#0F172A" />
               </TouchableOpacity>
             </View>
 
-            <ScrollView
-              ref={calendarScrollRef}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.calendarScroll}
-            >
-              {calendarDays.map(day => {
-                const selected = isSameDay(day, selectedCalendarDate);
-                const isToday = isSameDay(day, new Date());
-                const dayOrders = orders.filter(o => isSameDay(new Date(o.scheduledAt), day));
-                const count = dayOrders.length;
+            {/* Weekday Labels (Monday first) */}
+            <View style={styles.calendarGridWeekdays}>
+              {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(wd => (
+                <Text key={wd} style={styles.calendarGridWeekdayText}>{wd}</Text>
+              ))}
+            </View>
+
+            {/* Grid layout */}
+            <View style={styles.calendarGridContainer}>
+              {calendarGridDays.map(({ date, isCurrentMonth, key }) => {
+                const selected = isSameDay(date, selectedCalendarDate);
+                const isToday = isSameDay(date, new Date());
+                
+                const dayOrders = orders.filter(o => isSameDay(new Date(o.scheduledAt), date));
                 const hasActive = dayOrders.some(o => o.status !== 'completed' && o.status !== 'new');
                 const hasNew = dayOrders.some(o => o.status === 'new');
-                const dayNum = day.getDate();
+                const hasCompleted = dayOrders.some(o => o.status === 'completed');
+
                 return (
                   <TouchableOpacity
-                    key={day.toISOString()}
+                    key={key}
                     style={[
-                      styles.calendarDay,
-                      { width: CALENDAR_DAY_WIDTH },
-                      isToday && !selected && styles.calendarDayToday,
-                      selected && styles.calendarDaySelected,
+                      styles.calendarGridCell,
+                      !isCurrentMonth && styles.calendarGridCellMuted,
+                      isToday && !selected && styles.calendarGridCellToday,
+                      selected && styles.calendarGridCellSelected,
                     ]}
-                    onPress={() => {
-
-                      const d = startOfDay(day);
-                      setSelectedCalendarDate(d);
-                      scrollCalendarToDay(d);
-                    }}
+                    onPress={() => handleSelectCalendarDate(date)}
+                    activeOpacity={0.8}
                   >
-                    <Text style={[styles.calendarWeekday, selected && styles.calendarDayTextSelected]}>
-                      {getWeekdayShort(locale, day)}
+                    <Text style={[
+                      styles.calendarGridCellDayNum,
+                      !isCurrentMonth && styles.calendarGridCellDayNumMuted,
+                      selected && styles.calendarGridCellDayNumSelected,
+                    ]}>
+                      {date.getDate()}
                     </Text>
-                    <Text style={[styles.calendarDayNum, selected && styles.calendarDayTextSelected]}>{dayNum}</Text>
-                    {isToday && !selected ? (
-                      <Text style={styles.calendarMiniLabel}>{t(locale, 'today')}</Text>
-                    ) : null}
-                    {count > 0 ? (
-                      <View style={styles.calendarDotsRow}>
-                        {hasActive && <View style={[styles.calendarDot, { backgroundColor: selected ? '#fde68a' : '#f59e0b' }]} />}
-                        {hasNew && <View style={[styles.calendarDot, { backgroundColor: selected ? '#bfdbfe' : '#3b82f6' }]} />}
-                        <View style={[styles.calendarBadge, selected && styles.calendarBadgeSelected]}>
-                          <Text style={[styles.calendarBadgeText, selected && { color: '#fff' }]}>{count}</Text>
-                        </View>
+                    
+                    {dayOrders.length > 0 ? (
+                      <View style={styles.calendarGridCellDotsRow}>
+                        {hasActive && <View style={[styles.calendarGridCellDot, { backgroundColor: selected ? '#FFFFFF' : '#F59E0B' }]} />}
+                        {hasNew && <View style={[styles.calendarGridCellDot, { backgroundColor: selected ? '#FFFFFF' : '#3B82F6' }]} />}
+                        {hasCompleted && <View style={[styles.calendarGridCellDot, { backgroundColor: selected ? '#FFFFFF' : '#10B981' }]} />}
                       </View>
                     ) : (
-                      <View style={styles.calendarEmptyDot} />
+                      <View style={styles.calendarGridCellDotEmpty} />
                     )}
                   </TouchableOpacity>
                 );
               })}
-            </ScrollView>
+            </View>
 
-            <View style={{ paddingHorizontal: 20, marginTop: 24, paddingBottom: 20 }}>
-              <Text style={styles.sectionHeading}>
+            {/* Daily statistics banner */}
+            <View style={{ paddingHorizontal: 20, marginTop: 14 }}>
+              {ordersForCalendarDay.length > 0 && (
+                <View style={styles.calendarGridStatsRow}>
+                  <View style={styles.calendarGridStatCard}>
+                    <Text style={styles.calendarGridStatLabel}>Всего</Text>
+                    <Text style={styles.calendarGridStatValue}>{calendarDayStats.total}</Text>
+                  </View>
+                  <View style={styles.calendarGridStatCard}>
+                    <Text style={styles.calendarGridStatLabel}>В работе</Text>
+                    <Text style={[styles.calendarGridStatValue, { color: '#4F46E5' }]}>{calendarDayStats.active}</Text>
+                  </View>
+                  <View style={[styles.calendarGridStatCard, styles.calendarGridStatCardDone]}>
+                    <Text style={styles.calendarGridStatLabel}>Готово</Text>
+                    <Text style={[styles.calendarGridStatValue, { color: '#10B981' }]}>{calendarDayStats.done}</Text>
+                  </View>
+                </View>
+              )}
+
+              <Text style={styles.feedSectionHeading}>
                 {formatCalendarDayTitle(locale, selectedCalendarDate)}
               </Text>
+
               {ordersForCalendarDay.length === 0 ? (
-                <View style={styles.calendarEmpty}>
-                  <Clock size={40} color="#cbd5e1" />
-                  <Text style={styles.emptyTitle}>{t(locale, 'noOrdersOnDate')}</Text>
-                  <Text style={styles.emptySub}>{formatCalendarDayTitle(locale, selectedCalendarDate)}</Text>
+                <View style={styles.calendarGridEmptyFeedCard}>
+                  <Clock size={36} color="#CBD5E1" style={{ marginBottom: 12 }} />
+                  <Text style={styles.emptyFeedTitle}>{t(locale, 'noOrdersOnDate')}</Text>
+                  <Text style={styles.emptyFeedSub}>{formatCalendarDayTitle(locale, selectedCalendarDate)}</Text>
                 </View>
               ) : (
-                <View>
-                  {ordersForCalendarDay.map(o => renderCompactCard(o))}
+                <View style={styles.timelineFeedList}>
+                  {ordersForCalendarDay.map((o, idx) => {
+                    const time = formatTimeOnly(o.scheduledAt);
+                    const { label, color, bg } = getStatusLabel(locale, o.status);
+                    const completed = o.status === 'completed';
+                    const isLast = idx === ordersForCalendarDay.length - 1;
+                    return (
+                      <View key={o.id} style={styles.timelineRow}>
+                        <View style={styles.timelineTimeCol}>
+                          <Text style={styles.timelineTimeText}>{time}</Text>
+                        </View>
+                        <View style={styles.timelineRailCol}>
+                          <View style={[styles.timelineDotIndicator, completed && styles.timelineDotIndicatorDone]} />
+                          {!isLast && <View style={styles.timelineRailLine} />}
+                        </View>
+                        <TouchableOpacity
+                          style={[styles.timelineContentCard, completed && styles.timelineContentCardDone]}
+                          onPress={() => openOrder(o)}
+                          activeOpacity={0.9}
+                        >
+                          <View style={styles.timelineContentCardHeader}>
+                            <Text style={styles.timelineContentCardId}>#{o.id}</Text>
+                            <View style={[styles.badgeContainer, styles.badgeContainerCompact, { backgroundColor: bg }]}>
+                              <Text style={[styles.badgeTextCompact, { color }]}>{label}</Text>
+                            </View>
+                          </View>
+                          <Text style={styles.timelineContentCardAddress} numberOfLines={2}>
+                            {formatAddressDisplay(o.address, locale)}
+                          </Text>
+                          <Text style={styles.timelineContentCardClient}>{o.clientName}</Text>
+                          {o.operatorNote ? (
+                            <Text style={styles.timelineContentCardNote} numberOfLines={2}>{o.operatorNote}</Text>
+                          ) : null}
+                          <View style={styles.timelineContentCardArrowHint}>
+                            <Text style={styles.timelineArrowHintText}>{t(locale, 'openOrder')}</Text>
+                            <ChevronRight size={12} color="#94A3B8" />
+                          </View>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
                 </View>
               )}
             </View>
           </View>
-        ) : (
+        ) : activeTab === 'history' ? (
           <View style={{ flex: 1 }}>
-            {/* Header / Title */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginTop: 16 }}>
-              <Text style={{ fontSize: 28, fontWeight: '800', color: '#0f172a' }}>Деньги</Text>
-              <Banknote size={28} color="#0f172a" />
+            {/* History Section Header */}
+            <View style={styles.historySectionHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <View style={styles.historyHeaderIconWrapper}>
+                  <TrendingUp size={20} color="#4F46E5" />
+                </View>
+                <Text style={styles.historyScreenTitle}>Финансы / Деньги</Text>
+              </View>
             </View>
 
-            {/* Filter */}
-            <View style={{ flexDirection: 'row', backgroundColor: '#f1f5f9', borderRadius: 12, marginHorizontal: 20, marginTop: 24, padding: 4 }}>
+            {/* Today's earnings breakdown metrics */}
+            {(() => {
+              const todayOrders = historyOrders.filter(o => isSameDay(new Date(o.scheduledAt), new Date()));
+              const todayCash = todayOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+              const todayBeznal = todayOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+
+              return (
+                <View style={[styles.todayEarningsCard, { flexDirection: 'column', alignItems: 'stretch', marginHorizontal: 20, marginBottom: 12, backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' }]}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 13, color: '#64748B', fontWeight: '500' }}>Сводка за сегодня</Text>
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: '#10B981' }}>{(todayCash + todayBeznal).toLocaleString()} ₽</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, gap: 12 }}>
+                    <View style={{ flex: 1, backgroundColor: '#FFFFFF', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#E2E8F0' }}>
+                      <Text style={{ fontSize: 11, color: '#64748B' }}>Наличные (Naqd)</Text>
+                      <Text style={{ fontSize: 14, fontWeight: '700', color: '#0F172A', marginTop: 2 }}>{todayCash.toLocaleString()} ₽</Text>
+                    </View>
+                    <View style={{ flex: 1, backgroundColor: '#FFFFFF', padding: 10, borderRadius: 8, borderWidth: 1, borderColor: '#E2E8F0' }}>
+                      <Text style={{ fontSize: 11, color: '#64748B' }}>Безналичный (Naqdsiz)</Text>
+                      <Text style={{ fontSize: 14, fontWeight: '700', color: '#3B82F6', marginTop: 2 }}>{todayBeznal.toLocaleString()} ₽</Text>
+                    </View>
+                  </View>
+                </View>
+              );
+            })()}
+
+            {/* Filter Selector Switcher */}
+            <View style={styles.filterBarContainer}>
               {(['day', 'week', 'month'] as const).map(filter => (
                 <TouchableOpacity
                   key={filter}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 8,
-                    borderRadius: 10,
-                    backgroundColor: historyFilter === filter ? '#fff' : 'transparent',
-                    alignItems: 'center',
-                    shadowColor: historyFilter === filter ? '#000' : 'transparent',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: historyFilter === filter ? 0.05 : 0,
-                    shadowRadius: 4,
-                    elevation: historyFilter === filter ? 2 : 0,
-                  }}
+                  style={[
+                    styles.filterBarBtn,
+                    historyFilter === filter && styles.filterBarBtnActive
+                  ]}
                   onPress={() => {
                     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                     setHistoryFilter(filter);
                   }}
+                  activeOpacity={0.8}
                 >
-                  <Text style={{ fontSize: 14, fontWeight: historyFilter === filter ? '700' : '500', color: historyFilter === filter ? '#0f172a' : '#64748b' }}>
+                  <Text style={[
+                    styles.filterBarBtnText,
+                    historyFilter === filter && styles.filterBarBtnTextActive
+                  ]}>
                     {filter === 'day' ? 'День' : filter === 'week' ? 'Неделя' : 'Месяц'}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            {/* Chart */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 140, marginHorizontal: 20, marginTop: 16 }}>
-              {historyChartData.map((data, index) => {
-                const isSelected = selectedHistoryIndex === index;
-                const maxAmount = Math.max(...historyChartData.map(d => d.totalAmount), 1);
-                const barMaxHeight = 80;
-                const barHeight = Math.max((data.totalAmount / maxAmount) * barMaxHeight, 4);
+            {/* Chart Area */}
+            <View style={styles.historyChartContainer}>
+              <TouchableOpacity style={styles.chartArrowNavBtn} onPress={() => {
+                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                setHistoryOffset(o => o + 1);
+              }} activeOpacity={0.7}>
+                <ChevronLeft size={18} color="#0F172A" />
+              </TouchableOpacity>
 
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    style={{ alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end' }}
-                    onPress={() => setSelectedHistoryIndex(index)}
-                  >
-                    <Text 
-                      style={{ fontSize: 9, color: '#64748b', marginBottom: 6, textAlign: 'center', width: '110%' }} 
-                      numberOfLines={1} 
-                      adjustsFontSizeToFit
+              <View style={styles.chartColumnsWrapper}>
+                {historyChartData.map((data, index) => {
+                  const isSelected = selectedHistoryIndex === index;
+                  const maxAmount = Math.max(...historyChartData.map(d => d.totalAmount), 1);
+                  const barMaxHeight = 100;
+                  const barHeight = Math.max((data.totalAmount / maxAmount) * barMaxHeight, 6);
+
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.chartColumnItem}
+                      onPress={() => setSelectedHistoryIndex(index)}
+                      activeOpacity={0.85}
                     >
-                      {data.totalAmount > 0 ? data.totalAmount.toLocaleString() : ''}
-                    </Text>
-                    <View style={{
-                      width: '75%',
-                      height: barHeight,
-                      backgroundColor: isSelected ? '#4f46e5' : '#e2e8f0',
-                      borderRadius: 6,
-                    }} />
-                    <Text style={{ fontSize: 11, color: isSelected ? '#0f172a' : '#94a3b8', marginTop: 8, fontWeight: isSelected ? '700' : '500', textAlign: 'center' }}>
-                      {data.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+                      <Text 
+                        style={[styles.chartColumnValueText, isSelected && styles.chartColumnValueTextActive]} 
+                        numberOfLines={1} 
+                        adjustsFontSizeToFit
+                      >
+                        {data.totalAmount > 0 ? `${(data.totalAmount / 1000).toFixed(0)}k` : ''}
+                      </Text>
+                      <View style={[
+                        styles.chartColumnBar,
+                        { height: barHeight },
+                        isSelected && styles.chartColumnBarActive
+                      ]} />
+                      <Text style={[styles.chartColumnLabelText, isSelected && styles.chartColumnLabelTextActive]}>
+                        {data.label.replace('\n', ' ')}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <TouchableOpacity 
+                disabled={historyOffset === 0} 
+                onPress={() => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                  setHistoryOffset(o => Math.max(0, o - 1));
+                }} 
+                style={[styles.chartArrowNavBtn, historyOffset === 0 && { opacity: 0.3 }]}
+                activeOpacity={0.7}
+              >
+                <ChevronRight size={18} color="#0F172A" />
+              </TouchableOpacity>
             </View>
 
-            {/* Summary below chart */}
-            {selectedHistoryIndex !== null && historyChartData[selectedHistoryIndex] && (
-              <View style={{ backgroundColor: '#f8fafc', marginHorizontal: 20, marginTop: 24, borderRadius: 16, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0' }}>
-                <View>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>
-                    {historyChartData[selectedHistoryIndex].fullLabel}
-                  </Text>
-                  <Text style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>
-                    {historyChartData[selectedHistoryIndex].orderCount} заказов
-                  </Text>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={{ fontSize: 20, fontWeight: '800', color: '#0f172a' }}>
-                    {historyChartData[selectedHistoryIndex].totalAmount.toLocaleString()} ₽
-                  </Text>
-                  <View style={{ marginLeft: 4 }}>
-                    <ChevronRight size={20} color="#0f172a" />
+            {/* Selected Period Details */}
+            {selectedHistoryIndex !== null && historyChartData[selectedHistoryIndex] && (() => {
+              const period = historyChartData[selectedHistoryIndex];
+              const periodOrders = historyOrders.filter(o => {
+                const t = new Date(o.scheduledAt).getTime();
+                return t >= period.dateStart.getTime() && t < period.dateEnd.getTime();
+              });
+              const periodCash = periodOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+              const periodBeznal = periodOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+
+              return (
+                <View style={[styles.historySummaryPeriodCard, { flexDirection: 'column', gap: 12, alignItems: 'stretch' }]}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View>
+                      <Text style={styles.historySummaryTitle}>{period.fullLabel}</Text>
+                      <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>
+                        Выполнено заказов: <Text style={{ fontWeight: '600', color: '#0F172A' }}>{period.orderCount}</Text>
+                      </Text>
+                    </View>
+                    <Text style={styles.historySummaryValueText}>{period.totalAmount.toLocaleString()} ₽</Text>
+                  </View>
+
+                  <View style={{ height: 1, backgroundColor: '#E2E8F0' }} />
+
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' }} />
+                      <Text style={{ fontSize: 12, color: '#64748B' }}>Наличными:</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>{periodCash.toLocaleString()} ₽</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#3B82F6' }} />
+                      <Text style={{ fontSize: 12, color: '#64748B' }}>Безналичными:</Text>
+                      <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>{periodBeznal.toLocaleString()} ₽</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            )}
+              );
+            })()}
 
-            {/* Balans & Chaevie Cards */}
-            <View style={{ marginHorizontal: 20, marginTop: 16, gap: 12 }}>
-              <View style={{ backgroundColor: '#f8fafc', borderRadius: 16, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <View style={{ backgroundColor: '#e2e8f0', padding: 8, borderRadius: 10 }}>
-                    <Wallet size={20} color="#0f172a" />
-                  </View>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>Баланс</Text>
-                </View>
-                <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>1 054,1 ₽</Text>
-              </View>
-
-              <View style={{ backgroundColor: '#f8fafc', borderRadius: 16, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <View style={{ backgroundColor: '#e2e8f0', padding: 8, borderRadius: 10 }}>
-                    <Gift size={20} color="#0f172a" />
-                  </View>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>Чаевые</Text>
-                </View>
-                <View style={{ backgroundColor: '#ef4444', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '800', color: '#fff' }}>Новое</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* List of orders for selected period */}
-            <View style={{ paddingBottom: 20, paddingTop: 24, paddingHorizontal: 20 }}>
-              <Text style={styles.sectionHeading}>Заказы за период</Text>
+            {/* Completed list under chart */}
+            <View style={{ paddingBottom: 32, marginTop: 16, paddingHorizontal: 20 }}>
+              <Text style={styles.feedSectionHeading}>Заказы за период / Buyurtmalar ro'yxati</Text>
               {historyOrders
                 .filter(o => {
                   if (selectedHistoryIndex === null || !historyChartData[selectedHistoryIndex]) return false;
                   const t = new Date(o.scheduledAt).getTime();
                   return t >= historyChartData[selectedHistoryIndex].dateStart.getTime() && t < historyChartData[selectedHistoryIndex].dateEnd.getTime();
                 })
-                .map((o, i) => (
-                  <View key={`hist-${o.id}`} style={{ marginBottom: 12 }}>
-                    {renderCompactCard(o)}
-                  </View>
-                ))}
+                .map((o) => renderCompactCard(o, undefined, true))}
             </View>
           </View>
-        )}
+        ) : activeTab === 'profile' ? (
+          <View style={{ flex: 1 }}>
+            {/* Profile Avatar & Hero Section */}
+            <View style={styles.profileSheetHeroCard}>
+              <View style={styles.profileAvatarIconContainer}>
+                <View style={styles.profileAvatarIconCirc}>
+                  <LucideUser size={40} color="#FFFFFF" />
+                </View>
+                <View style={styles.profileActiveGpsIndicatorBorder}>
+                  <View style={[
+                    styles.profileActiveGpsIndicatorInner,
+                    { backgroundColor: isTrackingGps ? '#10B981' : '#94A3B8' }
+                  ]} />
+                </View>
+              </View>
+              
+              <Text style={styles.profileSheetDriverName}>{driver!.name}</Text>
+              
+              <View style={styles.profileSheetPlateBadge}>
+                <Car size={13} color="#4F46E5" />
+                <Text style={styles.profileSheetPlateText}>{driver!.vehiclePlate}</Text>
+              </View>
+              
+              <Text style={styles.profileSheetGpsStatusMessage}>
+                {isTrackingGps ? '🟢 Геолокация активна' : '⚪ Геолокация выкл.'}
+              </Text>
+            </View>
+
+            {/* Metrics cards grid */}
+            <View style={styles.profileMetricsRowContainer}>
+              <View style={styles.profileMetricCardItem}>
+                <PackageCheck size={20} color="#4F46E5" style={{ marginBottom: 4 }} />
+                <Text style={styles.profileMetricValueText}>{historyOrders.length}</Text>
+                <Text style={styles.profileMetricLabelText}>Выполнено</Text>
+              </View>
+              
+              <View style={styles.profileMetricCardItem}>
+                <TrendingUp size={20} color="#10B981" style={{ marginBottom: 4 }} />
+                <Text style={[styles.profileMetricValueText, { color: '#10B981' }]}>
+                  {historyOrders.reduce((s, o) => s + (Number(o.paymentAmount) || 0), 0).toLocaleString()}
+                </Text>
+                <Text style={styles.profileMetricLabelText}>Всего руб.</Text>
+              </View>
+              
+              <View style={styles.profileMetricCardItem}>
+                <ClipboardList size={20} color="#F59E0B" style={{ marginBottom: 4 }} />
+                <Text style={[styles.profileMetricValueText, { color: '#F59E0B' }]}>{activeOrders.length}</Text>
+                <Text style={styles.profileMetricLabelText}>Активных</Text>
+              </View>
+            </View>
+
+            {/* Income today metric banner */}
+            <View style={styles.profileTodayIncomeMetricCard}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.profileTodayIncomeLabel}>Заработано сегодня</Text>
+                <Text style={styles.profileTodayIncomeValue}>{todayEarned.toLocaleString()} руб.</Text>
+              </View>
+              <Banknote size={32} color="#10B981" />
+            </View>
+
+            {/* System Settings Options */}
+            <View style={styles.profileActionsListContainer}>
+              <TouchableOpacity
+                style={styles.profileActionListItem}
+                onPress={() => { fetchOrders(true); }}
+                activeOpacity={0.85}
+              >
+                <View style={[styles.profileActionListItemIconBg, { backgroundColor: '#EEF2FF' }]}>
+                  <RefreshCw size={18} color="#4F46E5" />
+                </View>
+                <Text style={styles.profileActionListItemText}>Обновить заказы</Text>
+                <ChevronRight size={16} color="#CBD5E1" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.profileActionListItem, { borderColor: '#FEE2E2' }]}
+                onPress={async () => { await clearSession(); }}
+                activeOpacity={0.85}
+              >
+                <View style={[styles.profileActionListItemIconBg, { backgroundColor: '#FEE2E2' }]}>
+                  <LogOut size={18} color="#EF4444" />
+                </View>
+                <Text style={[styles.profileActionListItemText, { color: '#EF4444' }]}>Выйти из аккаунта</Text>
+                <ChevronRight size={16} color="#FCA5A5" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : null}
       </ScrollView>
 
-
-      <View style={[styles.bottomNav, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+      {/* Modern sliding Bottom TabBar */}
+      <View style={[styles.bottomTabBarPanel, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         {bottomTabs.map(({ id, label, Icon, count }) => (
           <TouchableOpacity
             key={id}
-            style={styles.bottomNavItem}
+            style={styles.bottomTabBarItem}
             onPress={() => {
-
               if (id === 'calendar') {
-                goToCalendarToday();
+                handleGoToCalendarToday();
               }
               LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
               setActiveTab(id);
             }}
+            activeOpacity={0.8}
           >
-            <Icon size={22} color={activeTab === id ? '#4f46e5' : '#94a3b8'} />
-            <Text style={[styles.bottomNavLabel, activeTab === id && styles.bottomNavLabelActive]}>{label}</Text>
+            <Icon size={20} color={activeTab === id ? '#4F46E5' : '#94A3B8'} />
+            <Text style={[styles.bottomTabBarLabelText, activeTab === id && styles.bottomTabBarLabelTextActive]}>{label}</Text>
             {count > 0 ? (
-              <View style={styles.bottomNavBadge}>
-                <Text style={styles.bottomNavBadgeText}>{count > 9 ? '9+' : count}</Text>
+              <View style={styles.bottomTabBarItemBadge}>
+                <Text style={styles.bottomTabBarItemBadgeText}>{count > 9 ? '9+' : count}</Text>
               </View>
             ) : null}
           </TouchableOpacity>
         ))}
       </View>
 
-
+      {/* Slide-Up Bottom Sheet Detail Dialog */}
       {selectedOrder && (() => {
         const order = selectedOrder;
         const isUpdating = updatingOrderId === order.id;
         return (
           <Modal animationType="slide" transparent visible onRequestClose={() => setSelectedOrder(null)}>
-            <Pressable style={styles.modalOverlay} onPress={() => setSelectedOrder(null)}>
-              <Pressable style={styles.modalContent} onPress={e => e.stopPropagation()}>
-                <View style={styles.modalHeader}>
+            <Pressable style={styles.sheetOverlayContainer} onPress={() => setSelectedOrder(null)}>
+              <Pressable style={styles.sheetContentContainer} onPress={e => e.stopPropagation()}>
+                <View style={styles.sheetDragBarHandle} />
+                
+                <View style={styles.sheetHeaderBar}>
                   <TouchableOpacity onPress={() => { setSelectedOrder(null); }} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                    <X size={26} color="#1e293b" />
+                    <X size={24} color="#0F172A" />
                   </TouchableOpacity>
-                  <Text style={styles.modalOrderId}>#{order.id}</Text>
+                  <Text style={styles.sheetHeaderTitle}>Заказ #{order.id}</Text>
                 </View>
 
-                <ScrollView style={styles.modalScrollFlex} contentContainerStyle={{ paddingBottom: 16, paddingHorizontal: 20 }}>
-                  <View style={styles.modalStatusRow}>
+                <ScrollView style={styles.sheetScrollFlexBody} contentContainerStyle={{ paddingBottom: 28, paddingHorizontal: 20 }}>
+                  <View style={styles.sheetStatusBadgeBlock}>
                     {renderStatusBadge(order.status)}
-                    <Text style={styles.modalOrderIdInline}>#{order.id}</Text>
+                    <Text style={styles.sheetInlineOrderIdText}>#{order.id}</Text>
                   </View>
+                  
                   {renderStepProgress(order.status)}
-                  <Text style={styles.modalScheduleLabel}>{t(locale, 'scheduledAt')}</Text>
-                  <Text style={styles.modalBigTime}>{formatDate(order.scheduledAt)}</Text>
+                  
+                  <Text style={styles.sheetHeadingLabel}>{t(locale, 'scheduledAt')}</Text>
+                  <Text style={styles.sheetBigTimeText}>{formatDate(order.scheduledAt)}</Text>
+                  
                   {order.status === 'assigned' && (
-                    <Text style={styles.modalHint}>{t(locale, 'earlyTripHint')}</Text>
+                    <Text style={styles.sheetInfoHintCard}>{t(locale, 'earlyTripHint')}</Text>
                   )}
                   {order.status === 'new' && queueActionMode(order, focusOrder) === 'accept_only' && (
-                    <Text style={styles.modalHint}>{t(locale, 'acceptAnytimeHint')}</Text>
+                    <Text style={styles.sheetInfoHintCard}>{t(locale, 'acceptAnytimeHint')}</Text>
                   )}
                   {queueActionMode(order, focusOrder) === 'locked' && (
-                    <Text style={styles.modalWarn}>{t(locale, 'finishCurrentFirst')}</Text>
+                    <Text style={styles.sheetWarningHintCard}>{t(locale, 'finishCurrentFirst')}</Text>
                   )}
-                  <Text style={styles.modalBigAddress}>{formatAddressDisplay(order.address, locale)}</Text>
-                  <TouchableOpacity style={styles.navBtn} onPress={() => openNavigation(order)} activeOpacity={0.8}>
-                    <Navigation size={16} color="#fff" />
-                    <Text style={styles.navBtnText}>
-                      Навигация (открыть карту)
-                    </Text>
+                  
+                  <Text style={styles.sheetBigAddressText}>{formatAddressDisplay(order.address, locale)}</Text>
+                  
+                  <TouchableOpacity style={styles.sheetMapsNavigationBtn} onPress={() => openNavigation(order)} activeOpacity={0.85}>
+                    <Navigation size={14} color="#FFFFFF" />
+                    <Text style={styles.sheetMapsNavigationBtnText}>Навигация (открыть карту)</Text>
                   </TouchableOpacity>
+
                   {order.containerNumber ? (
-                    <View style={styles.containerNumBadge}>
-                      <Text style={styles.containerNumText}>📦 #{order.containerNumber}</Text>
+                    <View style={styles.sheetContainerNumBadge}>
+                      <Text style={styles.sheetContainerNumBadgeText}>📦 Контейнер: #{order.containerNumber}</Text>
                     </View>
                   ) : null}
-                  <Text style={styles.modalBigClient}>{order.clientName}</Text>
+                  
+                  <Text style={styles.sheetClientNameText}>{order.clientName}</Text>
 
-                  <TouchableOpacity style={styles.callBtn} onPress={() => callClient(order.clientPhone)}>
-                    <Phone size={18} color="#4f46e5" />
-                    <Text style={styles.callBtnText}>{t(locale, 'callClient')}</Text>
+                  <TouchableOpacity style={styles.sheetCallClientBtn} onPress={() => callClient(order.clientPhone)} activeOpacity={0.85}>
+                    <Phone size={16} color="#059669" />
+                    <Text style={styles.sheetCallClientBtnText}>{t(locale, 'callClient')}</Text>
                   </TouchableOpacity>
 
                   {order.operatorNote ? (
-                    <View style={styles.noteBox}>
-                      <Text style={styles.noteText}>{order.operatorNote}</Text>
+                    <View style={styles.sheetOperatorNoteBox}>
+                      <Text style={styles.sheetOperatorNoteText}>{order.operatorNote}</Text>
                     </View>
                   ) : null}
 
-                  <TouchableOpacity style={styles.detailsToggle} onPress={() => setShowOrderDetails(v => !v)}>
-                    <Text style={styles.detailsToggleText}>
+                  <TouchableOpacity style={styles.sheetDetailsToggleButton} onPress={() => {
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                    setShowOrderDetails(v => !v);
+                  }} activeOpacity={0.8}>
+                    <Text style={styles.sheetDetailsToggleButtonText}>
                       {showOrderDetails ? t(locale, 'hideDetails') : t(locale, 'showDetails')}
                     </Text>
                   </TouchableOpacity>
 
                   {showOrderDetails && (
-                    <View style={styles.detailsBlock}>
-                      <Text style={styles.detailsLine}>
+                    <View style={styles.sheetHiddenDetailsBlock}>
+                      <Text style={styles.sheetHiddenDetailsLineText}>
                         {t(locale, 'container')}: {order.containerSizeM3} m³
                       </Text>
-                      <Text style={styles.detailsLine}>
+                      <Text style={styles.sheetHiddenDetailsLineText}>
                         {t(locale, 'duration')}: {getRentalLabel(locale, order.rentalDuration)}
                       </Text>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                        <PaymentTypeIcon type={order.paymentType} size={16} color="#475569" />
-                        <Text style={[styles.detailsLine, { marginTop: 0 }]}>
-                          {order.paymentAmount.toLocaleString()} {t(locale, 'currency')} · {getPaymentLabel(locale, order.paymentType)}
+                        <PaymentTypeIcon type={order.paymentType} size={14} color="#475569" />
+                        <Text style={[styles.sheetHiddenDetailsLineText, { marginTop: 0 }]}>
+                          Оплата: {order.paymentAmount.toLocaleString()} {t(locale, 'currency')} · {getPaymentLabel(locale, order.paymentType)}
                         </Text>
                       </View>
                     </View>
@@ -2022,17 +2375,18 @@ function AppInner() {
 
                   {order.status === 'in_progress' && canRunWorkflowOnOrder(order, focusOrder) && (
                     <TouchableOpacity
-                      style={styles.altActionLink}
+                      style={styles.sheetSkipToPickedUpLink}
                       disabled={isUpdating}
                       onPress={() => { handleUpdateStatus(order.id, 'picked_up'); }}
+                      activeOpacity={0.7}
                     >
-                      <Text style={styles.altActionLinkText}>{t(locale, 'pickUpNow')}</Text>
+                      <Text style={styles.sheetSkipToPickedUpLinkText}>{t(locale, 'pickUpNow')}</Text>
                     </TouchableOpacity>
                   )}
                 </ScrollView>
 
                 {order.status !== 'completed' && (
-                  <View style={styles.modalFooter}>
+                  <View style={styles.sheetFooterBlock}>
                     {renderPrimaryButton(order, true)}
                   </View>
                 )}
@@ -2051,25 +2405,24 @@ function AppInner() {
         onOpenSettings={customAlert.openSettings ? () => Linking.openSettings() : undefined}
       />
 
+      {/* Navigation App Selector Modal */}
       <Modal animationType="fade" transparent visible={!!navModalOrder} onRequestClose={() => setNavModalOrder(null)}>
         <Pressable style={styles.alertOverlay} onPress={() => setNavModalOrder(null)}>
           <View style={[styles.alertBox, { padding: 0, overflow: 'hidden' }]} onStartShouldSetResponder={() => true}>
-            <View style={{ padding: 20, alignItems: 'center', backgroundColor: '#f8fafc', width: '100%', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' }}>
-              <Navigation size={32} color="#4f46e5" style={{ marginBottom: 12 }} />
-              <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1e293b' }}>
-                Выберите карту
-              </Text>
+            <View style={styles.mapSelectorHeader}>
+              <Navigation size={28} color="#4F46E5" style={{ marginBottom: 12 }} />
+              <Text style={styles.mapSelectorTitle}>Выберите карту</Text>
             </View>
-            <View style={{ width: '100%', padding: 16, gap: 12 }}>
-              <TouchableOpacity style={[styles.alertBtn, { backgroundColor: '#fcd34d', flexDirection: 'row', justifyContent: 'center', gap: 8 }]} onPress={() => navModalOrder && openMapApp('yandex', navModalOrder)}>
-                <MapPin size={20} color="#92400e" />
-                <Text style={[styles.alertBtnText, { color: '#92400e' }]}>Yandex Maps</Text>
+            <View style={{ width: '100%', padding: 18, gap: 12 }}>
+              <TouchableOpacity style={[styles.alertBtn, { backgroundColor: '#FCD34D', flexDirection: 'row', justifyContent: 'center', gap: 8 }]} onPress={() => navModalOrder && openMapApp('yandex', navModalOrder)} activeOpacity={0.85}>
+                <MapPin size={18} color="#92400E" />
+                <Text style={[styles.alertBtnText, { color: '#92400E' }]}>Yandex Maps</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.alertBtn, { backgroundColor: '#2563eb', flexDirection: 'row', justifyContent: 'center', gap: 8 }]} onPress={() => navModalOrder && openMapApp('google', navModalOrder)}>
-                <MapPin size={20} color="#fff" />
+              <TouchableOpacity style={[styles.alertBtn, { backgroundColor: '#3B82F6', flexDirection: 'row', justifyContent: 'center', gap: 8 }]} onPress={() => navModalOrder && openMapApp('google', navModalOrder)} activeOpacity={0.85}>
+                <MapPin size={18} color="#FFFFFF" />
                 <Text style={styles.alertBtnText}>Google Maps</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.alertBtn, styles.alertBtnSecondary, { marginTop: 4 }]} onPress={() => setNavModalOrder(null)}>
+              <TouchableOpacity style={[styles.alertBtn, styles.alertBtnSecondary, { marginTop: 4 }]} onPress={() => setNavModalOrder(null)} activeOpacity={0.85}>
                 <Text style={styles.alertBtnTextSecondary}>Отмена</Text>
               </TouchableOpacity>
             </View>
@@ -2089,203 +2442,1621 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  loginContainer: { flex: 1, backgroundColor: '#0B0F19', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
-  scrollContainer: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  loginTopBar: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 8, gap: 8 },
-  settingsBtn: { padding: 8 },
-  langBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: '#334155' },
-  langBtnText: { color: '#e2e8f0', fontWeight: '700', fontSize: 12 },
-  langBtnLight: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: '#e0e7ff', marginRight: 4 },
-  langBtnLightText: { color: '#4f46e5', fontWeight: '700', fontSize: 12 },
-  headerArea: { alignItems: 'center', marginBottom: 40 },
-  logoCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#4f46e5', alignItems: 'center', justifyContent: 'center', elevation: 10 },
-  appTitle: { fontSize: 28, fontWeight: 'bold', color: '#fff', marginTop: 16 },
-  appSub: { fontSize: 12, color: '#94a3b8', marginTop: 4, textAlign: 'center' },
-  card: { backgroundColor: '#1E293B', borderRadius: 24, padding: 24, elevation: 5 },
-  cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff', marginBottom: 20, textAlign: 'center' },
-  label: { color: '#94a3b8', fontSize: 14, marginBottom: 8 },
-  input: { backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1, borderRadius: 12, padding: 12, color: '#fff', marginBottom: 16, fontSize: 16 },
-  saveBtn: { backgroundColor: '#4f46e5', padding: 14, borderRadius: 12, alignItems: 'center', marginTop: 8 },
-  saveBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0F172A', borderColor: '#334155', borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, marginBottom: 16, height: 52 },
-  inputIcon: { marginRight: 10 },
-  textInput: { flex: 1, color: '#fff', fontSize: 16, height: '100%' },
-  loginBtn: { backgroundColor: '#4f46e5', height: 52, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
-  loginBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  gpsActiveBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ecfdf5', paddingHorizontal: 16, paddingVertical: 8 },
-  gpsIdleBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', paddingHorizontal: 16, paddingVertical: 8 },
-  pulseContainer: { height: 12, width: 12, marginRight: 10, justifyContent: 'center', alignItems: 'center' },
-  pulseRing: { position: 'absolute', height: 20, width: 20, borderRadius: 10, backgroundColor: '#34d399' },
-  pulseDot: { height: 8, width: 8, borderRadius: 4, backgroundColor: '#10b981' },
-  gpsActiveText: { fontSize: 12, color: '#065f46', fontWeight: '600', flex: 1 },
-  gpsIdleText: { fontSize: 12, color: '#64748b', fontWeight: '600', flex: 1 },
-  mainContainer: { flex: 1, backgroundColor: '#f1f5f9' },
-  mainScroll: { flex: 1 },
-  appHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: '#fff' },
-  driverInfoArea: { flex: 1 },
-  welcomeText: { fontSize: 20, fontWeight: '800', color: '#0f172a' },
-  plateText: { fontSize: 13, color: '#64748b', marginTop: 2 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  headerMiniBtn: { padding: 8, borderRadius: 10, backgroundColor: '#f8fafc' },
-  headerMiniBtnText: { fontSize: 12, fontWeight: '800', color: '#4f46e5' },
-  actionIconBtn: { padding: 8, borderRadius: 10, backgroundColor: '#eef2ff' },
-  bottomNav: { flexDirection: 'row', backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 8 },
-  bottomNavItem: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 6, position: 'relative' },
-  bottomNavLabel: { fontSize: 11, color: '#94a3b8', marginTop: 4, fontWeight: '600' },
-  bottomNavLabelActive: { color: '#4f46e5', fontWeight: '800' },
-  bottomNavBadge: { position: 'absolute', top: 0, right: '22%', backgroundColor: '#ef4444', borderRadius: 8, minWidth: 16, height: 16, alignItems: 'center', justifyContent: 'center' },
-  bottomNavBadgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
-  heroCard: { backgroundColor: '#fff', borderRadius: 20, padding: 20, marginBottom: 20, borderWidth: 2, borderColor: '#2563eb', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 4 },
-  heroTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
-  heroLabel: { fontSize: 12, fontWeight: '800', color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5, flex: 1 },
-  heroTimeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  heroScheduleBlock: { marginTop: 12 },
-  heroScheduleLabel: { fontSize: 12, color: '#64748b', fontWeight: '600' },
-  heroDateSub: { fontSize: 15, color: '#64748b', marginTop: 2, fontWeight: '600' },
-  heroHint: { fontSize: 13, color: '#0369a1', backgroundColor: '#e0f2fe', padding: 10, borderRadius: 10, marginTop: 12, lineHeight: 18 },
-  stepRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, marginBottom: 4 },
-  stepItem: { flex: 1, alignItems: 'center', paddingHorizontal: 2 },
-  stepDot: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-  stepDotDone: { backgroundColor: '#10b981' },
-  stepDotActive: { backgroundColor: '#2563eb' },
-  stepDotNum: { fontSize: 12, fontWeight: '800', color: '#64748b' },
-  stepDotNumActive: { color: '#fff' },
-  stepLabel: { fontSize: 9, color: '#94a3b8', fontWeight: '600', textAlign: 'center' },
-  stepLabelActive: { color: '#2563eb', fontWeight: '800' },
-  heroTime: { fontSize: 28, fontWeight: '800', color: '#0f172a', marginTop: 12 },
-  heroAddress: { fontSize: 18, color: '#1e293b', marginTop: 8, lineHeight: 26, fontWeight: '600' },
-  heroNavBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10, backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 16, alignSelf: 'flex-start' },
-  heroNavBtnText: { color: '#fff', fontSize: 13, fontWeight: '800' },
-  navBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: 11, paddingHorizontal: 16 },
-  navBtnText: { color: '#fff', fontSize: 14, fontWeight: '700', flex: 1 },
-  containerNumBadge: { marginTop: 8, backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, alignSelf: 'flex-start', borderWidth: 1, borderColor: '#e2e8f0' },
-  containerNumText: { fontSize: 13, fontWeight: '700', color: '#475569' },
-  heroClientRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 },
-  heroClient: { fontSize: 16, color: '#64748b', flex: 1 },
-  heroCallBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#2563eb', alignItems: 'center', justifyContent: 'center', marginLeft: 12 },
-  whatToDoLabel: { fontSize: 13, color: '#64748b', marginTop: 16, fontWeight: '600' },
-  heroBtn: { marginTop: 12, height: 58, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  heroBtnText: { color: '#fff', fontSize: 16, fontWeight: '800', letterSpacing: 0.3 },
-  heroPayBlock: { marginTop: 8 },
-  payHint: { fontSize: 14, color: '#475569', fontWeight: '600', marginBottom: 10, textAlign: 'center' },
-  heroLinkBtn: { marginTop: 12, alignItems: 'center', paddingVertical: 8 },
-  heroLinkText: { color: '#64748b', fontSize: 14, fontWeight: '600' },
-  btnDisabled: { opacity: 0.6 },
-  emptyHero: { backgroundColor: '#fff', borderRadius: 20, padding: 40, alignItems: 'center', marginBottom: 16 },
-  sectionHeading: { fontSize: 14, fontWeight: '700', color: '#64748b', marginBottom: 12, marginTop: 4 },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  statusBadgeCompact: { paddingHorizontal: 8, paddingVertical: 2 },
-  statusBadgeText: { fontSize: 12, fontWeight: '700' },
-  statusBadgeTextCompact: { fontSize: 10 },
-  calendarPanel: { marginBottom: 8 },
-  calendarToolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 4 },
-  calendarNavBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center' },
-  calendarToolbarCenter: { flex: 1, alignItems: 'center', paddingHorizontal: 8 },
-  calendarMonthTitle: { fontSize: 17, fontWeight: '800', color: '#0f172a', textTransform: 'capitalize' },
-  calendarTodayBtn: { marginTop: 6, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, backgroundColor: '#eef2ff' },
-  calendarTodayBtnText: { fontSize: 12, fontWeight: '700', color: '#4f46e5' },
-  calendarScroll: { paddingHorizontal: 12, paddingVertical: 8, alignItems: 'flex-end', marginBottom: 12 },
-  calendarDay: { paddingVertical: 10, paddingHorizontal: 6, borderRadius: 16, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', marginRight: 8, alignItems: 'center', minHeight: 88 },
-  calendarDayToday: { borderColor: '#4f46e5', borderWidth: 2, backgroundColor: '#eef2ff' },
-  calendarDaySelected: { backgroundColor: '#4f46e5', borderColor: '#4f46e5', shadowColor: '#4f46e5', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 8, elevation: 4 },
-  calendarWeekday: { fontSize: 11, color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' },
-  calendarDayNum: { fontSize: 22, fontWeight: '800', color: '#0f172a', marginTop: 2 },
-  calendarDayTextSelected: { color: '#fff' },
-  calendarMiniLabel: { fontSize: 9, color: '#4f46e5', fontWeight: '700', marginTop: 2 },
-  calendarDotsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 3, minHeight: 14 },
-  calendarEmptyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#e2e8f0', marginTop: 8 },
-  calendarDot: { width: 5, height: 5, borderRadius: 3 },
-  calendarBadge: { backgroundColor: '#e0e7ff', borderRadius: 8, minWidth: 18, height: 18, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center' },
-  calendarBadgeSelected: { backgroundColor: 'rgba(255,255,255,0.35)' },
-  calendarBadgeText: { fontSize: 10, fontWeight: '800', color: '#4f46e5' },
-  selectedDayCard: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#e2e8f0' },
-  selectedDayHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  selectedDayHeaderText: { flex: 1 },
-  selectedDayTitle: { fontSize: 16, fontWeight: '800', color: '#0f172a', lineHeight: 22 },
-  selectedDaySub: { fontSize: 12, color: '#64748b', marginTop: 2, fontWeight: '600' },
-  selectedDayStats: { flexDirection: 'row', gap: 8, marginTop: 14 },
-  statChip: { flex: 1, backgroundColor: '#f8fafc', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 8, alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0' },
-  statChipDone: { backgroundColor: '#ecfdf5', borderColor: '#a7f3d0' },
-  statChipLabel: { fontSize: 10, color: '#64748b', fontWeight: '600' },
-  statChipValue: { fontSize: 18, fontWeight: '800', color: '#0f172a', marginTop: 2 },
-  calendarEmpty: { alignItems: 'center', paddingVertical: 40, paddingHorizontal: 24 },
-  timelineList: { paddingBottom: 24 },
-  timelineRow: { flexDirection: 'row', marginBottom: 4 },
-  timelineTimeCol: { width: 52, paddingTop: 14, alignItems: 'flex-end', paddingRight: 8 },
-  timelineTime: { fontSize: 15, fontWeight: '800', color: '#4f46e5' },
-  timelineRail: { width: 20, alignItems: 'center', paddingTop: 16 },
-  timelineDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#4f46e5', borderWidth: 2, borderColor: '#fff', zIndex: 1 },
-  timelineDotDone: { backgroundColor: '#10b981' },
-  timelineLine: { flex: 1, width: 2, backgroundColor: '#e2e8f0', marginTop: 4, marginBottom: -8, minHeight: 24 },
-  timelineCard: { flex: 1, backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#e2e8f0', marginLeft: 4 },
-  timelineCardDone: { opacity: 0.85, backgroundColor: '#f8fafc' },
-  timelineCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  timelineOrderId: { fontSize: 13, fontWeight: '800', color: '#64748b' },
-  timelineAddress: { fontSize: 15, fontWeight: '600', color: '#1e293b', lineHeight: 21 },
-  timelineClient: { fontSize: 13, color: '#64748b', marginTop: 4 },
-  timelineNote: { fontSize: 12, color: '#b45309', marginTop: 6, fontStyle: 'italic' },
-  timelineTapHint: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 10, gap: 2 },
-  timelineTapHintText: { fontSize: 12, color: '#94a3b8', fontWeight: '600' },
-  ordersListContainer: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16 },
-  orderCard: { backgroundColor: '#fff', borderRadius: 16, marginBottom: 10, overflow: 'hidden', borderWidth: 1, borderColor: '#e2e8f0' },
-  orderCardFocus: { borderColor: '#2563eb', borderWidth: 2 },
-  orderTimeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
-  orderAddressRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 4 },
-  orderCardTap: { flexDirection: 'row', alignItems: 'center', paddingRight: 12 },
-  orderCardAction: { paddingHorizontal: 12, paddingBottom: 12 },
-  orderCardBody: { flex: 1, paddingVertical: 14, paddingHorizontal: 14 },
-  orderCardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  orderQueue: { fontSize: 12, fontWeight: '700', color: '#94a3b8' },
-  orderTime: { fontSize: 16, fontWeight: '800', color: '#0f172a' },
-  orderAddress: { fontSize: 15, color: '#334155', lineHeight: 21, fontWeight: '500' },
-  orderMeta: { fontSize: 13, color: '#94a3b8', marginTop: 4 },
-  quickActionBtn: { height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  quickActionText: { color: '#fff', fontSize: 14, fontWeight: '800' },
-  compactPayRow: { paddingTop: 4 },
-  orderInfoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  infoIcon: { marginRight: 8 },
-  infoText: { fontSize: 13, color: '#475569', flex: 1 },
-  amountText: { fontSize: 15, fontWeight: 'bold', color: '#10b981' },
-  emptyContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 80 },
-  emptyTitle: { fontSize: 18, fontWeight: 'bold', color: '#475569', marginTop: 16 },
-  emptySub: { fontSize: 14, color: '#94a3b8', marginTop: 6, textAlign: 'center' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '92%', minHeight: '55%', flexDirection: 'column' },
-  modalHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, gap: 12 },
-  modalOrderId: { flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '700', color: '#64748b' },
-  modalScrollFlex: { flexShrink: 1, flexGrow: 1 },
-  modalBigTime: { fontSize: 15, color: '#64748b', fontWeight: '600' },
-  modalBigAddress: { fontSize: 22, fontWeight: '800', color: '#0f172a', marginTop: 8, lineHeight: 30 },
-  modalBigClient: { fontSize: 17, color: '#475569', marginTop: 8 },
-  callBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, paddingVertical: 14, borderRadius: 14, backgroundColor: '#eef2ff' },
-  callBtnText: { fontSize: 16, fontWeight: '700', color: '#4f46e5' },
-  detailsToggle: { marginTop: 20, paddingVertical: 10 },
-  detailsToggleText: { fontSize: 14, color: '#64748b', fontWeight: '600', textAlign: 'center' },
-  detailsBlock: { backgroundColor: '#f8fafc', borderRadius: 12, padding: 14, gap: 6 },
-  detailsLine: { fontSize: 14, color: '#475569' },
-  altActionLink: { marginTop: 16, paddingVertical: 12, alignItems: 'center' },
-  altActionLinkText: { fontSize: 15, color: '#14b8a6', fontWeight: '700' },
-  noteBox: { backgroundColor: '#fffbeb', borderRadius: 12, padding: 14, marginTop: 16 },
-  noteText: { fontSize: 14, color: '#b45309', lineHeight: 20 },
-  modalFooter: { paddingHorizontal: 20, paddingVertical: 16, paddingBottom: Platform.OS === 'ios' ? 28 : 20, borderTopWidth: 1, borderTopColor: '#f1f5f9', backgroundColor: '#fff' },
-  paymentRow: { flexDirection: 'row', gap: 8 },
-  payChip: { flex: 1, paddingVertical: 12, paddingHorizontal: 4, borderRadius: 12, alignItems: 'center', minHeight: 72, justifyContent: 'center', gap: 6 },
-  payChipText: { color: '#fff', fontSize: 10, fontWeight: '800', textAlign: 'center' },
-  lockedBtn: { backgroundColor: '#e2e8f0' },
-  lockedBtnText: { color: '#64748b', fontSize: 14, fontWeight: '700' },
-  lockedBlock: { paddingVertical: 8 },
-  lockedHint: { fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 18 },
-  modalStatusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  modalOrderIdInline: { fontSize: 14, fontWeight: '700', color: '#94a3b8' },
-  modalScheduleLabel: { fontSize: 12, color: '#64748b', fontWeight: '600', marginTop: 8 },
-  modalHint: { fontSize: 13, color: '#0369a1', backgroundColor: '#e0f2fe', padding: 10, borderRadius: 10, marginTop: 10, lineHeight: 18 },
-  modalWarn: { fontSize: 13, color: '#b45309', backgroundColor: '#fffbeb', padding: 10, borderRadius: 10, marginTop: 10, lineHeight: 18 },
-  alertOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  alertBox: { backgroundColor: '#fff', borderRadius: 24, padding: 24, width: '100%', alignItems: 'center', elevation: 5 },
-  alertTitle: { fontSize: 20, fontWeight: 'bold', color: '#1e293b', marginBottom: 8, textAlign: 'center' },
-  alertMessage: { fontSize: 15, color: '#475569', textAlign: 'center', marginBottom: 24, lineHeight: 22 },
-  alertBtn: { backgroundColor: '#4f46e5', paddingVertical: 14, paddingHorizontal: 24, borderRadius: 12, width: '100%', alignItems: 'center' },
-  alertBtnSecondary: { backgroundColor: '#e2e8f0' },
-  alertBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  alertBtnTextSecondary: { color: '#475569' },
+  // ─── Custom Global Premium variables & styles ──────────────────
+  layoutMainContainer: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  layoutMainScroll: {
+    flex: 1,
+  },
+  darkAuthContainer: {
+    flex: 1,
+    backgroundColor: '#0B0F19',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  authScroll: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  authTopBar: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  authSettingsBtn: {
+    padding: 10,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  brandContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  brandIconWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: '#4F46E5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  brandTitle: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    marginTop: 18,
+    letterSpacing: 0.5,
+  },
+  brandSubTitle: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 6,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  glassAuthCard: {
+    backgroundColor: '#111827',
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#1F2937',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 6,
+  },
+  authCardTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 24,
+    textAlign: 'center',
+    letterSpacing: 0.3,
+  },
+  inputHeading: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    marginBottom: 6,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  authInput: {
+    backgroundColor: '#030712',
+    borderColor: '#1F2937',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 14,
+    color: '#FFFFFF',
+    marginBottom: 16,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  authSaveBtn: {
+    backgroundColor: '#4F46E5',
+    padding: 15,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  authSaveBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  authInputGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#030712',
+    borderColor: '#1F2937',
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    height: 54,
+  },
+  authInputIcon: {
+    marginRight: 12,
+  },
+  authTextInput: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+    height: '100%',
+  },
+  authLoginBtn: {
+    backgroundColor: '#4F46E5',
+    height: 54,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  authLoginBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  topProfileBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  driverMetaBlock: {
+    flex: 1,
+  },
+  driverWelcome: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  driverPlateBadgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    alignSelf: 'flex-start',
+  },
+  driverPlateText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  refreshIconButton: {
+    padding: 10,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  gpsActiveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#A7F3D0',
+  },
+  gpsInactiveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  gpsPulseBox: {
+    height: 12,
+    width: 12,
+    marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  gpsPulseRing: {
+    position: 'absolute',
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    backgroundColor: '#34D399',
+  },
+  gpsPulseDot: {
+    height: 6,
+    width: 6,
+    borderRadius: 3,
+  },
+  gpsActiveText: {
+    fontSize: 11,
+    color: '#065F46',
+    fontWeight: '700',
+    flex: 1,
+  },
+  gpsInactiveText: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '700',
+    flex: 1,
+  },
+  todayEarningsCard: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 16,
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.01,
+    shadowRadius: 8,
+  },
+  earningsIconBg: {
+    backgroundColor: '#ECFDF5',
+    padding: 8,
+    borderRadius: 10,
+  },
+  earningsTitleText: {
+    fontSize: 13,
+    color: '#475569',
+    fontWeight: '700',
+  },
+  earningsValueText: {
+    fontSize: 18,
+    color: '#10B981',
+    fontWeight: '800',
+  },
+  focusedOrderContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: '#4F46E5',
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  focusedOrderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  focusedOrderLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#4F46E5',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  focusedOrderScheduleBlock: {
+    marginTop: 14,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  focusedOrderScheduleLabel: {
+    fontSize: 10,
+    color: '#64748B',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  focusedOrderTimeText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 4,
+  },
+  focusedOrderAddress: {
+    fontSize: 18,
+    color: '#0F172A',
+    marginTop: 14,
+    lineHeight: 25,
+    fontWeight: '800',
+  },
+  focusedOrderNavBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    backgroundColor: '#4F46E5',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignSelf: 'flex-start',
+  },
+  focusedOrderNavBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  focusedOrderGridDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 14,
+  },
+  focusedDetailBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  focusedDetailBadgeText: {
+    fontSize: 12,
+    color: '#475569',
+    fontWeight: '700',
+  },
+  focusedOrderClientBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  focusedClientLabel: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  focusedClientName: {
+    fontSize: 15,
+    color: '#0F172A',
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  focusedClientCallBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#10B981',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  focusedOrderHint: {
+    fontSize: 12,
+    color: '#0369A1',
+    backgroundColor: '#E0F2FE',
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 14,
+    lineHeight: 18,
+    fontWeight: '600',
+  },
+  focusedOrderWhatToDo: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 16,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  focusedOrderLinkBtn: {
+    marginTop: 14,
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  focusedOrderLinkText: {
+    color: '#4F46E5',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  emptyFeedPlaceholder: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 36,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  emptyFeedTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#475569',
+    marginTop: 14,
+  },
+  emptyFeedSub: {
+    fontSize: 13,
+    color: '#94A3B8',
+    marginTop: 4,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  feedSectionHeading: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#64748B',
+    marginBottom: 12,
+    marginTop: 18,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  feedCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    marginBottom: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.01,
+    shadowRadius: 8,
+  },
+  feedCardActive: {
+    borderColor: '#4F46E5',
+    borderWidth: 1.5,
+  },
+  feedCardTapArea: {
+    padding: 16,
+  },
+  feedCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  feedCardId: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#94A3B8',
+  },
+  feedCardBody: {
+    marginTop: 10,
+  },
+  infoLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  infoTimeText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  infoAddressText: {
+    fontSize: 14,
+    color: '#334155',
+    fontWeight: '600',
+    flex: 1,
+  },
+  feedCardSeparator: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 10,
+  },
+  feedCardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  feedCardClient: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  paymentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  paymentBadgeText: {
+    fontSize: 11,
+    color: '#10B981',
+    fontWeight: '700',
+  },
+  feedCardActionBlock: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  cardActionBtn: {
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  cardActionBtnLocked: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  cardActionBtnLockedText: {
+    color: '#94A3B8',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  actionButtonLarge: {
+    height: 52,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  actionButtonLargeText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  buttonDisabled: {
+    opacity: 0.65,
+  },
+  payLockWrapperCompact: {
+    paddingTop: 4,
+  },
+  payLockWrapperLarge: {
+    marginTop: 8,
+  },
+  payLockText: {
+    fontSize: 12,
+    color: '#64748B',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  payOptionBlockCompact: {
+    paddingTop: 4,
+  },
+  payOptionBlockLarge: {
+    marginTop: 8,
+  },
+  paidBadgeBanner: {
+    backgroundColor: '#10B981',
+    padding: 10,
+    borderRadius: 12,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  paidBadgeText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 13,
+  },
+  payHintText: {
+    fontSize: 13,
+    color: '#475569',
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  timerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  timerText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  badgeContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  badgeContainerCompact: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  badgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  badgeTextCompact: {
+    fontSize: 9,
+  },
+  stepProgressWrapper: {
+    position: 'relative',
+    marginVertical: 14,
+    paddingHorizontal: 8,
+  },
+  stepTrackBackground: {
+    position: 'absolute',
+    top: 14,
+    left: '12%',
+    right: '12%',
+    height: 2,
+    backgroundColor: '#F1F5F9',
+    zIndex: 1,
+  },
+  stepTrackActive: {
+    position: 'absolute',
+    top: 14,
+    left: '12%',
+    height: 2,
+    backgroundColor: '#4F46E5',
+    zIndex: 1,
+  },
+  stepItemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  stepItemBox: {
+    flex: 1,
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  stepDotCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  stepDotCircleDone: {
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
+  },
+  stepDotCircleActive: {
+    backgroundColor: '#4F46E5',
+    borderColor: '#4F46E5',
+  },
+  stepDotNumberText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#94A3B8',
+  },
+  stepDotNumberTextActive: {
+    color: '#FFFFFF',
+  },
+  stepDotLabelText: {
+    fontSize: 9,
+    color: '#94A3B8',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  stepDotLabelTextActive: {
+    color: '#4F46E5',
+    fontWeight: '700',
+  },
+  timelineFeedList: {
+    paddingBottom: 20,
+  },
+  timelineRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+  },
+  timelineTimeCol: {
+    width: 56,
+    paddingTop: 16,
+    alignItems: 'flex-end',
+    paddingRight: 10,
+  },
+  timelineTimeText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#4F46E5',
+  },
+  timelineRailCol: {
+    width: 16,
+    alignItems: 'center',
+    paddingTop: 18,
+  },
+  timelineDotIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#4F46E5',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    zIndex: 1,
+  },
+  timelineDotIndicatorDone: {
+    backgroundColor: '#10B981',
+  },
+  timelineRailLine: {
+    flex: 1,
+    width: 1.5,
+    backgroundColor: '#E2E8F0',
+    marginTop: 2,
+    marginBottom: -12,
+    minHeight: 28,
+  },
+  timelineContentCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginLeft: 8,
+  },
+  timelineContentCardDone: {
+    opacity: 0.8,
+    backgroundColor: '#F8FAFC',
+  },
+  timelineContentCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  timelineContentCardId: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  timelineContentCardAddress: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+    lineHeight: 18,
+  },
+  timelineContentCardClient: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  timelineContentCardNote: {
+    fontSize: 12,
+    color: '#B45309',
+    marginTop: 6,
+    fontStyle: 'italic',
+    backgroundColor: '#FFFBEB',
+    padding: 6,
+    borderRadius: 6,
+  },
+  timelineContentCardArrowHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: 8,
+    gap: 2,
+  },
+  timelineArrowHintText: {
+    fontSize: 11,
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
+  historySectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 16,
+  },
+  historyHeaderIconWrapper: {
+    backgroundColor: '#EEF2FF',
+    padding: 8,
+    borderRadius: 10,
+  },
+  historyScreenTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  filterBarContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    marginHorizontal: 20,
+    marginTop: 14,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  filterBarBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  filterBarBtnActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  filterBarBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  filterBarBtnTextActive: {
+    color: '#0F172A',
+    fontWeight: '800',
+  },
+  historyChartContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 18,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 20,
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  chartArrowNavBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  chartColumnsWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    height: 140,
+    flex: 1,
+    paddingHorizontal: 8,
+  },
+  chartColumnItem: {
+    alignItems: 'center',
+    flex: 1,
+    height: '100%',
+    justifyContent: 'flex-end',
+  },
+  chartColumnValueText: {
+    fontSize: 8,
+    color: '#64748B',
+    marginBottom: 4,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  chartColumnValueTextActive: {
+    color: '#4F46E5',
+    fontWeight: '800',
+  },
+  chartColumnBar: {
+    width: '60%',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 4,
+  },
+  chartColumnBarActive: {
+    backgroundColor: '#4F46E5',
+  },
+  chartColumnLabelText: {
+    fontSize: 9,
+    color: '#94A3B8',
+    marginTop: 6,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  chartColumnLabelTextActive: {
+    color: '#0F172A',
+    fontWeight: '800',
+  },
+  historySummaryPeriodCard: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 20,
+    marginTop: 14,
+    borderRadius: 16,
+    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  historySummaryTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  historySummaryBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 3,
+  },
+  historySummaryCountBadge: {
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  historySummaryCountBadgeText: {
+    fontSize: 9,
+    color: '#4F46E5',
+    fontWeight: '700',
+  },
+  historySummaryValueText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#10B981',
+  },
+  profileSheetHeroCard: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.01,
+    shadowRadius: 8,
+  },
+  profileAvatarIconContainer: {
+    position: 'relative',
+    marginBottom: 12,
+  },
+  profileAvatarIconCirc: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#4F46E5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileActiveGpsIndicatorBorder: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  profileActiveGpsIndicatorInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  profileSheetDriverName: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
+    textAlign: 'center',
+  },
+  profileSheetPlateBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 8,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  profileSheetPlateText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#334155',
+  },
+  profileSheetGpsStatusMessage: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 10,
+    fontWeight: '600',
+  },
+  profileMetricsRowContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginTop: 12,
+    gap: 8,
+  },
+  profileMetricCardItem: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 2,
+  },
+  profileMetricValueText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  profileMetricLabelText: {
+    fontSize: 10,
+    color: '#64748B',
+    fontWeight: '700',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  profileTodayIncomeMetricCard: {
+    marginHorizontal: 20,
+    marginTop: 12,
+    backgroundColor: '#ECFDF5',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  profileTodayIncomeLabel: {
+    fontSize: 11,
+    color: '#065F46',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  profileTodayIncomeValue: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#059669',
+    marginTop: 2,
+  },
+  profileActionsListContainer: {
+    paddingHorizontal: 20,
+    marginTop: 16,
+    gap: 8,
+  },
+  profileActionListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 10,
+  },
+  profileActionListItemIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileActionListItemText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  bottomTabBarPanel: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.02,
+    shadowRadius: 6,
+  },
+  bottomTabBarItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+    position: 'relative',
+  },
+  bottomTabBarLabelText: {
+    fontSize: 10,
+    color: '#94A3B8',
+    marginTop: 2,
+    fontWeight: '700',
+  },
+  bottomTabBarLabelTextActive: {
+    color: '#4F46E5',
+    fontWeight: '800',
+  },
+  bottomTabBarItemBadge: {
+    position: 'absolute',
+    top: 0,
+    right: '22%',
+    backgroundColor: '#EF4444',
+    borderRadius: 6,
+    minWidth: 14,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  bottomTabBarItemBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '900',
+  },
+  sheetOverlayContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(9, 13, 22, 0.4)',
+    justifyContent: 'flex-end',
+  },
+  sheetContentContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '90%',
+    minHeight: '55%',
+    flexDirection: 'column',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  sheetDragBarHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E2E8F0',
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  sheetHeaderBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 10,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  sheetHeaderTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  sheetScrollFlexBody: {
+    flexShrink: 1,
+    flexGrow: 1,
+  },
+  sheetStatusBadgeBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  sheetInlineOrderIdText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#94A3B8',
+  },
+  sheetHeadingLabel: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '700',
+    marginTop: 10,
+    textTransform: 'uppercase',
+  },
+  sheetBigTimeText: {
+    fontSize: 15,
+    color: '#4F46E5',
+    fontWeight: '800',
+    marginTop: 2,
+  },
+  sheetInfoHintCard: {
+    fontSize: 12,
+    color: '#0369A1',
+    backgroundColor: '#E0F2FE',
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 10,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
+  sheetWarningHintCard: {
+    fontSize: 12,
+    color: '#B45309',
+    backgroundColor: '#FFFBEB',
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 10,
+    lineHeight: 16,
+    fontWeight: '600',
+  },
+  sheetBigAddressText: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 12,
+    lineHeight: 26,
+  },
+  sheetMapsNavigationBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+    backgroundColor: '#4F46E5',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  sheetMapsNavigationBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  sheetContainerNumBadge: {
+    marginTop: 10,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  sheetContainerNumBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  sheetClientNameText: {
+    fontSize: 15,
+    color: '#475569',
+    marginTop: 10,
+    fontWeight: '700',
+  },
+  sheetCallClientBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  sheetCallClientBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#059669',
+  },
+  sheetOperatorNoteBox: {
+    backgroundColor: '#FFFBEB',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  sheetOperatorNoteText: {
+    fontSize: 13,
+    color: '#B45309',
+    lineHeight: 18,
+    fontWeight: '600',
+  },
+  sheetDetailsToggleButton: {
+    marginTop: 16,
+    paddingVertical: 10,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  sheetDetailsToggleButtonText: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  sheetHiddenDetailsBlock: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 12,
+    gap: 6,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  sheetHiddenDetailsLineText: {
+    fontSize: 13,
+    color: '#475569',
+    fontWeight: '600',
+  },
+  sheetSkipToPickedUpLink: {
+    marginTop: 14,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  sheetSkipToPickedUpLinkText: {
+    fontSize: 13,
+    color: '#0D9488',
+    fontWeight: '700',
+  },
+  sheetFooterBlock: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
+  },
+  mapSelectorHeader: {
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    width: '100%',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  mapSelectorTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+
+  // ─── Monthly Grid Calendar Styles ──────────────────────────────
+  calendarGridPanel: {
+    paddingTop: 12,
+  },
+  calendarGridHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  calendarGridHeaderBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarGridHeaderCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  calendarGridMonthTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    textTransform: 'capitalize',
+  },
+  calendarGridTodayBtn: {
+    marginTop: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 3,
+    borderRadius: 10,
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#E0E7FF',
+  },
+  calendarGridTodayBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#4F46E5',
+  },
+  calendarGridWeekdays: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    marginBottom: 6,
+  },
+  calendarGridWeekdayText: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#94A3B8',
+  },
+  calendarGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    gap: 4,
+  },
+  calendarGridCell: {
+    width: `${(100 - 6 * 1.5) / 7}%`, // dynamic 7 columns
+    aspectRatio: 1.05,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+    position: 'relative',
+  },
+  calendarGridCellMuted: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#F8FAFC',
+    opacity: 0.6,
+  },
+  calendarGridCellToday: {
+    borderColor: '#4F46E5',
+    borderWidth: 1.5,
+    backgroundColor: '#EEF2FF',
+  },
+  calendarGridCellSelected: {
+    backgroundColor: '#4F46E5',
+    borderColor: '#4F46E5',
+  },
+  calendarGridCellDayNum: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  calendarGridCellDayNumMuted: {
+    color: '#CBD5E1',
+    fontWeight: '500',
+  },
+  calendarGridCellDayNumSelected: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+  },
+  calendarGridCellDotsRow: {
+    flexDirection: 'row',
+    gap: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 5,
+  },
+  calendarGridCellDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+  calendarGridCellDotEmpty: {
+    height: 4,
+    marginTop: 4,
+  },
+  calendarGridStatsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 6,
+  },
+  calendarGridStatCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  calendarGridStatCardDone: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+  },
+  calendarGridStatLabel: {
+    fontSize: 10,
+    color: '#64748B',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  calendarGridStatValue: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 2,
+  },
+  calendarGridEmptyFeedCard: {
+    alignItems: 'center',
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+
+  // ─── Alert Modal Styles ──────────────────────────────────────────
+  alertOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(9, 13, 22, 0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  alertBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 28,
+    width: '100%',
+    maxWidth: 340,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.15,
+    shadowRadius: 32,
+    elevation: 12,
+  },
+  alertTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  alertMessage: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 20,
+    fontWeight: '500',
+    marginBottom: 20,
+  },
+  alertBtn: {
+    backgroundColor: '#4F46E5',
+    borderRadius: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 24,
+    width: '100%',
+    alignItems: 'center',
+  },
+  alertBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  alertBtnSecondary: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  alertBtnTextSecondary: {
+    color: '#475569',
+    fontSize: 15,
+    fontWeight: '700',
+  },
 });
