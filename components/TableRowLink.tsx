@@ -17,7 +17,19 @@ export function TableRowLink({
   const handleClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     const tagName = target.tagName.toLowerCase();
-    if (tagName === 'select' || tagName === 'option' || tagName === 'button' || tagName === 'a' || target.closest('button') || target.closest('a')) {
+    if (
+      tagName === 'select' || 
+      tagName === 'option' || 
+      tagName === 'button' || 
+      tagName === 'a' || 
+      tagName === 'input' || 
+      tagName === 'textarea' || 
+      tagName === 'label' || 
+      target.closest('button') || 
+      target.closest('a') ||
+      target.closest('[role="dialog"]') ||
+      target.closest('.radix-dialog-content')
+    ) {
       return;
     }
     router.push(href);

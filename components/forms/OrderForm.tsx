@@ -162,7 +162,19 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
     e.preventDefault();
     setLoading(true); setError(null);
     try {
-      const payload = { ...form, scheduledAt: `${form.scheduledDate} ${form.scheduledTime}`.trim() };
+      const scheduledAtStr = `${form.scheduledDate} ${form.scheduledTime}`.trim();
+      let isoString = scheduledAtStr;
+      const match = scheduledAtStr.match(/^(\d{1,2})[\.\/](\d{1,2})[\.\/](\d{4})(?:\s+(\d{1,2}):(\d{1,2}))?$/);
+      if (match) {
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1;
+        const year = parseInt(match[3], 10);
+        const hour = match[4] ? parseInt(match[4], 10) : 0;
+        const minute = match[5] ? parseInt(match[5], 10) : 0;
+        isoString = new Date(year, month, day, hour, minute).toISOString();
+      }
+
+      const payload = { ...form, scheduledAt: isoString };
       const res = order ? await updateOrder(order.id, payload) : await createOrder(payload);
       if (res && !res.success) { setError(res.error); return; }
       setOpen(false);

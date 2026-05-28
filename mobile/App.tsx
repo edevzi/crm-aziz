@@ -16,6 +16,8 @@ import {
   Linking,
   Pressable,
   Alert,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -47,6 +49,8 @@ import {
   Smartphone as LucideSmartphone,
   Clock as LucideClock,
   MapPin as LucideMapPin,
+  Gift as LucideGift,
+  Wallet as LucideWallet,
 } from 'lucide-react-native';
 import {
   t,
@@ -89,6 +93,10 @@ const CreditCard = LucideCreditCard as React.ComponentType<{ color?: string; siz
 const Smartphone = LucideSmartphone as React.ComponentType<{ color?: string; size?: number }>;
 const Clock = LucideClock as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 const MapPin = LucideMapPin as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -254,6 +262,59 @@ function isSameDay(d1: Date, d2: Date): boolean {
          d1.getDate() === d2.getDate();
 }
 
+function getMonthShort(locale: string, d: Date): string {
+  const months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+  return months[d.getMonth()];
+}
+
+function getMonthFull(locale: string, d: Date): string {
+  const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  return months[d.getMonth()];
+}
+
+const ContainerTimer = ({ updatedAt }: { updatedAt?: string }) => {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const update = () => {
+      if (!updatedAt) {
+        setElapsed(0);
+        return;
+      }
+      const start = new Date(updatedAt).getTime();
+      const now = new Date().getTime();
+      if (!isNaN(start)) {
+        setElapsed(Math.max(0, now - start));
+      }
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [updatedAt]);
+
+  const totalSeconds = Math.floor(elapsed / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const isLate = hours >= 2;
+  const color = isLate ? '#ef4444' : '#f59e0b';
+  const bgColor = isLate ? '#fee2e2' : '#fef3c7';
+  
+  const hStr = String(hours).padStart(2, '0');
+  const mStr = String(minutes).padStart(2, '0');
+  const sStr = String(seconds).padStart(2, '0');
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: bgColor, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, marginTop: 10, marginBottom: 12, alignSelf: 'flex-start' }}>
+      <Clock size={16} color={color} style={{ marginRight: 6 }} />
+      <Text style={{ fontSize: 16, fontWeight: '700', color: color }}>
+        {hStr}:{mStr}:{sStr} {isLate ? '(Опоздание)' : ''}
+      </Text>
+    </View>
+  );
+};
+
 /** Bump when DB seed resets driver IDs — forces mobile re-login */
 const SESSION_VERSION = '3';
 
@@ -341,6 +402,9 @@ function AlertModal({
   );
 }
 
+const Gift = LucideGift;
+const Wallet = LucideWallet;
+
 function AppInner() {
   const insets = useSafeAreaInsets();
 
@@ -366,6 +430,9 @@ function AppInner() {
   /** Stays on current job until completed — accepting another order does not switch hero card */
   const [pinnedFocusId, setPinnedFocusId] = useState<number | null>(null);
   const [expandedHistoryDates, setExpandedHistoryDates] = useState<Set<string>>(new Set());
+
+  const [historyFilter, setHistoryFilter] = useState<'day' | 'week' | 'month'>('day');
+  const [selectedHistoryIndex, setSelectedHistoryIndex] = useState<number>(6);
 
   const knownOrderIds = useRef<Set<number>>(new Set());
   const initialFetchDone = useRef(false);
@@ -1038,6 +1105,70 @@ function AppInner() {
       .reduce((sum, o) => sum + (Number(o.paymentAmount) || 0), 0);
   }, [historyOrders]);
 
+  const historyChartData = useMemo(() => {
+    const periods: { label: string, fullLabel: string, dateStart: Date, dateEnd: Date, totalAmount: number, orderCount: number }[] = [];
+    
+    if (historyFilter === 'day') {
+      // Last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const start = startOfDay(d);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+        
+        let label = getWeekdayShort(locale, d);
+        let fullLabel = `${d.getDate()} ${getMonthFull(locale, d).toLowerCase()}`;
+        if (i === 0) fullLabel = 'Сегодня';
+        else if (i === 1) fullLabel = 'Вчера';
+        
+        periods.push({ label: `${d.getDate()}\n${label}`, fullLabel, dateStart: start, dateEnd: end, totalAmount: 0, orderCount: 0 });
+      }
+    } else if (historyFilter === 'week') {
+      // Last 4 weeks
+      for (let i = 3; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - d.getDay() + 1 - (i * 7)); // Monday start
+        const start = startOfDay(d);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 7);
+        
+        const label = `${start.getDate()}-${end.getDate() - 1}`;
+        periods.push({ label, fullLabel: `Неделя ${label}`, dateStart: start, dateEnd: end, totalAmount: 0, orderCount: 0 });
+      }
+    } else if (historyFilter === 'month') {
+      // Last 6 months
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i, 1);
+        const start = startOfDay(d);
+        const end = new Date(start);
+        end.setMonth(end.getMonth() + 1);
+        
+        const label = getMonthShort(locale, start);
+        periods.push({ label, fullLabel: `${getMonthFull(locale, start)} ${start.getFullYear()}`, dateStart: start, dateEnd: end, totalAmount: 0, orderCount: 0 });
+      }
+    }
+    
+    // Fill data
+    historyOrders.forEach(o => {
+      const time = new Date(o.scheduledAt).getTime();
+      for (let i = 0; i < periods.length; i++) {
+        if (time >= periods[i].dateStart.getTime() && time < periods[i].dateEnd.getTime()) {
+          periods[i].totalAmount += (Number(o.paymentAmount) || 0);
+          periods[i].orderCount++;
+          break;
+        }
+      }
+    });
+    
+    return periods;
+  }, [historyFilter, historyOrders, locale]);
+
+  useEffect(() => {
+    setSelectedHistoryIndex(historyFilter === 'day' ? 6 : historyFilter === 'week' ? 3 : 5);
+  }, [historyFilter]);
+
   const groupedHistory = useMemo(() => {
     const groups: { dateStr: string; dateObj: Date; orders: Order[]; totalAmount: number }[] = [];
     const sorted = [...historyOrders].sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
@@ -1275,48 +1406,7 @@ function AppInner() {
     );
   };
 
-  const ContainerTimer = ({ updatedAt }: { updatedAt?: string }) => {
-    const [elapsed, setElapsed] = useState(0);
 
-    useEffect(() => {
-      const update = () => {
-        if (!updatedAt) {
-          setElapsed(0);
-          return;
-        }
-        const start = new Date(updatedAt).getTime();
-        const now = new Date().getTime();
-        if (!isNaN(start)) {
-          setElapsed(Math.max(0, now - start));
-        }
-      };
-      update();
-      const interval = setInterval(update, 1000);
-      return () => clearInterval(interval);
-    }, [updatedAt]);
-
-    const totalSeconds = Math.floor(elapsed / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    const isLate = hours >= 2;
-    const color = isLate ? '#ef4444' : '#f59e0b';
-    const bgColor = isLate ? '#fee2e2' : '#fef3c7';
-    
-    const hStr = String(hours).padStart(2, '0');
-    const mStr = String(minutes).padStart(2, '0');
-    const sStr = String(seconds).padStart(2, '0');
-
-    return (
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: bgColor, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, marginTop: 10, marginBottom: 12, alignSelf: 'flex-start' }}>
-        <Clock size={16} color={color} style={{ marginRight: 6 }} />
-        <Text style={{ fontSize: 16, fontWeight: '700', color: color }}>
-          {hStr}:{mStr}:{sStr} {isLate ? '(Опоздание)' : ''}
-        </Text>
-      </View>
-    );
-  };
 
   const renderHeroCard = (order: Order) => {
     const scheduledFull = formatDate(order.scheduledAt);
@@ -1686,48 +1776,140 @@ function AppInner() {
               )}
             </View>
           </View>
-        ) : historyOrders.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <ClipboardList size={48} color="#cbd5e1" />
-            <Text style={styles.emptyTitle}>{t(locale, 'noOrders')}</Text>
-          </View>
         ) : (
-          <View style={{ paddingBottom: 20, paddingTop: 12 }}>
-            {groupedHistory.map(group => {
-              const isExpanded = expandedHistoryDates.has(group.dateStr);
-              return (
-                <View key={group.dateStr} style={{ marginBottom: 12, marginHorizontal: 20 }}>
+          <View style={{ flex: 1 }}>
+            {/* Header / Title */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginTop: 16 }}>
+              <Text style={{ fontSize: 28, fontWeight: '800', color: '#0f172a' }}>Деньги</Text>
+              <Banknote size={28} color="#0f172a" />
+            </View>
+
+            {/* Filter */}
+            <View style={{ flexDirection: 'row', backgroundColor: '#f1f5f9', borderRadius: 12, marginHorizontal: 20, marginTop: 24, padding: 4 }}>
+              {(['day', 'week', 'month'] as const).map(filter => (
+                <TouchableOpacity
+                  key={filter}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 8,
+                    borderRadius: 10,
+                    backgroundColor: historyFilter === filter ? '#fff' : 'transparent',
+                    alignItems: 'center',
+                    shadowColor: historyFilter === filter ? '#000' : 'transparent',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: historyFilter === filter ? 0.05 : 0,
+                    shadowRadius: 4,
+                    elevation: historyFilter === filter ? 2 : 0,
+                  }}
+                  onPress={() => {
+                    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                    setHistoryFilter(filter);
+                  }}
+                >
+                  <Text style={{ fontSize: 14, fontWeight: historyFilter === filter ? '700' : '500', color: historyFilter === filter ? '#0f172a' : '#64748b' }}>
+                    {filter === 'day' ? 'День' : filter === 'week' ? 'Неделя' : 'Месяц'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Chart */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 140, marginHorizontal: 20, marginTop: 16 }}>
+              {historyChartData.map((data, index) => {
+                const isSelected = selectedHistoryIndex === index;
+                const maxAmount = Math.max(...historyChartData.map(d => d.totalAmount), 1);
+                const barMaxHeight = 80;
+                const barHeight = Math.max((data.totalAmount / maxAmount) * barMaxHeight, 4);
+
+                return (
                   <TouchableOpacity
-                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', padding: 16, borderRadius: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 }}
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      setExpandedHistoryDates(prev => {
-                        const next = new Set(prev);
-                        if (next.has(group.dateStr)) next.delete(group.dateStr);
-                        else next.add(group.dateStr);
-                        return next;
-                      });
-                    }}
+                    key={index}
+                    style={{ alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end' }}
+                    onPress={() => setSelectedHistoryIndex(index)}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                      <Calendar size={20} color="#4f46e5" />
-                      <View>
-                        <Text style={{ fontSize: 15, fontWeight: '700', color: '#1e293b', textTransform: 'capitalize' }}>{group.dateStr}</Text>
-                        <Text style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>{group.orders.length} заказов</Text>
-                      </View>
-                    </View>
-                    <View style={{ alignItems: 'flex-end' }}>
-                      <Text style={{ fontSize: 16, fontWeight: '800', color: '#10b981' }}>{group.totalAmount.toLocaleString()} {t(locale, 'currency')}</Text>
-                    </View>
+                    <Text 
+                      style={{ fontSize: 9, color: '#64748b', marginBottom: 6, textAlign: 'center', width: '110%' }} 
+                      numberOfLines={1} 
+                      adjustsFontSizeToFit
+                    >
+                      {data.totalAmount > 0 ? data.totalAmount.toLocaleString() : ''}
+                    </Text>
+                    <View style={{
+                      width: '75%',
+                      height: barHeight,
+                      backgroundColor: isSelected ? '#4f46e5' : '#e2e8f0',
+                      borderRadius: 6,
+                    }} />
+                    <Text style={{ fontSize: 11, color: isSelected ? '#0f172a' : '#94a3b8', marginTop: 8, fontWeight: isSelected ? '700' : '500', textAlign: 'center' }}>
+                      {data.label}
+                    </Text>
                   </TouchableOpacity>
-                  {isExpanded && (
-                    <View style={{ marginTop: 12 }}>
-                      {group.orders.map(o => renderCompactCard(o))}
-                    </View>
-                  )}
+                );
+              })}
+            </View>
+
+            {/* Summary below chart */}
+            {selectedHistoryIndex !== null && historyChartData[selectedHistoryIndex] && (
+              <View style={{ backgroundColor: '#f8fafc', marginHorizontal: 20, marginTop: 24, borderRadius: 16, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0' }}>
+                <View>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>
+                    {historyChartData[selectedHistoryIndex].fullLabel}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>
+                    {historyChartData[selectedHistoryIndex].orderCount} заказов
+                  </Text>
                 </View>
-              );
-            })}
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 20, fontWeight: '800', color: '#0f172a' }}>
+                    {historyChartData[selectedHistoryIndex].totalAmount.toLocaleString()} ₽
+                  </Text>
+                  <View style={{ marginLeft: 4 }}>
+                    <ChevronRight size={20} color="#0f172a" />
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Balans & Chaevie Cards */}
+            <View style={{ marginHorizontal: 20, marginTop: 16, gap: 12 }}>
+              <View style={{ backgroundColor: '#f8fafc', borderRadius: 16, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ backgroundColor: '#e2e8f0', padding: 8, borderRadius: 10 }}>
+                    <Wallet size={20} color="#0f172a" />
+                  </View>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>Баланс</Text>
+                </View>
+                <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>1 054,1 ₽</Text>
+              </View>
+
+              <View style={{ backgroundColor: '#f8fafc', borderRadius: 16, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ backgroundColor: '#e2e8f0', padding: 8, borderRadius: 10 }}>
+                    <Gift size={20} color="#0f172a" />
+                  </View>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#0f172a' }}>Чаевые</Text>
+                </View>
+                <View style={{ backgroundColor: '#ef4444', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                  <Text style={{ fontSize: 12, fontWeight: '800', color: '#fff' }}>Новое</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* List of orders for selected period */}
+            <View style={{ paddingBottom: 20, paddingTop: 24, paddingHorizontal: 20 }}>
+              <Text style={styles.sectionHeading}>Заказы за период</Text>
+              {historyOrders
+                .filter(o => {
+                  if (selectedHistoryIndex === null || !historyChartData[selectedHistoryIndex]) return false;
+                  const t = new Date(o.scheduledAt).getTime();
+                  return t >= historyChartData[selectedHistoryIndex].dateStart.getTime() && t < historyChartData[selectedHistoryIndex].dateEnd.getTime();
+                })
+                .map((o, i) => (
+                  <View key={`hist-${o.id}`} style={{ marginBottom: 12 }}>
+                    {renderCompactCard(o)}
+                  </View>
+                ))}
+            </View>
           </View>
         )}
       </ScrollView>
@@ -1743,6 +1925,7 @@ function AppInner() {
               if (id === 'calendar') {
                 goToCalendarToday();
               }
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
               setActiveTab(id);
             }}
           >
