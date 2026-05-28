@@ -239,23 +239,19 @@ type Order = {
   containerNumber?: string | null;
   rentalDuration: string;
   operatorNote?: string;
+  updatedAt: string;
 };
 
-function toMoscowDate(d: Date | string | number): Date {
-  const date = new Date(d);
-  if (isNaN(date.getTime())) return new Date();
-  const moscowMs = date.getTime() + (3 * 60 * 60 * 1000);
-  return new Date(moscowMs);
-}
-
 function startOfDay(d: Date): Date {
-  const moscow = toMoscowDate(d);
-  moscow.setUTCHours(0, 0, 0, 0);
-  return new Date(moscow.getTime() - (3 * 60 * 60 * 1000));
+  const local = new Date(d);
+  local.setHours(0, 0, 0, 0);
+  return local;
 }
 
-function isSameDay(a: Date, b: Date): boolean {
-  return startOfDay(a).getTime() === startOfDay(b).getTime();
+function isSameDay(d1: Date, d2: Date): boolean {
+  return d1.getFullYear() === d2.getFullYear() &&
+         d1.getMonth() === d2.getMonth() &&
+         d1.getDate() === d2.getDate();
 }
 
 /** Bump when DB seed resets driver IDs — forces mobile re-login */
@@ -407,12 +403,11 @@ function AppInner() {
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return dateStr;
 
-      const mDate = toMoscowDate(d);
-      const day = String(mDate.getUTCDate()).padStart(2, '0');
-      const month = String(mDate.getUTCMonth() + 1).padStart(2, '0');
-      const year = mDate.getUTCFullYear();
-      const hours = String(mDate.getUTCHours()).padStart(2, '0');
-      const minutes = String(mDate.getUTCMinutes()).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
       return `${day}.${month}.${year} ${hours}:${minutes}`;
     } catch {
       return dateStr;
@@ -420,9 +415,8 @@ function AppInner() {
   }, []);
 
   const formatDateShort = useCallback((d: Date) => {
-    const mDate = toMoscowDate(d);
-    const day = String(mDate.getUTCDate()).padStart(2, '0');
-    const month = String(mDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
     return `${day}.${month}`;
   }, []);
 
@@ -1040,7 +1034,7 @@ function AppInner() {
 
   const todayEarned = useMemo(() => {
     return historyOrders
-      .filter(o => isSameDay(toMoscowDate(new Date(o.scheduledAt)), startOfDay(new Date())))
+      .filter(o => isSameDay(new Date(o.scheduledAt), startOfDay(new Date())))
       .reduce((sum, o) => sum + (Number(o.paymentAmount) || 0), 0);
   }, [historyOrders]);
 
@@ -1048,7 +1042,7 @@ function AppInner() {
     const groups: { dateStr: string; dateObj: Date; orders: Order[]; totalAmount: number }[] = [];
     const sorted = [...historyOrders].sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
     sorted.forEach(o => {
-      const d = toMoscowDate(new Date(o.scheduledAt));
+      const d = new Date(o.scheduledAt);
       const dateStr = formatCalendarDayTitle(locale, d);
       let g = groups.find(x => x.dateStr === dateStr);
       if (!g) {
@@ -1252,6 +1246,13 @@ function AppInner() {
           </View>
           <ChevronRight size={20} color="#cbd5e1" />
         </TouchableOpacity>
+        
+        {order.status === 'container_placed' && (
+          <View style={{ paddingHorizontal: 12 }}>
+            <ContainerTimer updatedAt={order.updatedAt} />
+          </View>
+        )}
+
         {showAction && order.status !== 'completed' && (
           <View style={styles.orderCardAction}>
             {isPayment && mode === 'locked' ? (
@@ -1270,6 +1271,49 @@ function AppInner() {
             )}
           </View>
         )}
+      </View>
+    );
+  };
+
+  const ContainerTimer = ({ updatedAt }: { updatedAt?: string }) => {
+    const [elapsed, setElapsed] = useState(0);
+
+    useEffect(() => {
+      const update = () => {
+        if (!updatedAt) {
+          setElapsed(0);
+          return;
+        }
+        const start = new Date(updatedAt).getTime();
+        const now = new Date().getTime();
+        if (!isNaN(start)) {
+          setElapsed(Math.max(0, now - start));
+        }
+      };
+      update();
+      const interval = setInterval(update, 1000);
+      return () => clearInterval(interval);
+    }, [updatedAt]);
+
+    const totalSeconds = Math.floor(elapsed / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const isLate = hours >= 2;
+    const color = isLate ? '#ef4444' : '#f59e0b';
+    const bgColor = isLate ? '#fee2e2' : '#fef3c7';
+    
+    const hStr = String(hours).padStart(2, '0');
+    const mStr = String(minutes).padStart(2, '0');
+    const sStr = String(seconds).padStart(2, '0');
+
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: bgColor, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, marginTop: 10, marginBottom: 12, alignSelf: 'flex-start' }}>
+        <Clock size={16} color={color} style={{ marginRight: 6 }} />
+        <Text style={{ fontSize: 16, fontWeight: '700', color: color }}>
+          {hStr}:{mStr}:{sStr} {isLate ? '(Опоздание)' : ''}
+        </Text>
       </View>
     );
   };
@@ -1298,6 +1342,9 @@ function AppInner() {
             Навигация
           </Text>
         </TouchableOpacity>
+        {order.status === 'container_placed' && (
+          <ContainerTimer updatedAt={order.updatedAt} />
+        )}
         <View style={styles.heroTimeRow}>
           <Clock size={16} color="#64748b" style={{ marginRight: 6 }} />
           <Text style={styles.heroTime}>{timeOnly}</Text>
@@ -1582,7 +1629,7 @@ function AppInner() {
                 const count = dayOrders.length;
                 const hasActive = dayOrders.some(o => o.status !== 'completed' && o.status !== 'new');
                 const hasNew = dayOrders.some(o => o.status === 'new');
-                const dayNum = toMoscowDate(day).getUTCDate();
+                const dayNum = day.getDate();
                 return (
                   <TouchableOpacity
                     key={day.toISOString()}

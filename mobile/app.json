@@ -10,8 +10,8 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Operator sizni yo'lda kuzatishi uchun joylashuv kerak.",
-          "locationAlwaysAndWhenInUsePermission": "Ilovadan chiqilganida ham xaritada ko'rinish uchun «Har doim» ruxsatini bering.",
+          "locationWhenInUsePermission": "Геолокация нужна для отслеживания пути оператором.",
+          "locationAlwaysAndWhenInUsePermission": "Разрешите доступ «Всегда», чтобы трекинг работал в фоне.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isAndroidForegroundServiceEnabled": true
@@ -23,7 +23,10 @@
       "icon": "./assets/icon.png",
       "bundleIdentifier": "com.driver.crm",
       "infoPlist": {
-        "UIBackgroundModes": ["location"]
+        "UIBackgroundModes": ["location"],
+        "NSLocationWhenInUseUsageDescription": "Геолокация нужна для отслеживания пути оператором.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Разрешите доступ «Всегда», чтобы трекинг работал в фоне.",
+        "NSLocationAlwaysUsageDescription": "Разрешите доступ «Всегда», чтобы трекинг работал в фоне."
       }
     },
     "android": {
