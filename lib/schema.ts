@@ -84,6 +84,7 @@ export const orders = pgTable('orders', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   lastNotifiedAt: timestamp('last_notified_at'),
 });
+
 export const fuelLogs = pgTable('fuel_logs', {
   id: serial('id').primaryKey(),
   driverId: integer('driver_id').references(() => drivers.id).notNull(),
