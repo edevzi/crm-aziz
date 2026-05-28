@@ -111,7 +111,6 @@ async function registerForPushNotificationsAsync(locale: Locale) {
       lightColor: '#FF231F7C',
     });
   }
-
   if (Device.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -407,7 +406,7 @@ function AppInner() {
     try {
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return dateStr;
-      
+
       const mDate = toMoscowDate(d);
       const day = String(mDate.getUTCDate()).padStart(2, '0');
       const month = String(mDate.getUTCMonth() + 1).padStart(2, '0');
@@ -473,7 +472,7 @@ function AppInner() {
           const parsed = JSON.parse(savedDriver) as { id: number; name: string; vehiclePlate: string };
           const apiBase =
             (savedIp ?? 'crm-aziz.vercel.app').includes('.vercel.app') ||
-            ((savedIp ?? '').includes('.') && !/^[0-9.]+$/.test(savedIp ?? ''))
+              ((savedIp ?? '').includes('.') && !/^[0-9.]+$/.test(savedIp ?? ''))
               ? `https://${savedIp ?? 'crm-aziz.vercel.app'}/api`
               : `http://${savedIp ?? 'crm-aziz.vercel.app'}${savedPort ? `:${savedPort}` : ''}/api`;
 
@@ -585,7 +584,7 @@ function AppInner() {
               setIsTrackingGps(true);
               return;
             }
-          } catch (e) {}
+          } catch (e) { }
         } else if (canAskAgain) {
           showAlert(t(locale, 'gpsAlwaysTitle'), t(locale, 'gpsAlwaysMessage'), true);
         }
@@ -624,7 +623,7 @@ function AppInner() {
         }
       };
       setupPush();
-      
+
       const subscription = Notifications.addNotificationResponseReceivedListener(response => {
         // Handle notification tap
         console.log("Notification tapped:", response);
@@ -656,7 +655,7 @@ function AppInner() {
       initialFetchDone.current = false;
       await AsyncStorage.setItem('@driver_data', JSON.stringify(data));
       await AsyncStorage.setItem('@session_version', SESSION_VERSION);
-      
+
 
       const perms = await requestFullLocationAccess();
       if (!perms.foreground) {
@@ -752,7 +751,7 @@ function AppInner() {
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(prev => (prev ? { ...prev, status: newStatus } : null));
       }
-      
+
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : t(locale, 'statusUpdateError');
       showAlert(t(locale, 'loginError'), msg);
@@ -828,7 +827,7 @@ function AppInner() {
       if (photoBase64) {
         payload.photoUrl = photoBase64;
       }
-      
+
       const response = await fetch(`${getApiUrl()}/driver/orders/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -847,7 +846,7 @@ function AppInner() {
 
       setSelectedOrder(null);
       if (pinnedFocusId === orderId) setPinnedFocusId(null);
-      
+
       showAlert(t(locale, 'orderCompletedTitle'), t(locale, 'orderCompletedMessage'));
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : t(locale, 'completeError');
@@ -955,7 +954,7 @@ function AppInner() {
   }, [scrollCalendarToDay]);
 
   const goToCalendarToday = useCallback(() => {
-    
+
     const today = startOfDay(new Date());
     setSelectedCalendarDate(today);
     scrollCalendarToToday();
@@ -968,7 +967,7 @@ function AppInner() {
       const min = calendarDays[0];
       const max = calendarDays[calendarDays.length - 1];
       const clamped = startOfDay(next < min ? min : next > max ? max : next);
-      
+
       setSelectedCalendarDate(clamped);
       scrollCalendarToDay(clamped);
     },
@@ -1063,7 +1062,7 @@ function AppInner() {
   }, [historyOrders, locale]);
 
   const openOrder = (order: Order) => {
-    
+
     setShowOrderDetails(false);
     setSelectedOrder(order);
   };
@@ -1089,7 +1088,7 @@ function AppInner() {
     if (pinnedFocusId == null) {
       setPinnedFocusId(order.id);
     }
-    
+
     handleUpdateStatus(order.id, next);
   };
 
@@ -1131,17 +1130,17 @@ function AppInner() {
           </View>
         );
       }
-      
+
       const isBeznal = order.paymentType === 'card' || order.paymentType === 'online';
-      
+
       if (isBeznal) {
         return (
           <View style={large ? styles.heroPayBlock : styles.compactPayRow}>
             <View style={{ backgroundColor: '#10b981', padding: 8, borderRadius: 8, marginBottom: large ? 12 : 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-               <View style={{ marginRight: 6 }}>
-                 <CheckCircle size={18} color="#fff" />
-               </View>
-               <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t(locale, 'paidBeznal')}</Text>
+              <View style={{ marginRight: 6 }}>
+                <CheckCircle size={18} color="#fff" />
+              </View>
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>{t(locale, 'paidBeznal')}</Text>
             </View>
             <TouchableOpacity
               style={[large ? styles.heroBtn : styles.quickActionBtn, { backgroundColor: '#059669' }, isUpdating && styles.btnDisabled]}
@@ -1488,13 +1487,13 @@ function AppInner() {
         </View>
         <View style={styles.headerActions}>
 
-          <TouchableOpacity style={styles.actionIconBtn} onPress={() => {  fetchOrders(true); }}>
+          <TouchableOpacity style={styles.actionIconBtn} onPress={() => { fetchOrders(true); }}>
             <RefreshCw size={20} color="#4f46e5" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.headerMiniBtn}
             onPress={async () => {
-              
+
               await clearSession();
             }}
           >
@@ -1536,21 +1535,21 @@ function AppInner() {
               <Text style={{ fontSize: 18, color: '#10b981', fontWeight: '800' }}>{todayEarned.toLocaleString()} {t(locale, 'currency')}</Text>
             </View>
             <View style={{ paddingHorizontal: 20 }}>
-            {focusOrder ? (
-              renderHeroCard(focusOrder)
-            ) : (
-              <View style={styles.emptyHero}>
-                <CheckCircle size={56} color="#10b981" />
-                <Text style={styles.emptyTitle}>{t(locale, 'allDone')}</Text>
-                <Text style={styles.emptySub}>{t(locale, 'allDoneSub')}</Text>
-              </View>
-            )}
-            {otherActiveOrders.length > 0 && (
-              <>
-                <Text style={styles.sectionHeading}>{t(locale, 'otherOrders')}</Text>
-                {otherActiveOrders.map((o, i) => renderCompactCard(o, i + 2))}
-              </>
-            )}
+              {focusOrder ? (
+                renderHeroCard(focusOrder)
+              ) : (
+                <View style={styles.emptyHero}>
+                  <CheckCircle size={56} color="#10b981" />
+                  <Text style={styles.emptyTitle}>{t(locale, 'allDone')}</Text>
+                  <Text style={styles.emptySub}>{t(locale, 'allDoneSub')}</Text>
+                </View>
+              )}
+              {otherActiveOrders.length > 0 && (
+                <>
+                  <Text style={styles.sectionHeading}>{t(locale, 'otherOrders')}</Text>
+                  {otherActiveOrders.map((o, i) => renderCompactCard(o, i + 2))}
+                </>
+              )}
             </View>
           </View>
         ) : activeTab === 'calendar' ? (
@@ -1594,7 +1593,7 @@ function AppInner() {
                       selected && styles.calendarDaySelected,
                     ]}
                     onPress={() => {
-                      
+
                       const d = startOfDay(day);
                       setSelectedCalendarDate(d);
                       scrollCalendarToDay(d);
@@ -1693,7 +1692,7 @@ function AppInner() {
             key={id}
             style={styles.bottomNavItem}
             onPress={() => {
-              
+
               if (id === 'calendar') {
                 goToCalendarToday();
               }
@@ -1720,7 +1719,7 @@ function AppInner() {
             <Pressable style={styles.modalOverlay} onPress={() => setSelectedOrder(null)}>
               <Pressable style={styles.modalContent} onPress={e => e.stopPropagation()}>
                 <View style={styles.modalHeader}>
-                  <TouchableOpacity onPress={() => {  setSelectedOrder(null); }} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                  <TouchableOpacity onPress={() => { setSelectedOrder(null); }} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                     <X size={26} color="#1e293b" />
                   </TouchableOpacity>
                   <Text style={styles.modalOrderId}>#{order.id}</Text>
@@ -1795,7 +1794,7 @@ function AppInner() {
                     <TouchableOpacity
                       style={styles.altActionLink}
                       disabled={isUpdating}
-                      onPress={() => {  handleUpdateStatus(order.id, 'picked_up'); }}
+                      onPress={() => { handleUpdateStatus(order.id, 'picked_up'); }}
                     >
                       <Text style={styles.altActionLinkText}>{t(locale, 'pickUpNow')}</Text>
                     </TouchableOpacity>
