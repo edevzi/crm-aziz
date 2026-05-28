@@ -7,7 +7,6 @@ export function cn(...inputs: ClassValue[]) {
 
 export function isOverdue(order: any): boolean {
   if (order.status !== 'container_placed' || order.isClosed) return false;
-  
   const placedAt = new Date(order.scheduledAt);
   const now = new Date();
   let durationMs = 0;
