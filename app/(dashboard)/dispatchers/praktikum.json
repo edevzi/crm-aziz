@@ -1,0 +1,1897 @@
+
+{
+    "data": {
+        "order": 0,
+        "type": "QUIZ",
+        "title": "Tanışırken kullandığımız kelimeler",
+        "slug": "tanisirken-kullandigimiz-kelimeler",
+        "splitHtml": false,
+        "withAnswers": false,
+        "withIdes": false,
+        "preview": false,
+        "embedFiles": [],
+        "quiz": {
+            "limit": {
+                "count": 0,
+                "time": 0
+            },
+            "difficulty": "MEDIUM",
+            "questions": [
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "Yodlamang foydasi yo'q",
+                    "options": [
+                        {
+                            "id": "6c1b9339",
+                            "text": "dsd"
+                        },
+                        {
+                            "id": "462670e1",
+                            "text": "sfvbgfdf"
+                        }
+                    ],
+                    "answers": [
+                        "462670e1"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523181940459.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523181947038.mp3\" controls=\"\"></audio></div><p><span style=\"font-family: Times\\ New\\ Roman, serif\">Merhaba – Salom</span></p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0aa8",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Merhaba</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523182020524.mp3\" controls=\"\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523182024610.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0aa9",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span>Salom</span></p>",
+                    "options": [
+                        {
+                            "id": "9400fc47",
+                            "text": "M",
+                            "order": 0
+                        },
+                        {
+                            "id": "cd38db14",
+                            "text": "e",
+                            "order": 1
+                        },
+                        {
+                            "id": "b54fd505",
+                            "text": "r",
+                            "order": 2
+                        },
+                        {
+                            "id": "39ce2d71",
+                            "text": "h",
+                            "order": 3
+                        },
+                        {
+                            "id": "59d321c5",
+                            "text": "a",
+                            "order": 4
+                        },
+                        {
+                            "id": "44f42311",
+                            "text": "b",
+                            "order": 5
+                        },
+                        {
+                            "id": "59d321c5",
+                            "text": "a",
+                            "order": 6
+                        }
+                    ],
+                    "answers": [
+                        "9400fc47",
+                        "cd38db14",
+                        "b54fd505",
+                        "39ce2d71",
+                        "59d321c5",
+                        "44f42311",
+                        "59d321c5"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0aaa",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523182111617.mp3",
+                        "text": "Merhaba"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "447819c7",
+                            "text": "Qalaysan",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523182059571.original.jpg"
+                        },
+                        {
+                            "id": "c1766430",
+                            "text": "Salom",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523182102352.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "c1766430"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0aab",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "78c4360a",
+                            "text": "ada"
+                        },
+                        {
+                            "id": "8e31d0cd",
+                            "text": "xzx"
+                        }
+                    ],
+                    "answers": [
+                        "78c4360a"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523193907486.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-06-09/20250609100853163.mp3\" controls=\"true\"></audio></div><p>Nasılsın – Qalaysan</p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0aac",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Nasılsın</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-06-09/20250609100906067.mp3\" controls=\"true\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523193955473.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0aad",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Qalaysan</span></p>",
+                    "options": [
+                        {
+                            "id": "e4f8afd3",
+                            "text": "N",
+                            "order": 0
+                        },
+                        {
+                            "id": "bbe7eae1",
+                            "text": "a",
+                            "order": 1
+                        },
+                        {
+                            "id": "c5918c8a",
+                            "text": "s",
+                            "order": 2
+                        },
+                        {
+                            "id": "4dca4133",
+                            "text": "ı",
+                            "order": 3
+                        },
+                        {
+                            "id": "d0d84366",
+                            "text": "l",
+                            "order": 4
+                        },
+                        {
+                            "id": "c5918c8a",
+                            "text": "s",
+                            "order": 5
+                        },
+                        {
+                            "id": "4dca4133",
+                            "text": "ı",
+                            "order": 6
+                        },
+                        {
+                            "id": "0893a7a8",
+                            "text": "n",
+                            "order": 7
+                        }
+                    ],
+                    "answers": [
+                        "e4f8afd3",
+                        "bbe7eae1",
+                        "c5918c8a",
+                        "4dca4133",
+                        "d0d84366",
+                        "c5918c8a",
+                        "4dca4133",
+                        "0893a7a8"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0aae",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250609100917856.mp3",
+                        "text": "Nasılsın "
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "2712167a",
+                            "text": "Qalaysan",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523194031826.original.jpg"
+                        },
+                        {
+                            "id": "39423bb1",
+                            "text": "Salom",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523194028498.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "2712167a"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0aaf",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "94ff9de9",
+                            "text": "ddzsx"
+                        },
+                        {
+                            "id": "93d718cc",
+                            "text": "zdsfvgb"
+                        }
+                    ],
+                    "answers": [
+                        "93d718cc"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523195124757.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523195129662.mp3\" controls=\"\"></audio></div><p><span style=\"font-family: Times\\ New\\ Roman, serif\">Ben - Men</span></p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0ab0",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Ben</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523195208286.mp3\" controls=\"\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523195215052.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ab1",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Men</span></p>",
+                    "options": [
+                        {
+                            "id": "248f8120",
+                            "text": "B",
+                            "order": 0
+                        },
+                        {
+                            "id": "abfd19a4",
+                            "text": "e",
+                            "order": 1
+                        },
+                        {
+                            "id": "d88d9969",
+                            "text": "n",
+                            "order": 2
+                        }
+                    ],
+                    "answers": [
+                        "248f8120",
+                        "abfd19a4",
+                        "d88d9969"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0ab2",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523195328172.mp3",
+                        "text": "Ben"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "428ca758",
+                            "text": "Sen",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250527134450934.original.jpg"
+                        },
+                        {
+                            "id": "bfde566c",
+                            "text": "Men ",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523195316053.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "bfde566c"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ab3",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "d629d3d1",
+                            "text": "dsfc"
+                        },
+                        {
+                            "id": "947df1c6",
+                            "text": "dzfvgb"
+                        }
+                    ],
+                    "answers": [
+                        "947df1c6"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523195814772.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-06-09/20250609101004947.mp3\" controls=\"true\"></audio></div><p>Sen - Sen</p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0ab4",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Sen</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-06-09/20250609101019404.mp3\" controls=\"true\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523201713836.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ab5",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p>Sen</p>",
+                    "options": [
+                        {
+                            "id": "9a9e5f78",
+                            "text": "S",
+                            "order": 0
+                        },
+                        {
+                            "id": "c3e5f144",
+                            "text": "e",
+                            "order": 1
+                        },
+                        {
+                            "id": "ad715f5e",
+                            "text": "n",
+                            "order": 2
+                        }
+                    ],
+                    "answers": [
+                        "9a9e5f78",
+                        "c3e5f144",
+                        "ad715f5e"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0ab6",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250609101048263.mp3",
+                        "text": "Sen"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "7bafca30",
+                            "text": "Sen",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523201754682.original.jpg"
+                        },
+                        {
+                            "id": "f47cce69",
+                            "text": "Mening",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523201751152.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "7bafca30"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ab7",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "e9ec43ad",
+                            "text": "xzcxvbcvnm"
+                        },
+                        {
+                            "id": "e9d491ec",
+                            "text": "xzcxv"
+                        }
+                    ],
+                    "answers": [
+                        "e9ec43ad"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523201824847.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523201837308.mp3\" controls=\"\"></audio></div><p><span>Benim – Mening</span></p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0ab8",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Benim</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523201907189.mp3\" controls=\"\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523201913194.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ab9",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Mening</span></p>",
+                    "options": [
+                        {
+                            "id": "16933987",
+                            "text": "B",
+                            "order": 0
+                        },
+                        {
+                            "id": "b1b66e5a",
+                            "text": "e",
+                            "order": 1
+                        },
+                        {
+                            "id": "6306aad4",
+                            "text": "n",
+                            "order": 2
+                        },
+                        {
+                            "id": "db3c884c",
+                            "text": "i",
+                            "order": 3
+                        },
+                        {
+                            "id": "54128035",
+                            "text": "m",
+                            "order": 4
+                        }
+                    ],
+                    "answers": [
+                        "16933987",
+                        "b1b66e5a",
+                        "6306aad4",
+                        "db3c884c",
+                        "54128035"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0aba",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523201959907.mp3",
+                        "text": "Benim"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "8997a473",
+                            "text": "Sen",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523201945280.original.jpg"
+                        },
+                        {
+                            "id": "84e736de",
+                            "text": "Mening",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523201948127.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "84e736de"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0abb",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "5a22abbe",
+                            "text": "zxc"
+                        },
+                        {
+                            "id": "b7d2ff39",
+                            "text": "ZXzc"
+                        }
+                    ],
+                    "answers": [
+                        "5a22abbe"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523202105881.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523202113089.mp3\" controls=\"\"></audio></div><p><span>Senin – Sening</span></p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0abc",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Senin</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523202147379.mp3\" controls=\"\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523202151764.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0abd",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Sening</span></p>",
+                    "options": [
+                        {
+                            "id": "32482349",
+                            "text": "S",
+                            "order": 0
+                        },
+                        {
+                            "id": "ffcd2c22",
+                            "text": "e",
+                            "order": 1
+                        },
+                        {
+                            "id": "31603aaf",
+                            "text": "n",
+                            "order": 2
+                        },
+                        {
+                            "id": "9fc064b9",
+                            "text": "i",
+                            "order": 3
+                        },
+                        {
+                            "id": "31603aaf",
+                            "text": "n",
+                            "order": 4
+                        }
+                    ],
+                    "answers": [
+                        "32482349",
+                        "ffcd2c22",
+                        "31603aaf",
+                        "9fc064b9",
+                        "31603aaf"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0abe",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250527135109943.mp3",
+                        "text": "Senin"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "9ddde128",
+                            "text": "Sening",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523202230648.original.jpg"
+                        },
+                        {
+                            "id": "66b7e173",
+                            "text": "Nima",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523202225597.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "9ddde128"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0abf",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "2cc98dca",
+                            "text": "dfv"
+                        },
+                        {
+                            "id": "5d1451dd",
+                            "text": "xzcxvcb"
+                        }
+                    ],
+                    "answers": [
+                        "5d1451dd"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523202303520.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523202309718.mp3\" controls=\"\"></audio></div><p><span>Ne – Nima</span></p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0ac0",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Ne</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523203027273.mp3\" controls=\"\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203041352.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ac1",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p>Nima</p>",
+                    "options": [
+                        {
+                            "id": "7a701c02",
+                            "text": "N",
+                            "order": 0
+                        },
+                        {
+                            "id": "5a937796",
+                            "text": "e",
+                            "order": 1
+                        }
+                    ],
+                    "answers": [
+                        "7a701c02",
+                        "5a937796"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0ac2",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203134562.mp3",
+                        "text": "Ne"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "96289c7a",
+                            "text": "Nima",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203123111.original.jpg"
+                        },
+                        {
+                            "id": "2ad250b8",
+                            "text": "Sening",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203120513.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "96289c7a"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ac3",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "bab69b0a",
+                            "text": "dcxvfds"
+                        },
+                        {
+                            "id": "3850501d",
+                            "text": "dxscfdvgfbh"
+                        }
+                    ],
+                    "answers": [
+                        "3850501d"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523203511626.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523203518433.mp3\" controls=\"\"></audio></div><p>Adım – Ismim</p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0ac4",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Adım</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-27/20250527134612781.mp3\" controls=\"true\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203549113.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ac5",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Ismim</span></p>",
+                    "options": [
+                        {
+                            "id": "d47c780f",
+                            "text": "A",
+                            "order": 0
+                        },
+                        {
+                            "id": "28cf9739",
+                            "text": "d",
+                            "order": 1
+                        },
+                        {
+                            "id": "b27669d9",
+                            "text": "ı",
+                            "order": 2
+                        },
+                        {
+                            "id": "d4dd0852",
+                            "text": "m",
+                            "order": 3
+                        }
+                    ],
+                    "answers": [
+                        "d47c780f",
+                        "28cf9739",
+                        "b27669d9",
+                        "d4dd0852"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0ac6",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203644633.mp3",
+                        "text": "Adım"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "2e457657",
+                            "text": "Isming",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203629365.original.jpg"
+                        },
+                        {
+                            "id": "164d7ab6",
+                            "text": "Ismim",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203631452.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "164d7ab6"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ac7",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "35800e3a",
+                            "text": "sdsvc"
+                        },
+                        {
+                            "id": "d17a836c",
+                            "text": "dxxcfdg"
+                        }
+                    ],
+                    "answers": [
+                        "d17a836c"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523203701358.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523203705302.mp3\" controls=\"\"></audio></div><p>Adın – Isming</p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0ac8",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Adın</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523203736893.mp3\" controls=\"\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203741227.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ac9",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Isming</span></p>",
+                    "options": [
+                        {
+                            "id": "d4bf6b47",
+                            "text": "A",
+                            "order": 0
+                        },
+                        {
+                            "id": "db38411c",
+                            "text": "d",
+                            "order": 1
+                        },
+                        {
+                            "id": "d0203f92",
+                            "text": "ı",
+                            "order": 2
+                        },
+                        {
+                            "id": "a7ac85d2",
+                            "text": "n",
+                            "order": 3
+                        }
+                    ],
+                    "answers": [
+                        "d4bf6b47",
+                        "db38411c",
+                        "d0203f92",
+                        "a7ac85d2"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0aca",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203833502.mp3",
+                        "text": "Adın"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "7e48bf06",
+                            "text": "Yaxshiman",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203818813.original.jpg"
+                        },
+                        {
+                            "id": "d3b36a71",
+                            "text": "Isming",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203821792.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "d3b36a71"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0acb",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "486dedf9",
+                            "text": "zxcxvc"
+                        },
+                        {
+                            "id": "7ec16101",
+                            "text": "xzcvc"
+                        }
+                    ],
+                    "answers": [
+                        "486dedf9"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523203851642.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523203855313.mp3\" controls=\"\"></audio></div><p><span>İyiyim – Yaxshiman</span></p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0acc",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">İyiyim</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523203927362.mp3\" controls=\"\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523203931927.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0acd",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Yaxshiman</span></p>",
+                    "options": [
+                        {
+                            "id": "0160c152",
+                            "text": "İ",
+                            "order": 0
+                        },
+                        {
+                            "id": "2d0f8950",
+                            "text": "y",
+                            "order": 1
+                        },
+                        {
+                            "id": "c66e3119",
+                            "text": "i",
+                            "order": 2
+                        },
+                        {
+                            "id": "2d0f8950",
+                            "text": "y",
+                            "order": 3
+                        },
+                        {
+                            "id": "c66e3119",
+                            "text": "i",
+                            "order": 4
+                        },
+                        {
+                            "id": "0f6b5571",
+                            "text": "m",
+                            "order": 5
+                        }
+                    ],
+                    "answers": [
+                        "0160c152",
+                        "2d0f8950",
+                        "c66e3119",
+                        "2d0f8950",
+                        "c66e3119",
+                        "0f6b5571"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0ace",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204018407.mp3",
+                        "text": "İyiyim"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "b8944400",
+                            "text": "Yaxshiman",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204002958.original.jpg"
+                        },
+                        {
+                            "id": "d1e1eeb7",
+                            "text": "Isming",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204000443.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "b8944400"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0acf",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "04191c7a",
+                            "text": "xzcxv"
+                        },
+                        {
+                            "id": "a8ae68d5",
+                            "text": "xzcx"
+                        }
+                    ],
+                    "answers": [
+                        "04191c7a"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523204049322.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523204053327.mp3\" controls=\"\"></audio></div><p><span>Memnun – Mamnun</span></p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0ad0",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Memnun</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523204119128.mp3\" controls=\"\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204123682.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ad1",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Mamnun</span></p>",
+                    "options": [
+                        {
+                            "id": "6732cbdc",
+                            "text": "M",
+                            "order": 0
+                        },
+                        {
+                            "id": "246449a8",
+                            "text": "e",
+                            "order": 1
+                        },
+                        {
+                            "id": "e6ef3b09",
+                            "text": "m",
+                            "order": 2
+                        },
+                        {
+                            "id": "832a7743",
+                            "text": "n",
+                            "order": 3
+                        },
+                        {
+                            "id": "0320a275",
+                            "text": "u",
+                            "order": 4
+                        },
+                        {
+                            "id": "832a7743",
+                            "text": "n",
+                            "order": 5
+                        }
+                    ],
+                    "answers": [
+                        "6732cbdc",
+                        "246449a8",
+                        "e6ef3b09",
+                        "832a7743",
+                        "0320a275",
+                        "832a7743"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0ad2",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204307242.mp3",
+                        "text": "Memnun"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "a704d4a4",
+                            "text": "Mamnun",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204202443.original.jpg"
+                        },
+                        {
+                            "id": "d8d985b3",
+                            "text": "Bo’lmoq",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204159642.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "a704d4a4"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ad3",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "a7f2ac86",
+                            "text": "xzcv"
+                        },
+                        {
+                            "id": "ba3cb059",
+                            "text": "zxzc"
+                        }
+                    ],
+                    "answers": [
+                        "a7f2ac86"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p><img src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523204325697.jpg\"></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523204330697.mp3\" controls=\"\"></audio></div><p><span>Olmak – Bo’lmoq</span></p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0ad4",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "PRONUNCIATION_WORD",
+                    "title": "So'zni talaffuz qiling.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Olmak</span></p><div class=\"audio-wrapper\"><audio src=\"https://storage.googleapis.com/ibrat-prod-assets/temp/2025-05-23/20250523204406222.mp3\" controls=\"\"></audio></div>",
+                    "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204411068.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ad5",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "LETTER_OPTIONS_ORDER",
+                    "title": "Harflarni to'g'ri joylashtiring.",
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p><span style=\"font-family: Times\\ New\\ Roman, serif\">Bo’lmoq</span></p>",
+                    "options": [
+                        {
+                            "id": "8e3e4180",
+                            "text": "O",
+                            "order": 0
+                        },
+                        {
+                            "id": "0b6616ad",
+                            "text": "l",
+                            "order": 1
+                        },
+                        {
+                            "id": "a0febc42",
+                            "text": "m",
+                            "order": 2
+                        },
+                        {
+                            "id": "5a58313c",
+                            "text": "a",
+                            "order": 3
+                        },
+                        {
+                            "id": "e78d068d",
+                            "text": "k",
+                            "order": 4
+                        }
+                    ],
+                    "answers": [
+                        "8e3e4180",
+                        "0b6616ad",
+                        "a0febc42",
+                        "5a58313c",
+                        "e78d068d"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "EASY",
+                    "_id": "693fb87da87707e0f16f0ad6",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "IMAGE_SELECTION",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204457297.mp3",
+                        "text": "Olmak"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zga mos rasmni tanlang.",
+                    "options": [
+                        {
+                            "id": "7c24e2c6",
+                            "text": "Mamnun",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204444733.original.jpg"
+                        },
+                        {
+                            "id": "e18d7325",
+                            "text": "Bo’lmoq",
+                            "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204447922.original.jpg"
+                        }
+                    ],
+                    "answers": [
+                        "e18d7325"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ad7",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "MATCHING",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zlarni  moslashtiring.",
+                    "options": [
+                        {
+                            "id": "17aae428",
+                            "text": "Merhaba",
+                            "isCodeblock": false,
+                            "order": 0,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204644953.mp3",
+                                "text": "Merhaba"
+                            }
+                        },
+                        {
+                            "id": "46b2be4c",
+                            "text": "Salom",
+                            "isCodeblock": false,
+                            "order": 0,
+                            "side": "RIGHT"
+                        },
+                        {
+                            "id": "24dee2f3",
+                            "text": "Ben",
+                            "isCodeblock": false,
+                            "order": 1,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204651262.mp3",
+                                "text": "Ben"
+                            }
+                        },
+                        {
+                            "id": "4752a94e",
+                            "text": "Men",
+                            "isCodeblock": false,
+                            "order": 1,
+                            "side": "RIGHT"
+                        },
+                        {
+                            "id": "d6371645",
+                            "text": "Sen",
+                            "isCodeblock": false,
+                            "order": 2,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250609101115157.mp3",
+                                "text": "Sen"
+                            }
+                        },
+                        {
+                            "id": "d6371645",
+                            "text": "Sen",
+                            "isCodeblock": false,
+                            "order": 2,
+                            "side": "RIGHT"
+                        },
+                        {
+                            "id": "f9217f0f",
+                            "text": "Benim",
+                            "isCodeblock": false,
+                            "order": 3,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204705988.mp3",
+                                "text": "Benim"
+                            }
+                        },
+                        {
+                            "id": "3bf287a0",
+                            "text": "Mening",
+                            "isCodeblock": false,
+                            "order": 3,
+                            "side": "RIGHT"
+                        }
+                    ],
+                    "answers": [
+                        "17aae428|46b2be4c",
+                        "24dee2f3|4752a94e",
+                        "d6371645|d6371645",
+                        "f9217f0f|3bf287a0"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ad8",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "MATCHING",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zlarni  moslashtiring.",
+                    "options": [
+                        {
+                            "id": "44961256",
+                            "text": "Senin",
+                            "isCodeblock": false,
+                            "order": 0,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204818353.mp3",
+                                "text": "Senin"
+                            }
+                        },
+                        {
+                            "id": "97be4990",
+                            "text": "Sening",
+                            "isCodeblock": false,
+                            "order": 0,
+                            "side": "RIGHT"
+                        },
+                        {
+                            "id": "bbd6ca2d",
+                            "text": "Olmak",
+                            "isCodeblock": false,
+                            "order": 1,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204825248.mp3",
+                                "text": "Olmak"
+                            }
+                        },
+                        {
+                            "id": "4403b304",
+                            "text": "Bo'lmoq",
+                            "isCodeblock": false,
+                            "order": 1,
+                            "side": "RIGHT"
+                        },
+                        {
+                            "id": "fba49079",
+                            "text": "Ne",
+                            "isCodeblock": false,
+                            "order": 2,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204831340.mp3",
+                                "text": "Ne"
+                            }
+                        },
+                        {
+                            "id": "1d3c3b77",
+                            "text": "Nima",
+                            "isCodeblock": false,
+                            "order": 2,
+                            "side": "RIGHT"
+                        },
+                        {
+                            "id": "abfdf047",
+                            "text": "Adın",
+                            "isCodeblock": false,
+                            "order": 3,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204839655.mp3",
+                                "text": "Adın"
+                            }
+                        },
+                        {
+                            "id": "d4a3253b",
+                            "text": "Isming",
+                            "isCodeblock": false,
+                            "order": 3,
+                            "side": "RIGHT"
+                        }
+                    ],
+                    "answers": [
+                        "44961256|97be4990",
+                        "bbd6ca2d|4403b304",
+                        "fba49079|1d3c3b77",
+                        "abfdf047|d4a3253b"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ad9",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "MATCHING",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zlarni  moslashtiring.",
+                    "options": [
+                        {
+                            "id": "63ce652a",
+                            "text": "İyiyim",
+                            "isCodeblock": false,
+                            "order": 0,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523204952723.mp3",
+                                "text": "İyiyim"
+                            }
+                        },
+                        {
+                            "id": "38cb7baf",
+                            "text": "Yaxshiman",
+                            "isCodeblock": false,
+                            "order": 0,
+                            "side": "RIGHT"
+                        },
+                        {
+                            "id": "7f85c75e",
+                            "text": "Memnun",
+                            "isCodeblock": false,
+                            "order": 1,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523205002833.mp3",
+                                "text": "Memnun"
+                            }
+                        },
+                        {
+                            "id": "4580cfcf",
+                            "text": "Mamnun",
+                            "isCodeblock": false,
+                            "order": 1,
+                            "side": "RIGHT"
+                        },
+                        {
+                            "id": "f0a44f2b",
+                            "text": "Olmak",
+                            "isCodeblock": false,
+                            "order": 2,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523205009812.mp3",
+                                "text": "Olmak"
+                            }
+                        },
+                        {
+                            "id": "8b2f60c8",
+                            "text": "Bo’lmoq",
+                            "isCodeblock": false,
+                            "order": 2,
+                            "side": "RIGHT"
+                        },
+                        {
+                            "id": "d42e11cb",
+                            "text": "Merhaba",
+                            "isCodeblock": false,
+                            "order": 3,
+                            "side": "LEFT",
+                            "audio": {
+                                "url": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250523205017913.mp3",
+                                "text": "Merhaba"
+                            }
+                        },
+                        {
+                            "id": "ae3c6ae1",
+                            "text": "Salom",
+                            "isCodeblock": false,
+                            "order": 3,
+                            "side": "RIGHT"
+                        }
+                    ],
+                    "answers": [
+                        "63ce652a|38cb7baf",
+                        "7f85c75e|4580cfcf",
+                        "f0a44f2b|8b2f60c8",
+                        "d42e11cb|ae3c6ae1"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ada",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "CONVERSATIONAL_BLOCK",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/zehn-staging-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20251201071918593.mp3",
+                        "text": "sa"
+                    },
+                    "dialog": [
+                        {
+                            "type": "QUESTION",
+                            "question": {
+                                "questionType": "FILLING_GAPS",
+                                "question": "fasdfasd",
+                                "options": [
+                                    {
+                                        "id": "981d8406-6b0d-4fc6-9f4b-81d611962031",
+                                        "text": "fasfasd",
+                                        "order": 0
+                                    },
+                                    {
+                                        "id": "71fa93d3-ca86-43d6-a078-46d0eb404952",
+                                        "text": "fasdfasdfasdqrwer"
+                                    }
+                                ],
+                                "answers": [
+                                    "981d8406-6b0d-4fc6-9f4b-81d611962031"
+                                ],
+                                "withAnswers": false,
+                                "_id": "68a98894b4a240ba6ba7baf3"
+                            }
+                        }
+                    ],
+                    "words": [],
+                    "question": "fasdfasd",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "_id": "693fb87da87707e0f16f0adb",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "CONVERSATIONAL_BLOCK",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/zehn-staging-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20251201073821003.mp3",
+                        "text": "asd"
+                    },
+                    "dialog": [
+                        {
+                            "type": "MESSAGE",
+                            "speaker": "asdasd",
+                            "text": "The manager insisted that everyone ___ the new policy.",
+                            "avatar": {
+                                "id": "689b2660af557968f886a900",
+                                "gender": "MALE",
+                                "image": "https://storage.googleapis.com/zehn-staging-assets/temp/2025-08-12/20250812113246667.png",
+                                "name": "Mark"
+                            },
+                            "audio": {
+                                "url": "https://storage.googleapis.com/zehn-staging-assets/temp/2025-12-01/20251201073217032.mp3",
+                                "text": "asd"
+                            }
+                        }
+                    ],
+                    "words": [],
+                    "question": "The manager insisted that everyone ___ the new policy.",
+                    "image": "https://storage.googleapis.com/zehn-staging-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20251201073204207.original.jpg",
+                    "options": [],
+                    "answers": [],
+                    "withAnswers": false,
+                    "_id": "693fb87da87707e0f16f0add",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "CONVERSATIONAL",
+                    "title": "Ducking question",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/zehn-staging-assets/temp/2025-12-01/20251201085120097.mp3",
+                        "text": "asdadasd"
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p>asdasd</p><p>asdas</p><p>dad</p><p>asdasd</p>",
+                    "image": "https://storage.googleapis.com/zehn-staging-assets/temp/2025-12-01/20251201085038602.jpg",
+                    "options": [
+                        {
+                            "id": "a6e74cf2",
+                            "text": "asdadadasdasdasdsd",
+                            "order": 0
+                        },
+                        {
+                            "id": "8258bd92",
+                            "text": "asdasdadadadasd"
+                        }
+                    ],
+                    "answers": [
+                        "a6e74cf2"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0ade",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "CONVERSATIONAL",
+                    "title": "adadadas",
+                    "audio": {
+                        "url": "https://storage.googleapis.com/zehn-staging-assets/temp/2025-12-04/20251204112713273.mp3",
+                        "text": ""
+                    },
+                    "dialog": [],
+                    "words": [],
+                    "question": "<p>adadad</p>",
+                    "image": "https://storage.googleapis.com/zehn-staging-assets/temp/2025-12-04/20251204112633573.png",
+                    "options": [
+                        {
+                            "id": "c5d01901",
+                            "text": "adadas",
+                            "order": 0
+                        },
+                        {
+                            "id": "a135242e",
+                            "text": "asdadad"
+                        }
+                    ],
+                    "answers": [
+                        "c5d01901"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "_id": "693fb87da87707e0f16f0adf",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "SINGLE",
+                    "dialog": [],
+                    "words": [],
+                    "question": "So'zni yodlang.",
+                    "options": [
+                        {
+                            "id": "5a5107ef",
+                            "text": "asdas"
+                        },
+                        {
+                            "id": "c2e9ba62",
+                            "text": "dasdad"
+                        }
+                    ],
+                    "answers": [
+                        "c2e9ba62"
+                    ],
+                    "withAnswers": false,
+                    "difficulty": "MEDIUM",
+                    "content": "<p>asdsdasd</p>",
+                    "contentPosition": "TOP",
+                    "_id": "693fb87da87707e0f16f0ae0",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z"
+                },
+                {
+                    "questionType": "WORDS",
+                    "words": [
+                        {
+                            "questionType": "SINGLE",
+                            "question": "So'zni yodlang.",
+                            "options": [
+                                {
+                                    "id": "06000b16-a1b9-4b71-aa1e-a7e87f9410d0",
+                                    "text": "asd"
+                                },
+                                {
+                                    "id": "d5dac2e3-3183-4195-bbeb-9f8eeae65366",
+                                    "text": "sasd"
+                                }
+                            ],
+                            "answers": [],
+                            "withAnswers": false,
+                            "difficulty": "MEDIUM",
+                            "content": "<p>asd</p>",
+                            "_id": "693fb85ec85a96a2ed5e73ae"
+                        }
+                    ],
+                    "question": "Say each word aloud.",
+                    "answers": [],
+                    "withAnswers": false,
+                    "_id": "693fb87da87707e0f16f0ae1",
+                    "createdAt": "2025-12-15T07:27:57.355Z",
+                    "updatedAt": "2025-12-15T07:27:57.355Z",
+                    "dialog": [],
+                    "options": []
+                }
+            ],
+            "shuffleEnabled": false,
+            "_id": "693fb87da87707e0f16f0aa7",
+            "createdAt": "2025-12-15T07:27:57.355Z",
+            "updatedAt": "2025-12-15T07:27:57.355Z"
+        },
+        "description": "<p>Shaxsiy ma'lumotlar berishda ishlatiladigan so'zlar.</p>",
+        "_id": "6830baaa9b154b6ea002b9a4",
+        "createdAt": "2025-05-23T18:12:58.306Z",
+        "updatedAt": "2025-12-15T07:27:57.355Z",
+        "usefulLinks": [],
+        "ides": [],
+        "html": "",
+        "image": "https://storage.googleapis.com/ibrat-prod-assets/practicums/:practicumId/modules/6830ba909b154b6ea002afdb/lessons/6830baaa9b154b6ea002b9a4/20250604082916128.original.jpg"
+    }
+}
+
+
+
+

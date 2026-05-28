@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Driver CRM",
+    "slug": "driver-crm",
+    "version": "1.0.4",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Operator sizni yo'lda kuzatishi uchun joylashuv kerak.",
+          "locationAlwaysAndWhenInUsePermission": "Ilovadan chiqilganida ham xaritada ko'rinish uchun «Har doim» ruxsatini bering.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "icon": "./assets/icon.png",
+      "bundleIdentifier": "com.driver.crm",
+      "infoPlist": {
+        "UIBackgroundModes": ["location"]
+      }
+    },
+    "android": {
+      "versionCode": 5,
+      "package": "com.driver.crm",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "POST_NOTIFICATIONS"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F172A"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "566e3bf1-3841-40d4-9c07-d2305838330d"
+      }
+    },
+    "owner": "ergashevv"
+  }
+}
