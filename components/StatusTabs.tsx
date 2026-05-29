@@ -9,12 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter } from 'lucide-react';
+import { Filter, Loader2 } from 'lucide-react';
 
 export function StatusTabs({ 
   options, 
   filterParam = "status",
-  defaultFilter = "active",
+  defaultFilter = "all",
 }: { 
   options: { value: string, label: string }[],
   filterParam?: string,
@@ -29,6 +29,7 @@ export function StatusTabs({
 
   const handleStatus = (val: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete('page'); // reset pagination on filter change
     if (val && val !== defaultFilter) {
       params.set(filterParam, val);
     } else {
@@ -41,16 +42,20 @@ export function StatusTabs({
 
   return (
     <div className="flex items-center gap-2 w-full sm:w-auto">
-      <div className="w-full sm:w-[320px]">
+      <div className="w-full sm:w-[320px] relative">
         <Select 
           value={currentVal} 
           onValueChange={handleStatus}
           disabled={isPending}
         >
-          <SelectTrigger className={`w-full bg-white h-12 rounded-xl border-slate-200/60 shadow-sm font-semibold text-slate-700 hover:border-primary/50 transition-colors ${isPending ? 'opacity-70' : ''}`}>
+          <SelectTrigger className={`w-full bg-white h-12 rounded-xl border-slate-200/60 shadow-sm font-semibold text-slate-700 hover:border-primary/50 transition-all ${isPending ? 'opacity-60 cursor-not-allowed' : ''}`}>
             <div className="flex items-center gap-2.5">
-              <Filter className="w-4 h-4 text-primary" />
-              <SelectValue placeholder="Status" />
+              {isPending ? (
+                <Loader2 className="w-4 h-4 text-primary animate-spin" />
+              ) : (
+                <Filter className="w-4 h-4 text-primary" />
+              )}
+              <SelectValue placeholder="Фильтр" />
             </div>
           </SelectTrigger>
           <SelectContent className="rounded-xl border-slate-200/60 shadow-lg font-medium p-1">
@@ -61,6 +66,10 @@ export function StatusTabs({
             ))}
           </SelectContent>
         </Select>
+        {isPending && (
+          <div className="absolute inset-0 rounded-xl bg-white/50 backdrop-blur-[1px] flex items-center justify-center pointer-events-none">
+          </div>
+        )}
       </div>
     </div>
   );

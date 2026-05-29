@@ -2,7 +2,7 @@
 
 import React, { useTransition, useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 
 export function SearchAndFilter({ 
   dict, 
@@ -27,9 +27,15 @@ export function SearchAndFilter({
   const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState(searchParams.get('q') || '');
 
+  // Sync query with URL param when searchParams changes externally
+  useEffect(() => {
+    setQuery(searchParams.get('q') || '');
+  }, [searchParams]);
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
+      params.delete('page'); // reset pagination on search
       if (query) {
         params.set('q', query);
       } else {
@@ -38,13 +44,14 @@ export function SearchAndFilter({
       startTransition(() => {
         router.push(`${pathname}?${params.toString()}`);
       });
-    }, 300);
+    }, 400);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [query, pathname, router]);
+  }, [query]); // eslint-disable-line
 
   const handleStatus = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete('page');
     if (e.target.value && e.target.value !== defaultFilter) {
       params.set(filterParam, e.target.value);
     } else {
@@ -58,21 +65,35 @@ export function SearchAndFilter({
   return (
     <div className="flex flex-col sm:flex-row gap-4">
       <div className="relative flex-1">
-        <Search className={`absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 ${isPending ? 'animate-pulse text-primary' : ''}`} />
+        {isPending ? (
+          <Loader2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary animate-spin" />
+        ) : (
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        )}
         <input 
           type="text" 
           placeholder={placeholder || "Поиск..."} 
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200/60 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm font-medium transition-all"
+          className={`w-full pl-11 pr-4 py-3 bg-white border rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm font-medium transition-all ${
+            isPending 
+              ? 'border-primary/40 bg-primary/5' 
+              : 'border-slate-200/60'
+          }`}
         />
+        {isPending && (
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-primary/70 font-medium animate-pulse">
+            Поиск...
+          </span>
+        )}
       </div>
       {!hideFilter && (
         <div className="w-full sm:w-56 relative">
           <select 
             defaultValue={searchParams.get(filterParam) || defaultFilter}
             onChange={handleStatus}
-            className="w-full pl-4 pr-10 py-3 bg-white border border-slate-200/60 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm font-bold text-slate-700 appearance-none transition-all cursor-pointer"
+            disabled={isPending}
+            className={`w-full pl-4 pr-10 py-3 bg-white border border-slate-200/60 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm font-bold text-slate-700 appearance-none transition-all cursor-pointer ${isPending ? 'opacity-60' : ''}`}
           >
             <option value={defaultFilter}>{filterPlaceholder}</option>
             {filterOptions ? filterOptions.filter(opt => opt.value !== defaultFilter).map(opt => (

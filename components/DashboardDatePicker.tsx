@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { format, startOfMonth, startOfWeek, subDays } from "date-fns";
+import React, { useEffect, useState, useTransition } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { format, startOfMonth, subDays } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Calendar as CalendarIcon, ArrowRight } from "lucide-react";
+import { Calendar as CalendarIcon, ArrowRight, Loader2 } from "lucide-react";
 import * as Popover from "@radix-ui/react-popover";
 import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
@@ -12,7 +12,9 @@ import { Button } from "./ui/button";
 
 export function DashboardDatePicker() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
   const [date, setDate] = useState<DateRange | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -41,6 +43,7 @@ export function DashboardDatePicker() {
   const handleApply = (range?: DateRange) => {
     const selectedRange = range || date;
     const params = new URLSearchParams(searchParams.toString());
+    params.delete('page'); // reset pagination
     
     if (selectedRange?.from) {
       params.set("from", format(selectedRange.from, "yyyy-MM-dd"));
@@ -50,15 +53,20 @@ export function DashboardDatePicker() {
     }
     
     setOpen(false);
-    router.push(`?${params.toString()}`, { scroll: false });
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    });
   };
 
   const handleReset = () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("from");
     params.delete("to");
+    params.delete('page');
     setOpen(false);
-    router.push(`?${params.toString()}`, { scroll: false });
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    });
   };
 
   const setPreset = (type: 'today' | 'week' | 'month') => {
@@ -82,9 +90,11 @@ export function DashboardDatePicker() {
     <div className="flex flex-col sm:flex-row items-center gap-3">
       {/* Preset Buttons */}
       <div className="flex bg-slate-100/80 p-1 rounded-xl shadow-inner border border-slate-200/50">
-        <button onClick={() => setPreset('today')} className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500">Сегодня</button>
-        <button onClick={() => setPreset('week')} className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500">Неделя</button>
-        <button onClick={() => setPreset('month')} className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500">Месяц</button>
+        <button onClick={() => setPreset('today')} disabled={isPending} className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+          {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : null}Сегодня
+        </button>
+        <button onClick={() => setPreset('week')} disabled={isPending} className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">Неделя</button>
+        <button onClick={() => setPreset('month')} disabled={isPending} className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">Месяц</button>
       </div>
 
       <Popover.Root open={open} onOpenChange={setOpen}>
@@ -149,7 +159,8 @@ export function DashboardDatePicker() {
                 <Button variant="outline" onClick={() => setOpen(false)}>
                   Отмена
                 </Button>
-                <Button onClick={() => handleApply()} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Button onClick={() => handleApply()} disabled={isPending} className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2">
+                  {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   Применить
                 </Button>
               </div>
