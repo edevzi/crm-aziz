@@ -230,7 +230,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
       const busy = isDriverBusy(d.id);
       return { 
         value: String(d.id), 
-        label: busy ? `${d.name} (${dict.driver_busy || 'Занят'})` : d.name, 
+        label: d.name, 
         sub: d.vehiclePlate,
         disabled: busy 
       };
