@@ -121,6 +121,17 @@ const translations = {
     calendarDoneCount: 'Завершены',
     goToToday: 'Сегодня',
     statusBadge: 'Статус',
+    cameraPermissionTitle: 'Доступ к камере',
+    cameraPermissionMessage: 'Для фото-отчёта нужен доступ к камере. Разрешите в следующем окне.',
+    cameraPermissionSettings: 'Доступ к камере запрещён. Откройте настройки и разрешите камеру для Driver CRM.',
+    gpsServicesTitle: 'GPS выключен',
+    gpsServicesMessage: 'Включите геолокацию (GPS) в настройках устройства для отслеживания пути.',
+    batteryOptTitle: 'Фоновая работа GPS',
+    batteryOptXiaomi: 'Для стабильного GPS в фоне:\n1. Настройки → Приложения → Driver CRM → Автозапуск: ВКЛ\n2. Настройки → Батарея → Driver CRM → Без ограничений\n3. Безопасность → Ускорение → Закрепите Driver CRM',
+    batteryOptSamsung: 'Для стабильного GPS в фоне:\n1. Настройки → Обслуживание → Батарея → Driver CRM → Без ограничений\n2. Убедитесь, что Driver CRM НЕ в «Спящие приложения»',
+    batteryOptOppo: 'Для стабильного GPS в фоне:\n1. Настройки → Батарея → Driver CRM → Без ограничений\n2. Управление приложениями → Автозапуск → Driver CRM: ВКЛ',
+    batteryOptHuawei: 'Для стабильного GPS в фоне:\n1. Настройки → Батарея → Запуск приложений → Driver CRM\n2. Ручное управление — все переключатели ВКЛ',
+    batteryOptGeneric: 'Для стабильного GPS в фоне: откройте настройки батареи и отключите оптимизацию для Driver CRM.',
   },
 } as const;
 

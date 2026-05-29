@@ -86,6 +86,9 @@ export async function requestFullLocationAccess(): Promise<{
 
 export async function startBackgroundLocationTracking(): Promise<boolean> {
   try {
+    const servicesEnabled = await Location.hasServicesEnabledAsync();
+    if (!servicesEnabled) return false;
+
     const bg = await Location.getBackgroundPermissionsAsync();
     if (bg.status !== 'granted') return false;
 
