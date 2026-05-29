@@ -749,8 +749,12 @@ function AppInner() {
       setIsLoggedIn(true);
       knownOrderIds.current = new Set();
       initialFetchDone.current = false;
-      await AsyncStorage.setItem('@driver_data', JSON.stringify(data));
-      await AsyncStorage.setItem('@session_version', SESSION_VERSION);
+      await AsyncStorage.multiSet([
+        ['@driver_data', JSON.stringify(data)],
+        ['@session_version', SESSION_VERSION],
+        ['@server_ip', serverIp],
+        ['@server_port', port],
+      ]);
 
       const perms = await requestFullLocationAccess();
       if (!perms.foreground) {
@@ -841,7 +845,11 @@ function AppInner() {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!response.ok) throw new Error(t(locale, 'statusUpdateError'));
+      if (!response.ok) {
+        let errMsg = t(locale, 'statusUpdateError');
+        try { const d = await response.json(); if (d?.error) errMsg = d.error; } catch {}
+        throw new Error(errMsg);
+      }
 
       setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: newStatus } : o)));
       if (selectedOrder?.id === orderId) {
@@ -850,7 +858,7 @@ function AppInner() {
 
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : t(locale, 'statusUpdateError');
-      showAlert(t(locale, 'loginError'), msg);
+      showAlert(t(locale, 'statusUpdateError'), msg);
     } finally {
       setUpdatingOrderId(null);
     }
@@ -1006,6 +1014,10 @@ function AppInner() {
   };
 
   const handleFinalizeCashOrder = async (order: Order) => {
+    if (order.paymentStatus !== 'received') {
+      showAlert("Ошибка", "Сначала подтвердите получение оплаты перед завершением заказа.");
+      return;
+    }
     setUpdatingOrderId(order.id);
     try {
       const response = await fetch(`${getApiUrl()}/driver/orders/${order.id}`, {
@@ -2414,7 +2426,7 @@ function AppInner() {
                     <TouchableOpacity
                       style={styles.sheetSkipToPickedUpLink}
                       disabled={isUpdating}
-                      onPress={() => { handleUpdateStatus(order.id, 'picked_up'); }}
+                      onPress={() => { handlePickupContainer(order); }}
                       activeOpacity={0.7}
                     >
                       <Text style={styles.sheetSkipToPickedUpLinkText}>{t(locale, 'pickUpNow')}</Text>

@@ -23,11 +23,14 @@ export async function PUT(
     }
     const previousStatus = order.status;
 
-    // Require photo when transitioning from container_placed to picked_up or completed (for internal vehicles)
-    if ((status === 'picked_up' || status === 'completed') && order.status === 'container_placed' && !order.isExternalVehicle) {
-      if (!photoUrl) {
-        return NextResponse.json({ error: 'Photo is required to confirm container pickup' }, { status: 400 });
-      }
+    // Require photo when transitioning to picked_up or completed (for internal vehicles)
+    // This covers both container_placed → picked_up and in_progress → picked_up (skip case)
+    const isPickupTransition =
+      (status === 'picked_up' || status === 'completed') &&
+      (order.status === 'container_placed' || order.status === 'in_progress') &&
+      !order.isExternalVehicle;
+    if (isPickupTransition && !photoUrl && !order.photoUrl) {
+      return NextResponse.json({ error: 'Photo is required to confirm container pickup' }, { status: 400 });
     }
 
     const updateData: any = {};

@@ -35,6 +35,7 @@ export async function GET(request: Request) {
         paymentStatus: orders.paymentStatus,
         driverFee: orders.driverFee,
         operatorNote: orders.operatorNote,
+        photoUrl: orders.photoUrl,
         createdAt: orders.createdAt,
         updatedAt: orders.updatedAt,
         clientName: clients.name,

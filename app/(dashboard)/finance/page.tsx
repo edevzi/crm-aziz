@@ -1,9 +1,8 @@
+import React, { Suspense } from 'react';
 import { getFinanceData, getClients, getDispatchers, getDashboardData, getDrivers, getSafeData } from '@/lib/data';
-import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
-import { cookies } from 'next/headers';
 import { getDictionary } from '@/lib/dictionaries';
 import { Wallet, ArrowUpRight, ArrowDownRight, Percent, Briefcase, Fuel, FileWarning, Recycle, Wrench, CarFront, Tractor } from 'lucide-react';
 import { ExpenseForm } from '@/components/forms/ExpenseForm';
@@ -14,8 +13,10 @@ import { DashboardDatePicker } from '@/components/DashboardDatePicker';
 import { MetricCard } from '@/components/MetricCard';
 import { ExpenseLedgerTable } from '@/components/tables/ExpenseLedgerTable';
 import { IncomeLedgerTable } from '@/components/tables/IncomeLedgerTable';
-
 import { getCurrentUser } from '@/lib/auth';
+import FinanceLoading from './loading';
+
+export const dynamic = 'force-dynamic';
 
 export default async function FinancePage({
   searchParams,
@@ -25,14 +26,65 @@ export default async function FinancePage({
   const lang: string = 'ru';
   const dict = getDictionary(lang);
 
-  // Fetch all database records
-  const [allOrders, { allExpenses }, user, allClients, allDispatchers, allDrivers, safeData] = await Promise.all([
+  // Quick metadata for static forms & header shell
+  const [allDrivers, allDispatchers, user] = await Promise.all([
+    getDrivers(),
+    getDispatchers(),
+    getCurrentUser(),
+  ]);
+
+  return (
+    <div className="space-y-8">
+      {/* Header Panel */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-200/60">
+            <Wallet className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{dict.finance}</h1>
+            <p className="text-slate-500 mt-1 font-medium">{dict.track_finance}</p>
+          </div>
+        </div>
+        <div className="flex gap-3 items-center w-full sm:w-auto justify-end">
+          <DashboardDatePicker />
+          <ExpenseForm dict={dict} drivers={allDrivers} dispatchers={allDispatchers} />
+        </div>
+      </div>
+
+      <Suspense key={JSON.stringify(searchParams)} fallback={<FinanceLoading />}>
+        <FinancePageContent 
+          searchParams={searchParams} 
+          dict={dict} 
+          lang={lang} 
+          allDrivers={allDrivers}
+          allDispatchers={allDispatchers}
+          user={user}
+        />
+      </Suspense>
+    </div>
+  );
+}
+
+async function FinancePageContent({
+  searchParams,
+  dict,
+  lang,
+  allDrivers,
+  allDispatchers,
+  user,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined },
+  dict: any,
+  lang: string,
+  allDrivers: any[],
+  allDispatchers: any[],
+  user: any,
+}) {
+  const [allOrders, { allExpenses }, allClients, safeData] = await Promise.all([
     getDashboardData(),
     getFinanceData(),
-    getCurrentUser(),
     getClients(),
-    getDispatchers(),
-    getDrivers(),
     getSafeData()
   ]);
 
@@ -102,7 +154,6 @@ export default async function FinancePage({
     filteredExpensesByCategory[e.category] += e.amountRub;
   });
 
-  // Calculate chart categories breakdown based on active filters
   const chartExpensesByCategory = Object.entries(filteredExpensesByCategory).map(([name, value]) => ({
     name,
     value
@@ -124,7 +175,6 @@ export default async function FinancePage({
 
   const combinedIncomes: IncomeItem[] = [];
 
-  // 1. Client payments from completed/entered orders
   allOrders.forEach(o => {
     if (o.paymentStatus === 'entered' && (!isOperator || o.operatorId === currentUserId)) {
       const client = o.isExternalVehicle ? null : clientMap.get(o.clientId!);
@@ -147,7 +197,6 @@ export default async function FinancePage({
     }
   });
 
-  // 2. Safe withdrawals/expenses as negative incomes
   safeData.forEach(s => {
     if (s.transaction.type === 'expense' && (!isOperator || s.transaction.operatorId === currentUserId)) {
       combinedIncomes.push({
@@ -165,10 +214,8 @@ export default async function FinancePage({
     }
   });
 
-  // Sort timeline descending by date
   combinedIncomes.sort((a, b) => b.date.getTime() - a.date.getTime());
 
-  // Filter combined incomes
   let filteredIncomes = combinedIncomes;
 
   if (sourceFilter && sourceFilter !== 'all') {
@@ -190,7 +237,6 @@ export default async function FinancePage({
     filteredIncomes = filteredIncomes.filter(i => i.date <= endDate);
   }
 
-  // Calculate overall & filtered income totals
   let overallTotalIncome = 0;
   combinedIncomes.forEach(i => {
     overallTotalIncome += i.amount;
@@ -211,13 +257,10 @@ export default async function FinancePage({
   const overallNetProfit = overallTotalIncome - overallTotalExpenses;
   const filteredNetProfit = filteredTotalIncome - filteredTotalExpenses;
 
-  // Compute trends for sub-category cards
   const parseLocal = (dateStr: string) => {
     const [y, m, d] = dateStr.split('-');
     return new Date(parseInt(y), parseInt(m) - 1, parseInt(d), 0, 0, 0, 0);
   };
-
-
 
   const currentFrom = startDateStr ? parseLocal(startDateStr) : new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
   const currentTo = endDateStr ? parseLocal(endDateStr) : new Date(todayDate.getTime());
@@ -272,11 +315,6 @@ export default async function FinancePage({
       if (e.category === 'tractor') prevMetrics.tractor += amt;
     }
   }
-
-  const calcTrend = (current: number, prev: number) => {
-    if (prev === 0) return current > 0 ? 100 : 0;
-    return Math.round(((current - prev) / Math.abs(prev)) * 100);
-  };
 
   // ================= CHARTS DATA (All-Time Monthly) =================
   const last6Months = Array.from({ length: 6 }, (_, i) => {
@@ -353,7 +391,6 @@ export default async function FinancePage({
     { key: 'amount', label: dict.amount }
   ];
 
-  // Lists for Filter component
   const expenseCategories = [
     { value: 'fuel', label: dict.fuel || 'Топливо' },
     { value: 'diesel', label: dict.diesel || 'Дизель' },
@@ -369,7 +406,6 @@ export default async function FinancePage({
     { value: 'master_fee', label: dict.master_fee || 'Мастер' },
     { value: 'tractor', label: dict.tractor || 'Трактор' },
     { value: 'other', label: dict.other || 'Другое' }
-
   ];
 
   const incomeSources = [
@@ -378,33 +414,19 @@ export default async function FinancePage({
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-200/60">
-            <Wallet className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">{dict.finance}</h1>
-            <p className="text-slate-500 mt-1 font-medium">{dict.track_finance}</p>
-          </div>
-        </div>
-        <div className="flex gap-3 items-center w-full sm:w-auto justify-end">
-          <DashboardDatePicker />
-          <ExportButton
-            data={currentTab === 'expenses' ? exportExpensesData : exportIncomesData}
-            columns={currentTab === 'expenses' ? exportExpensesColumns : exportIncomesColumns}
-            filename={currentTab === 'expenses' ? "expenses_report" : "income_report"}
-            title={
-              currentTab === 'expenses'
-                ? ("Список расходов")
-                : ("Список доходов")
-            }
-            dict={dict}
-          />
-          <ExpenseForm dict={dict} drivers={allDrivers} dispatchers={allDispatchers} />
-        </div>
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex justify-end -mb-4">
+        <ExportButton
+          data={currentTab === 'expenses' ? exportExpensesData : exportIncomesData}
+          columns={currentTab === 'expenses' ? exportExpensesColumns : exportIncomesColumns}
+          filename={currentTab === 'expenses' ? "expenses_report" : "income_report"}
+          title={
+            currentTab === 'expenses'
+              ? ("Список расходов")
+              : ("Список доходов")
+          }
+          dict={dict}
+        />
       </div>
 
       {/* Summary Cards with Filter Awareness */}
@@ -497,7 +519,6 @@ export default async function FinancePage({
 
       {/* Dynamic Ledgers Section depending on tab */}
       {currentTab === 'expenses' ? (
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Expenses Breakdown */}
           <Card className="border-0 shadow-sm ring-1 ring-slate-100 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-xl">

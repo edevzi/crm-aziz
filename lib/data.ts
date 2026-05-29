@@ -32,8 +32,9 @@ export const getOrders = async (status?: string, q?: string, from?: string, to?:
       conditions.push(eq(orders.isClosed, false));
       conditions.push(ne(orders.status, 'completed'));
     } else if (status === 'pending_confirmation') {
+      // Orders where driver confirmed payment (received) but admin hasn't entered it yet
       conditions.push(eq(orders.isClosed, false));
-      conditions.push(or(eq(orders.status, 'completed'), eq(orders.paymentStatus, 'received')));
+      conditions.push(eq(orders.paymentStatus, 'received'));
     } else if (status === 'closed') {
       conditions.push(eq(orders.isClosed, true));
     } else if (status && status !== 'all') {

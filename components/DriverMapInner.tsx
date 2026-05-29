@@ -307,7 +307,7 @@ export default function DriverMapInner({ lang, dict }: { lang: string; dict: any
           <p className="text-xs text-slate-400 font-medium">
             {dict.last_updated || 'Yangilandi'}: {lastRefreshed.toLocaleTimeString()}
           </p>
-          {drivers.length > 0 && (
+          {drivers.length > 0 && process.env.NODE_ENV === 'development' && (
             <div className="mt-3">
               <button
                 onClick={handleSimulateGps}
@@ -315,7 +315,7 @@ export default function DriverMapInner({ lang, dict }: { lang: string; dict: any
                 className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold rounded-xl hover:bg-indigo-100 transition-all shadow-sm active:scale-95 duration-100"
               >
                 <Radio className="h-3.5 w-3.5" />
-                {'Симулировать GPS'}
+                {'[DEV] Симулировать GPS'}
               </button>
             </div>
           )}

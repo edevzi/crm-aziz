@@ -20,16 +20,29 @@ java -version
 # 2. Loyiha papkasiga o'tish va native Android loyihasini generatsiya qilish
 cd "$(dirname "$0")"
 echo "Expo Prebuild generatsiya qilinmoqda..."
-npx expo prebuild --platform android --no-install --clean
+# NOTE: --no-install olib tashlandi — ba'zi Expo 54 pluginlari prebuild vaqtida paket
+# versiyalarini tekshiradi va bu qadamsiz xato berishi mumkin
+npx expo prebuild --platform android --clean
+
+# 2.5. Android SDK yo'lini aniqlash va sozlash
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+if [ ! -d "$ANDROID_HOME" ]; then
+  echo "Xatolik: Android SDK topilmadi: $ANDROID_HOME"
+  echo "Android Studio orqali SDK o'rnatilganligini tekshiring."
+  exit 1
+fi
+echo "Android SDK sozlanmoqda: $ANDROID_HOME"
+echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
 # 3. Gradle orqali APK yig'ish
 cd android
 echo "Gradlew yordamida APK yig'ilmoqda..."
 chmod +x gradlew
-./gradlew assembleDebug
+# --no-daemon: CI/lokal buildlarda daemon muammolarini oldini olish uchun
+./gradlew assembleRelease --no-daemon
 
 # 4. Tayyor APK'ni Ish stoliga (Desktop) nusxalash
-GENERATED_APK="app/build/outputs/apk/debug/app-debug.apk"
+GENERATED_APK="app/build/outputs/apk/release/app-release.apk"
 DESKTOP_PATH="/Users/edevzi/Desktop/Driver-CRM-Final.apk"
 
 if [ -f "$GENERATED_APK" ]; then
