@@ -23,7 +23,13 @@ export async function PUT(
     }
     const previousStatus = order.status;
 
-    // Build update object based on what is provided
+    // Require photo when transitioning from container_placed to picked_up or completed (for internal vehicles)
+    if ((status === 'picked_up' || status === 'completed') && order.status === 'container_placed' && !order.isExternalVehicle) {
+      if (!photoUrl) {
+        return NextResponse.json({ error: 'Photo is required to confirm container pickup' }, { status: 400 });
+      }
+    }
+
     const updateData: any = {};
     if (status) updateData.status = status;
     if (paymentType) updateData.paymentType = paymentType;
@@ -33,19 +39,27 @@ export async function PUT(
         const token = process.env.BLOB_READ_WRITE_TOKEN;
         if (token) {
           const mimeTypeMatch = photoUrl.match(/^data:(image\/[a-zA-Z0-9.-]+);base64,/);
-          const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : 'image/jpeg';
-          const extension = mimeType.split('/')[1] || 'jpeg';
-          const base64Data = photoUrl.replace(/^data:image\/[a-z]+;base64,/, "");
-          const buffer = Buffer.from(base64Data, 'base64');
+          const base64Data = photoUrl.replace(/^data:image\/[a-z0-9.-]+;base64,/, "");
+          let buffer: any = Buffer.from(base64Data, 'base64');
           
+          try {
+            const sharp = (await import('sharp')).default;
+            buffer = await sharp(buffer)
+              .resize({ width: 1024, withoutEnlargement: true })
+              .jpeg({ quality: 60 })
+              .toBuffer();
+          } catch (sharpErr) {
+            console.error('Sharp compression failed, uploading raw buffer:', sharpErr);
+          }
+
           const { put } = await import('@vercel/blob');
-          const blob = await put(`order-${orderId}-${Date.now()}.${extension}`, buffer, {
-            contentType: mimeType,
+          const blob = await put(`order-${orderId}-${Date.now()}.jpeg`, buffer, {
+            contentType: 'image/jpeg',
             access: 'public',
             token: token,
           });
           photoUrlToSave = blob.url;
-          console.log('Successfully uploaded photo to Vercel Blob:', blob.url);
+          console.log('Successfully uploaded compressed photo to Vercel Blob:', blob.url);
         } else {
           console.warn('BLOB_READ_WRITE_TOKEN is missing. Storing photo as base64 directly.');
         }

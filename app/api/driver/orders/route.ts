@@ -41,7 +41,7 @@ export async function GET(request: Request) {
         clientPhone: clients.phone,
       })
       .from(orders)
-      .innerJoin(clients, eq(orders.clientId, clients.id))
+      .leftJoin(clients, eq(orders.clientId, clients.id))
       .where(eq(orders.driverId, driverId))
       .orderBy(desc(orders.scheduledAt));
 

@@ -52,8 +52,13 @@ TaskManager.defineTask(LOCATION_TASK, async ({ data, error }) => {
 });
 
 export async function hasBackgroundLocationPermission(): Promise<boolean> {
-  const bg = await Location.getBackgroundPermissionsAsync();
-  return bg.status === 'granted';
+  try {
+    const bg = await Location.getBackgroundPermissionsAsync();
+    return bg.status === 'granted';
+  } catch (e) {
+    console.warn('Failed to check background location permission:', e);
+    return false;
+  }
 }
 
 export async function requestFullLocationAccess(): Promise<{
@@ -61,42 +66,59 @@ export async function requestFullLocationAccess(): Promise<{
   background: boolean;
   canAskAgain: boolean;
 }> {
-  const fg = await Location.requestForegroundPermissionsAsync();
-  if (fg.status !== 'granted') {
-    return { foreground: false, background: false, canAskAgain: fg.canAskAgain };
-  }
+  try {
+    const fg = await Location.requestForegroundPermissionsAsync();
+    if (fg.status !== 'granted') {
+      return { foreground: false, background: false, canAskAgain: fg.canAskAgain };
+    }
 
-  const bg = await Location.requestBackgroundPermissionsAsync();
-  return {
-    foreground: true,
-    background: bg.status === 'granted',
-    canAskAgain: bg.canAskAgain,
-  };
+    const bg = await Location.requestBackgroundPermissionsAsync();
+    return {
+      foreground: true,
+      background: bg.status === 'granted',
+      canAskAgain: bg.canAskAgain,
+    };
+  } catch (e) {
+    console.warn('Failed to request location access:', e);
+    return { foreground: false, background: false, canAskAgain: false };
+  }
 }
 
 export async function startBackgroundLocationTracking(): Promise<boolean> {
-  const started = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK);
-  if (started) return true;
+  try {
+    const bg = await Location.getBackgroundPermissionsAsync();
+    if (bg.status !== 'granted') return false;
 
-  const bg = await Location.getBackgroundPermissionsAsync();
-  if (bg.status !== 'granted') return false;
+    const started = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK);
+    if (started) return true;
 
-  await Location.startLocationUpdatesAsync(LOCATION_TASK, {
-    accuracy: Location.Accuracy.Balanced,
-    timeInterval: 10000,
-    showsBackgroundLocationIndicator: true,
-    foregroundService: {
-      notificationTitle: 'Haydovchi — joylashuv',
-      notificationBody: 'Yo\'lda: joylashuvingiz operatorga yuborilmoqda',
-      notificationColor: '#4f46e5',
-    },
-  });
-  return true;
+    await Location.startLocationUpdatesAsync(LOCATION_TASK, {
+      accuracy: Location.Accuracy.Balanced,
+      timeInterval: 10000,
+      showsBackgroundLocationIndicator: true,
+      foregroundService: {
+        notificationTitle: 'Haydovchi — joylashuv',
+        notificationBody: 'Yo\'lda: joylashuvingiz operatorga yuborilmoqda',
+        notificationColor: '#4f46e5',
+      },
+    });
+    return true;
+  } catch (e) {
+    console.warn('Failed to start background location tracking:', e);
+    return false;
+  }
 }
 
 export async function stopBackgroundLocationTracking(): Promise<void> {
-  const started = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK);
-  if (started) {
-    await Location.stopLocationUpdatesAsync(LOCATION_TASK);
+  try {
+    const bg = await Location.getBackgroundPermissionsAsync();
+    if (bg.status !== 'granted') return;
+
+    const started = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK);
+    if (started) {
+      await Location.stopLocationUpdatesAsync(LOCATION_TASK);
+    }
+  } catch (e) {
+    console.warn('Failed to stop background location tracking:', e);
   }
 }

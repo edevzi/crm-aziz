@@ -383,6 +383,79 @@ async function seed() {
     }
   }
 
+  console.log('Inserting explicit test orders for Farhod, Jasur, and Sherzod to ensure overdue, active, and new orders are present...');
+  for (const driver of insertedDrivers) {
+    const client1 = insertedClients[driver.id % insertedClients.length];
+    const client2 = insertedClients[(driver.id + 1) % insertedClients.length];
+    const client3 = insertedClients[(driver.id + 2) % insertedClients.length];
+
+    // 1. Overdue order (> 2 hours ago)
+    await db.insert(orders).values({
+      clientId: client1.id,
+      driverId: driver.id,
+      operatorNote: `Просроченный контейнер (установлен более 2 часов назад) для ${driver.name}`,
+      address: client1.address,
+      mapUrl: `https://yandex.ru/maps/?pt=69.2401,41.2995&z=12`,
+      scheduledAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+      containerSizeM3: 8,
+      containerNumber: `КТ-PR-${driver.id}`,
+      rentalDuration: '1 день',
+      status: 'container_placed',
+      paymentAmount: 200000,
+      paymentType: 'cash',
+      paymentStatus: 'pending',
+      clientCategory: 'direct',
+      isClosed: false,
+      operatorId: operatorUser.id,
+      createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000) // Placed 3 hours ago (overdue)
+    });
+
+    // 2. Active placed container (< 2 hours ago)
+    await db.insert(orders).values({
+      clientId: client2.id,
+      driverId: driver.id,
+      operatorNote: `Активный контейнер (установлен 30 минут назад) для ${driver.name}`,
+      address: client2.address,
+      mapUrl: `https://yandex.ru/maps/?pt=69.2401,41.2995&z=12`,
+      scheduledAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+      containerSizeM3: 12,
+      containerNumber: `КТ-ACT-${driver.id}`,
+      rentalDuration: '1 день',
+      status: 'container_placed',
+      paymentAmount: 220000,
+      paymentType: 'cash',
+      paymentStatus: 'pending',
+      clientCategory: 'direct',
+      isClosed: false,
+      operatorId: operatorUser.id,
+      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 30 * 60 * 1000) // Placed 30 mins ago (active)
+    });
+
+    // 3. New assigned order to proceed with parallel work
+    await db.insert(orders).values({
+      clientId: client3.id,
+      driverId: driver.id,
+      operatorNote: `Новый назначенный заказ для параллельной работы ${driver.name}`,
+      address: client3.address,
+      mapUrl: `https://yandex.ru/maps/?pt=69.2401,41.2995&z=12`,
+      scheduledAt: new Date(Date.now() + 2 * 60 * 60 * 1000),
+      containerSizeM3: 20,
+      containerNumber: `КТ-NEW-${driver.id}`,
+      rentalDuration: '1 день',
+      status: 'assigned',
+      paymentAmount: 250000,
+      paymentType: 'cash',
+      paymentStatus: 'pending',
+      clientCategory: 'direct',
+      isClosed: false,
+      operatorId: operatorUser.id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+  }
+
   console.log('Seeding process completed successfully!');
   console.log(`Admin User: admin / admin1234`);
   console.log(`Operator User: operator / op1234`);

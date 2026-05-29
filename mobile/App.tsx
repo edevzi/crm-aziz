@@ -102,6 +102,7 @@ const UserCircle = LucideUserCircle as React.ComponentType<{ color?: string; siz
 const Car = LucideCar as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 const TrendingUp = LucideTrendingUp as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 const PackageCheck = LucidePackageCheck as React.ComponentType<{ color?: string; size?: number; style?: object }>;
+const ChevronDown = LucideChevronDown as React.ComponentType<{ color?: string; size?: number; style?: object }>;
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -320,12 +321,15 @@ const ContainerTimer = ({ updatedAt }: { updatedAt?: string }) => {
     return () => clearInterval(interval);
   }, [updatedAt]);
 
-  const totalSeconds = Math.floor(elapsed / 1000);
+  const twoHoursInMs = 2 * 60 * 60 * 1000;
+  const isLate = elapsed >= twoHoursInMs;
+  const remainingMs = isLate ? 0 : (twoHoursInMs - elapsed);
+
+  const totalSeconds = Math.floor(remainingMs / 1000);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  const isLate = hours >= 2;
   const color = isLate ? '#ef4444' : '#f59e0b';
   const bgColor = isLate ? '#fee2e2' : '#fef3c7';
   
@@ -337,7 +341,7 @@ const ContainerTimer = ({ updatedAt }: { updatedAt?: string }) => {
     <View style={[styles.timerContainer, { backgroundColor: bgColor }]}>
       <Clock size={14} color={color} style={{ marginRight: 6 }} />
       <Text style={[styles.timerText, { color }]}>
-        {hStr}:{mStr}:{sStr} {isLate ? '(Опоздание)' : ''}
+        {hStr}:{mStr}:{sStr} {isLate ? '(Просрочено!)' : ''}
       </Text>
     </View>
   );
@@ -453,6 +457,7 @@ function AppInner() {
   const [displayedMonth, setDisplayedMonth] = useState<Date>(() => startOfDay(new Date()));
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
   const [pinnedFocusId, setPinnedFocusId] = useState<number | null>(null);
+  const [isOverdueExpanded, setIsOverdueExpanded] = useState(false);
 
   const [historyFilter, setHistoryFilter] = useState<'day' | 'week' | 'month'>('day');
   const [historyOffset, setHistoryOffset] = useState<number>(0);
@@ -618,13 +623,18 @@ function AppInner() {
         if (locationSubscription.current) {
           locationSubscription.current.remove();
           locationSubscription.current = null;
+          try {
+            stopBackgroundLocationTracking();
+          } catch (e) {}
         }
-        await stopBackgroundLocationTracking();
         setIsTrackingGps(false);
         return;
       }
 
-      const fg = await Location.getForegroundPermissionsAsync();
+      let fg = await Location.getForegroundPermissionsAsync();
+      if (fg.status !== 'granted') {
+        fg = await Location.requestForegroundPermissionsAsync();
+      }
       if (fg.status !== 'granted') {
         showAlert(t(locale, 'gpsPermissionTitle'), t(locale, 'gpsPermissionMessage'), true);
         return;
@@ -673,10 +683,13 @@ function AppInner() {
       }
     };
 
-    startTracking();
+    const timer = setTimeout(() => {
+      startTracking();
+    }, 1500);
 
     return () => {
       active = false;
+      clearTimeout(timer);
       if (locationSubscription.current) {
         locationSubscription.current.remove();
         locationSubscription.current = null;
@@ -852,16 +865,15 @@ function AppInner() {
 
     Alert.alert(
       "Фото-отчет",
-      "Прикрепите фото контейнера для подтверждения получения.",
+      "Прикрепите фото контейнера для подтверждения получения. Это обязательное действие.",
       [
         {
           text: "Сделать фото",
           onPress: () => promptPickupPhotoCapture(order)
         },
         {
-          text: "Пропустить",
-          style: "cancel",
-          onPress: () => pickupContainerWithPhoto(order, null)
+          text: "Отмена",
+          style: "cancel"
         }
       ]
     );
@@ -889,24 +901,26 @@ function AppInner() {
           const base64Img = `data:image/jpeg;base64,${manipResult.base64}`;
           pickupContainerWithPhoto(order, base64Img);
         } else {
-          pickupContainerWithPhoto(order, null);
+          showAlert("Ошибка", "Не удалось обработать фото");
         }
       } catch (err) {
         console.error('Image compression failed:', err);
-        pickupContainerWithPhoto(order, null);
+        showAlert("Ошибка", "Ошибка сжатия изображения");
       }
     }
   };
 
   const pickupContainerWithPhoto = async (order: Order, photoBase64: string | null) => {
+    if (!photoBase64) {
+      showAlert("Ошибка", "Фото отчёт обязателен для подтверждения получения контейнера.");
+      return;
+    }
     setUpdatingOrderId(order.id);
     const isBeznal = order.paymentType === 'card' || order.paymentType === 'online';
 
     try {
       const payload: any = {};
-      if (photoBase64) {
-        payload.photoUrl = photoBase64;
-      }
+      payload.photoUrl = photoBase64;
 
       if (isBeznal) {
         payload.status = 'completed';
@@ -1205,7 +1219,7 @@ function AppInner() {
         const updatedDate = new Date(o.updatedAt);
         return isSameDay(scheduledDate, today) || isSameDay(updatedDate, today);
       })
-      .reduce((sum, o) => sum + (Number(o.driverFee) || 0), 0);
+      .reduce((sum, o) => sum + (Number(o.paymentAmount) || 0), 0);
   }, [historyOrders]);
 
   const historyChartData = useMemo(() => {
@@ -1256,7 +1270,7 @@ function AppInner() {
       const time = new Date(o.scheduledAt).getTime();
       for (let i = 0; i < periods.length; i++) {
         if (time >= periods[i].dateStart.getTime() && time < periods[i].dateEnd.getTime()) {
-          periods[i].totalAmount += (Number(o.driverFee) || 0);
+          periods[i].totalAmount += (Number(o.paymentAmount) || 0);
           periods[i].orderCount++;
           break;
         }
@@ -1744,11 +1758,33 @@ function AppInner() {
                   <View style={{ gap: 16 }}>
                     {/* SECTION 1: Overdue Containers */}
                     {overdueContainers.length > 0 && (
-                      <View>
-                        <Text style={[styles.feedSectionHeading, { color: '#EF4444', fontWeight: 'bold' }]}>
-                          {"⚠️ Просроченные контейнеры (> 2 ч.)"}
-                        </Text>
-                        {overdueContainers.map((o) => renderCompactCard(o))}
+                      <View style={{ marginBottom: 16, backgroundColor: '#FEF2F2', borderRadius: 20, borderWidth: 1, borderColor: '#FEE2E2', overflow: 'hidden' }}>
+                        <TouchableOpacity 
+                          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingVertical: 16, backgroundColor: '#FEE2E2' }}
+                          onPress={() => {
+                            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                            setIsOverdueExpanded(!isOverdueExpanded);
+                          }}
+                          activeOpacity={0.8}
+                        >
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                            <Text style={{ fontSize: 16, color: '#EF4444' }}>⚠️</Text>
+                            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#991B1B' }}>
+                              Просроченные контейнеры ({overdueContainers.length})
+                            </Text>
+                          </View>
+                          <ChevronDown 
+                            size={18} 
+                            color="#991B1B" 
+                            style={{ transform: [{ rotate: isOverdueExpanded ? '180deg' : '0deg' }] }} 
+                          />
+                        </TouchableOpacity>
+
+                        {isOverdueExpanded && (
+                          <View style={{ padding: 16, gap: 12 }}>
+                            {overdueContainers.map((o) => renderCompactCard(o))}
+                          </View>
+                        )}
                       </View>
                     )}
 
@@ -2012,8 +2048,8 @@ function AppInner() {
             {/* Today's earnings breakdown metrics */}
             {(() => {
               const todayOrders = historyOrders.filter(o => isSameDay(new Date(o.scheduledAt), new Date()));
-              const todayCash = todayOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.driverFee || 0), 0);
-              const todayBeznal = todayOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.driverFee || 0), 0);
+              const todayCash = todayOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+              const todayBeznal = todayOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.paymentAmount || 0), 0);
 
               return (
                 <View style={[styles.todayEarningsCard, { flexDirection: 'column', alignItems: 'stretch', marginHorizontal: 20, marginBottom: 12, backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' }]}>
@@ -2123,8 +2159,8 @@ function AppInner() {
                 const t = new Date(o.scheduledAt).getTime();
                 return t >= period.dateStart.getTime() && t < period.dateEnd.getTime();
               });
-              const periodCash = periodOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.driverFee || 0), 0);
-              const periodBeznal = periodOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.driverFee || 0), 0);
+              const periodCash = periodOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+              const periodBeznal = periodOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.paymentAmount || 0), 0);
 
               return (
                 <View style={[styles.historySummaryPeriodCard, { flexDirection: 'column', gap: 12, alignItems: 'stretch' }]}>
