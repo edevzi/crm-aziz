@@ -52,6 +52,7 @@ export const drivers = pgTable('drivers', {
   longitude: text('longitude'),
   locationUpdatedAt: timestamp('location_updated_at'),
   expoPushToken: text('expo_push_token'),
+  wagePerOrder: integer('wage_per_order').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

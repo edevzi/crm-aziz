@@ -82,8 +82,8 @@ export default async function DriverDetailPage({
   const totalOrders = allDriverOrders.length;
   const completedOrders = allDriverOrders.filter(r => r.order.status === 'completed').length;
   const totalRevenue = allDriverOrders
-    .filter(r => r.order.paymentStatus === 'entered')
-    .reduce((sum, r) => sum + r.order.paymentAmount, 0);
+    .filter(r => r.order.status === 'completed')
+    .reduce((sum, r) => sum + (r.order.driverFee || 0), 0);
   const activeOrders = allDriverOrders.filter(r => !r.order.isClosed && r.order.status !== 'completed').length;
 
   // Build URL helper preserving filters
@@ -230,7 +230,7 @@ export default async function DriverDetailPage({
           </Link>
 
           {/* Revenue */}
-          <Link href={`/drivers/${driverId}?payment=entered`} className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30 p-5 flex flex-col justify-between min-h-[130px] cursor-pointer hover:brightness-105 transition-all active:scale-[0.98]">
+          <Link href={`/drivers/${driverId}?status=completed`} className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30 p-5 flex flex-col justify-between min-h-[130px] cursor-pointer hover:brightness-105 transition-all active:scale-[0.98]">
             <div className="absolute -right-4 -bottom-4 opacity-10">
               <TrendingUp className="h-28 w-28 text-white" />
             </div>
@@ -245,7 +245,7 @@ export default async function DriverDetailPage({
                 {totalRevenue.toLocaleString()}
               </div>
               <p className="text-xs font-semibold text-violet-100 mt-1">
-                {"Учтённая выручка"}
+                {"Заработано водителем"}
               </p>
             </div>
           </Link>

@@ -82,6 +82,7 @@ export async function createDriver(data: any) {
     vehiclePlate: data.vehiclePlate,
     username: data.username || null,
     password: data.password || null,
+    wagePerOrder: parseInt(String(data.wagePerOrder).replace(/\D/g, '')) || 0,
   });
   revalidateTag('drivers');
   revalidatePath('/drivers');
@@ -94,6 +95,7 @@ export async function updateDriver(id: number, data: any) {
     vehiclePlate: data.vehiclePlate,
     username: data.username || null,
     password: data.password || null,
+    wagePerOrder: parseInt(String(data.wagePerOrder).replace(/\D/g, '')) || 0,
   }).where(eq(drivers.id, id));
   revalidateTag('drivers');
   revalidatePath('/drivers');
@@ -285,7 +287,11 @@ export async function createSafeTransaction(data: { type: 'income' | 'expense'; 
     operatorId: user ? user.id : null,
   });
   revalidateTag('safe');
+  revalidateTag('orders');
+  revalidateTag('expenses');
   revalidatePath('/safe');
+  revalidatePath('/dashboard');
+  revalidatePath('/finance');
 }
 
 
@@ -414,7 +420,13 @@ export async function createOrder(data: any) {
     const address = isExternalVehicle ? (data.address || 'База') : data.address;
     const isClosed = isExternalVehicle ? true : false;
 
-    const driverFee = (!isExternalVehicle && data.driverFee) ? parseInt(String(data.driverFee).replace(/\D/g, '')) : null;
+    let driverFee = (!isExternalVehicle && data.driverFee) ? parseInt(String(data.driverFee).replace(/\D/g, '')) : null;
+    if (!isExternalVehicle && !driverFee && data.driverId) {
+      const [drv] = await db.select().from(drivers).where(eq(drivers.id, parseInt(data.driverId))).limit(1);
+      if (drv && drv.wagePerOrder) {
+        driverFee = drv.wagePerOrder;
+      }
+    }
 
     const [newOrder] = await db.insert(orders).values({
       clientId,
@@ -606,7 +618,13 @@ export async function updateOrder(id: number, data: any) {
     const isClosed = isExternalVehicle ? true : data.isClosed;
     const address = isExternalVehicle ? (data.address || 'База') : data.address;
     const newPaymentStatus = isExternalVehicle ? 'entered' : data.paymentStatus;
-    const driverFee = (!isExternalVehicle && data.driverFee) ? parseInt(String(data.driverFee).replace(/\D/g, '')) : null;
+    let driverFee = (!isExternalVehicle && data.driverFee) ? parseInt(String(data.driverFee).replace(/\D/g, '')) : null;
+    if (!isExternalVehicle && !driverFee && data.driverId) {
+      const [drv] = await db.select().from(drivers).where(eq(drivers.id, parseInt(data.driverId))).limit(1);
+      if (drv && drv.wagePerOrder) {
+        driverFee = drv.wagePerOrder;
+      }
+    }
 
     await db.update(orders).set({
       clientId,

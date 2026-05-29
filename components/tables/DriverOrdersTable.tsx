@@ -37,7 +37,7 @@ export function DriverOrdersTable({
     scheduledAt: o.order.scheduledAt,
     statusStr: STATUS_CONFIG[o.order.status]?.label_ru || o.order.status,
     paymentStatusStr: PAYMENT_CONFIG[o.order.paymentStatus]?.label_ru || o.order.paymentStatus,
-    amount: o.order.paymentAmount,
+    amount: o.order.driverFee || 0,
   }));
 
   const { sortedData, sortKey, sortDirection, toggleSort } = useSortableTable(enrichedOrders);
@@ -86,7 +86,7 @@ export function DriverOrdersTable({
           </SortableTableHead>
           <SortableTableHead sortKey="amount" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={toggleSort} className="text-right hidden lg:table-cell pr-6">
             <div className="flex items-center justify-end">
-              {isUz ? "Summa" : "Сумма"}
+              {isUz ? "Ish haqi" : "Зарплата"}
             </div>
           </SortableTableHead>
         </TableRow>
@@ -175,7 +175,7 @@ export function DriverOrdersTable({
                 <TableCell className="text-right hidden lg:table-cell pr-6">
                   <Link href={`/orders/${order.id}`} className="block">
                     <span className="font-extrabold text-slate-800 text-sm">
-                      {order.paymentAmount.toLocaleString()}
+                      {(order.driverFee || 0).toLocaleString()}
                     </span>
                     <span className="text-xs text-slate-400 ml-1 font-semibold">RUB</span>
                   </Link>

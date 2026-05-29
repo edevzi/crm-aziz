@@ -15,6 +15,13 @@ async function main() {
   } catch (err) {
     console.log("driver_fee column already exists or couldn't be added:", err);
   }
+
+  console.log("Adding 'wage_per_order' column to 'drivers' table...");
+  try {
+    await sql(`ALTER TABLE drivers ADD COLUMN IF NOT EXISTS wage_per_order integer DEFAULT 0 NOT NULL;`);
+  } catch (err) {
+    console.log("wage_per_order column already exists or couldn't be added:", err);
+  }
   
   console.log("Migration successful!");
 }

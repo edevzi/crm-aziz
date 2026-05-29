@@ -1,4 +1,4 @@
-import { getFinanceData, getClients, getDispatchers, getDashboardData, getDrivers } from '@/lib/data';
+import { getFinanceData, getClients, getDispatchers, getDashboardData, getDrivers, getSafeData } from '@/lib/data';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -26,13 +26,14 @@ export default async function FinancePage({
   const dict = getDictionary(lang);
 
   // Fetch all database records
-  const [allOrders, { allExpenses }, user, allClients, allDispatchers, allDrivers] = await Promise.all([
+  const [allOrders, { allExpenses }, user, allClients, allDispatchers, allDrivers, safeData] = await Promise.all([
     getDashboardData(),
     getFinanceData(),
     getCurrentUser(),
     getClients(),
     getDispatchers(),
-    getDrivers()
+    getDrivers(),
+    getSafeData()
   ]);
 
   const ordersMap = new Map(allOrders.map(o => [o.id, o]));
@@ -146,7 +147,23 @@ export default async function FinancePage({
     }
   });
 
-  // 2. Warehouse incomes removed as warehouse no longer tracks finance
+  // 2. Safe withdrawals/expenses as negative incomes
+  safeData.forEach(s => {
+    if (s.transaction.type === 'expense' && (!isOperator || s.transaction.operatorId === currentUserId)) {
+      combinedIncomes.push({
+        id: `safe-expense-${s.transaction.id}`,
+        type: 'warehouse',
+        rawId: s.transaction.id,
+        date: new Date(s.transaction.recordedAt),
+        amount: -s.transaction.amountRub,
+        sourceKey: 'safe_expense',
+        sourceLabel: dict.safe_expense || 'Расход сейфа',
+        clientName: s.operator?.name || 'Оператор',
+        note: s.transaction.note || 'Расход из сейфа',
+        address: 'Сейф'
+      });
+    }
+  });
 
   // Sort timeline descending by date
   combinedIncomes.sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -282,7 +299,13 @@ export default async function FinancePage({
       }
     });
 
-
+    safeData.forEach(s => {
+      if (isOperator && s.transaction.operatorId !== currentUserId) return;
+      const sDate = new Date(s.transaction.recordedAt);
+      if (sDate.getMonth() === date.getMonth() && sDate.getFullYear() === date.getFullYear() && s.transaction.type === 'expense') {
+        income -= s.transaction.amountRub;
+      }
+    });
 
     allExpenses.forEach(e => {
       if (isOperator && e.operatorId !== currentUserId) return;

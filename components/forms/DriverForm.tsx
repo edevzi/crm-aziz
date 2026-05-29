@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { FormattedNumberInput } from '@/components/ui/FormattedNumberInput';
 import { Label } from '@/components/ui/label';
 import { createDriver, updateDriver } from '@/app/actions/entities';
 import { Plus, Edit2 } from 'lucide-react';
@@ -17,12 +18,14 @@ export function DriverForm({ dict, driver }: { dict: any, driver?: any }) {
     vehiclePlate: driver.vehiclePlate || '',
     username: driver.username || '',
     password: driver.password || '',
+    wagePerOrder: driver.wagePerOrder?.toString() || '',
   } : {
     name: '',
     phone: '',
     vehiclePlate: '',
     username: '',
-    password: ''
+    password: '',
+    wagePerOrder: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,7 +38,7 @@ export function DriverForm({ dict, driver }: { dict: any, driver?: any }) {
         await createDriver(formData);
       }
       setOpen(false);
-      if (!driver) setFormData({ name: '', phone: '', vehiclePlate: '', username: '', password: '' });
+      if (!driver) setFormData({ name: '', phone: '', vehiclePlate: '', username: '', password: '', wagePerOrder: '' });
     } finally {
       setLoading(false);
     }
@@ -70,6 +73,16 @@ export function DriverForm({ dict, driver }: { dict: any, driver?: any }) {
           <div className="space-y-2">
             <Label htmlFor="vehiclePlate">{dict.vehicle_plate}</Label>
             <Input id="vehiclePlate" value={formData.vehiclePlate} onChange={e => setFormData({...formData, vehiclePlate: e.target.value})} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="wagePerOrder">{"Ставка за заказ (RUB)"}</Label>
+            <FormattedNumberInput 
+              id="wagePerOrder" 
+              value={formData.wagePerOrder} 
+              onChange={val => setFormData({...formData, wagePerOrder: val})} 
+              required 
+              placeholder="0" 
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="username">{dict.username} ({dict.optional || "Optional"})</Label>

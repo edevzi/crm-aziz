@@ -153,12 +153,20 @@ export default async function DashboardPage({
 
     const sDate = new Date(s.transaction.recordedAt);
     if (isCurrent(sDate)) {
-      if (s.transaction.type === 'income') currentMetrics.safeTotal += s.transaction.amountRub;
-      else currentMetrics.safeTotal -= s.transaction.amountRub;
+      if (s.transaction.type === 'income') {
+        currentMetrics.safeTotal += s.transaction.amountRub;
+      } else {
+        currentMetrics.safeTotal -= s.transaction.amountRub;
+        currentMetrics.revenue -= s.transaction.amountRub;
+      }
     }
     if (isPrev(sDate)) {
-      if (s.transaction.type === 'income') prevMetrics.safeTotal += s.transaction.amountRub;
-      else prevMetrics.safeTotal -= s.transaction.amountRub;
+      if (s.transaction.type === 'income') {
+        prevMetrics.safeTotal += s.transaction.amountRub;
+      } else {
+        prevMetrics.safeTotal -= s.transaction.amountRub;
+        prevMetrics.revenue -= s.transaction.amountRub;
+      }
     }
   }
 
@@ -225,7 +233,13 @@ export default async function DashboardPage({
       }
     });
 
-
+    safeData.forEach(s => {
+      if (isOperator && s.transaction.operatorId !== currentUserId) return;
+      const sDate = new Date(s.transaction.recordedAt);
+      if (format(sDate, 'yyyy-MM-dd') === targetDateStr && s.transaction.type === 'expense') {
+        income -= s.transaction.amountRub;
+      }
+    });
 
     allExpenses.forEach(e => {
       if (isOperator && e.operatorId !== currentUserId) return;
