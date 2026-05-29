@@ -275,6 +275,7 @@ type Order = {
   operatorNote?: string;
   updatedAt: string;
   photoUrl?: string | null;
+  driverFee?: number | null;
 };
 
 function startOfDay(d: Date): Date {
@@ -1204,7 +1205,7 @@ function AppInner() {
         const updatedDate = new Date(o.updatedAt);
         return isSameDay(scheduledDate, today) || isSameDay(updatedDate, today);
       })
-      .reduce((sum, o) => sum + (Number(o.paymentAmount) || 0), 0);
+      .reduce((sum, o) => sum + (Number(o.driverFee) || 0), 0);
   }, [historyOrders]);
 
   const historyChartData = useMemo(() => {
@@ -1255,7 +1256,7 @@ function AppInner() {
       const time = new Date(o.scheduledAt).getTime();
       for (let i = 0; i < periods.length; i++) {
         if (time >= periods[i].dateStart.getTime() && time < periods[i].dateEnd.getTime()) {
-          periods[i].totalAmount += (Number(o.paymentAmount) || 0);
+          periods[i].totalAmount += (Number(o.driverFee) || 0);
           periods[i].orderCount++;
           break;
         }
@@ -2011,8 +2012,8 @@ function AppInner() {
             {/* Today's earnings breakdown metrics */}
             {(() => {
               const todayOrders = historyOrders.filter(o => isSameDay(new Date(o.scheduledAt), new Date()));
-              const todayCash = todayOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.paymentAmount || 0), 0);
-              const todayBeznal = todayOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+              const todayCash = todayOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.driverFee || 0), 0);
+              const todayBeznal = todayOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.driverFee || 0), 0);
 
               return (
                 <View style={[styles.todayEarningsCard, { flexDirection: 'column', alignItems: 'stretch', marginHorizontal: 20, marginBottom: 12, backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' }]}>
@@ -2122,8 +2123,8 @@ function AppInner() {
                 const t = new Date(o.scheduledAt).getTime();
                 return t >= period.dateStart.getTime() && t < period.dateEnd.getTime();
               });
-              const periodCash = periodOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.paymentAmount || 0), 0);
-              const periodBeznal = periodOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+              const periodCash = periodOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.driverFee || 0), 0);
+              const periodBeznal = periodOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.driverFee || 0), 0);
 
               return (
                 <View style={[styles.historySummaryPeriodCard, { flexDirection: 'column', gap: 12, alignItems: 'stretch' }]}>
@@ -2206,7 +2207,7 @@ function AppInner() {
               <View style={styles.profileMetricCardItem}>
                 <TrendingUp size={20} color="#10B981" style={{ marginBottom: 4 }} />
                 <Text style={[styles.profileMetricValueText, { color: '#10B981' }]}>
-                  {historyOrders.reduce((s, o) => s + (Number(o.paymentAmount) || 0), 0).toLocaleString()}
+                  {historyOrders.reduce((s, o) => s + (Number(o.driverFee) || 0), 0).toLocaleString()}
                 </Text>
                 <Text style={styles.profileMetricLabelText}>Всего руб.</Text>
               </View>

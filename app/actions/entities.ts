@@ -414,6 +414,8 @@ export async function createOrder(data: any) {
     const address = isExternalVehicle ? (data.address || 'База') : data.address;
     const isClosed = isExternalVehicle ? true : false;
 
+    const driverFee = (!isExternalVehicle && data.driverFee) ? parseInt(String(data.driverFee).replace(/\D/g, '')) : null;
+
     const [newOrder] = await db.insert(orders).values({
       clientId,
       driverId: (!isExternalVehicle && data.driverId) ? parseInt(data.driverId) : null,
@@ -431,6 +433,7 @@ export async function createOrder(data: any) {
       clientCategory,
       dispatcherId,
       dispatcherFee,
+      driverFee,
       referralName: isExternalVehicle ? null : data.referralName,
       referralPercent: isExternalVehicle ? null : (data.referralPercent ? parseInt(data.referralPercent) : null),
       operatorId: user ? user.id : null,
@@ -598,11 +601,12 @@ export async function updateOrder(id: number, data: any) {
 
     const previousPaymentStatus = order.paymentStatus;
     const previousStatus = order.status;
-    const newPaymentStatus = isExternalVehicle ? 'entered' : data.paymentStatus;
     const dispatcherFee = isExternalVehicle ? null : (data.dispatcherFee ? parseInt(String(data.dispatcherFee).replace(/\D/g, '')) : null);
     const status = isExternalVehicle ? 'completed' : data.status;
     const isClosed = isExternalVehicle ? true : data.isClosed;
     const address = isExternalVehicle ? (data.address || 'База') : data.address;
+    const newPaymentStatus = isExternalVehicle ? 'entered' : data.paymentStatus;
+    const driverFee = (!isExternalVehicle && data.driverFee) ? parseInt(String(data.driverFee).replace(/\D/g, '')) : null;
 
     await db.update(orders).set({
       clientId,
@@ -621,6 +625,7 @@ export async function updateOrder(id: number, data: any) {
       clientCategory,
       dispatcherId,
       dispatcherFee,
+      driverFee,
       referralName: isExternalVehicle ? null : data.referralName,
       referralPercent: isExternalVehicle ? null : (data.referralPercent ? parseInt(data.referralPercent) : null),
       isExternalVehicle,

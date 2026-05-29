@@ -33,6 +33,7 @@ export async function GET(request: Request) {
         paymentAmount: orders.paymentAmount,
         paymentType: orders.paymentType,
         paymentStatus: orders.paymentStatus,
+        driverFee: orders.driverFee,
         operatorNote: orders.operatorNote,
         createdAt: orders.createdAt,
         updatedAt: orders.updatedAt,

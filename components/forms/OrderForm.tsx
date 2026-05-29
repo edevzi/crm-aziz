@@ -94,6 +94,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
         referralPercent: String(order.referralPercent || ''),
         isExternalVehicle: order.isExternalVehicle || false,
         externalDriverName: order.externalDriverName || '',
+        driverFee:       String(order.driverFee || ''),
       };
     }
     return {
@@ -110,6 +111,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
       referralName: '', referralPercent: '',
       isExternalVehicle: false,
       externalDriverName: '',
+      driverFee: '',
     };
   };
 
@@ -575,17 +577,36 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
               </div>
 
               {/* ══ DRIVER ══ */}
-              <div>
-                <Label className="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
-                  <Truck className="h-3.5 w-3.5 text-slate-500" />
-                  {dict.driver} <span className="text-slate-300">({dict.optional || 'необязательно'})</span>
-                </Label>
-                <SearchableSelect
-                  options={driverOptions}
-                  value={form.driverId || 'none'}
-                  onChange={v => set('driverId', v === 'none' ? '' : v)}
-                  placeholder="Выбрать водителя..."
-                />
+              <div className="space-y-2.5">
+                <div>
+                  <Label className="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
+                    <Truck className="h-3.5 w-3.5 text-slate-500" />
+                    {dict.driver} <span className="text-slate-300">({dict.optional || 'необязательно'})</span>
+                  </Label>
+                  <SearchableSelect
+                    options={driverOptions}
+                    value={form.driverId || 'none'}
+                    onChange={v => set('driverId', v === 'none' ? '' : v)}
+                    placeholder="Выбрать водителя..."
+                  />
+                </div>
+                {form.driverId && form.driverId !== 'none' && (
+                  <div>
+                    <Label className="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
+                      <CreditCard className="h-3.5 w-3.5 text-indigo-500" />
+                      Сумма за выезд водителю (Haqqi)
+                    </Label>
+                    <div className="relative">
+                      <FormattedNumberInput
+                        placeholder="0"
+                        value={form.driverFee}
+                        onChange={v => set('driverFee', v)}
+                        className="h-9 rounded-xl text-sm font-bold pr-14"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-400">RUB</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}
