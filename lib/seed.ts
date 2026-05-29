@@ -139,6 +139,7 @@ async function seed() {
         let dispatcherFee = null;
         let referralName = null;
         let referralPercent = null;
+        const driverFee = 30000 + (counter % 3) * 10000; // 30k - 50k
 
         if (isDispatcher) {
           dispatcherId = insertedDispatchers[counter % insertedDispatchers.length].id;
@@ -225,6 +226,7 @@ async function seed() {
           clientCategory: isDispatcher ? 'dispatcher' : 'direct',
           dispatcherId,
           dispatcherFee,
+          driverFee,
           referralName,
           referralPercent,
           isExternalVehicle: false,
