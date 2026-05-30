@@ -52,7 +52,7 @@ export function IncomeLedgerTable({ incomes, dict }: IncomeLedgerTableProps) {
             currentSortDirection={sortDirection} 
             onSort={toggleSort}
           >
-            {dict.details || "Batafsil"}
+            {dict.details || "Детали"}
           </SortableTableHead>
           <SortableTableHead 
             sortKey="amount" 
@@ -95,7 +95,7 @@ export function IncomeLedgerTable({ incomes, dict }: IncomeLedgerTableProps) {
         {sortedIncomes.length === 0 && (
           <TableRow>
             <TableCell colSpan={4} className="text-center py-8 text-slate-500 font-medium">
-              {dict.no_income_found || "Daromadlar topilmadi."}
+              {dict.no_income_found || "Доходы не найдены."}
             </TableCell>
           </TableRow>
         )}

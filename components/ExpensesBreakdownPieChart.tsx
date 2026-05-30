@@ -71,7 +71,7 @@ export function ExpensesBreakdownPieChart({
           ) : (
             <div className="text-slate-400 text-sm font-bold flex flex-col items-center">
               <div className="h-16 w-16 mb-2 rounded-full bg-slate-100 flex items-center justify-center">📉</div>
-              {dict.no_expenses || "No expenses"}
+              {dict.no_expenses || "Расходы отсутствуют"}
             </div>
           )}
           {translatedExpenses.length > 0 && (

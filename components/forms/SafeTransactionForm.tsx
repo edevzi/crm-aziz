@@ -75,7 +75,7 @@ export function SafeTransactionForm({ dict, type }: { dict: any, type: 'income' 
             <Textarea id="note" value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? '...' : (dict.create || 'Create')}
+            {loading ? '...' : (dict.create || 'Создать')}
           </Button>
         </form>
       </DialogContent>

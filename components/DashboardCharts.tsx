@@ -49,7 +49,7 @@ export function DashboardCharts({
               <div className="h-3 w-3 rounded-full bg-blue-500" />
             </div>
             <CardTitle className="text-lg font-black tracking-tight text-slate-800">
-              {dict.financial_overview || "Financial Overview"}
+              {dict.financial_overview || "Финансовый обзор"}
             </CardTitle>
           </div>
         </CardHeader>
@@ -76,8 +76,8 @@ export function DashboardCharts({
                   itemStyle={{ fontWeight: '600', fontSize: '13px' }}
                 />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px', fontSize: '12px', fontWeight: '600' }} />
-                <Area type="monotone" name={dict.total_income || "Income"} dataKey="income" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" activeDot={{ r: 6, strokeWidth: 0 }} />
-                <Area type="monotone" name={dict.total_expenses || "Expenses"} dataKey="expenses" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" activeDot={{ r: 6, strokeWidth: 0 }} />
+                <Area type="monotone" name={dict.total_income || "Доход"} dataKey="income" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" activeDot={{ r: 6, strokeWidth: 0 }} />
+                <Area type="monotone" name={dict.total_expenses || "Расходы"} dataKey="expenses" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" activeDot={{ r: 6, strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

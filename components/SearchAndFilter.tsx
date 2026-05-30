@@ -100,12 +100,12 @@ export function SearchAndFilter({
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             )) : (
               <>
-                <option value="new">{dict?.new || 'New'}</option>
-                <option value="assigned">{dict?.assigned || 'Assigned'}</option>
-                <option value="in_progress">{dict?.in_progress || 'In Progress'}</option>
-                <option value="container_placed">{dict?.container_placed || 'Container Placed'}</option>
-                <option value="picked_up">{dict?.picked_up || 'Picked Up'}</option>
-                <option value="completed">{dict?.completed || 'Completed'}</option>
+                <option value="new">{dict?.new || 'Новый'}</option>
+                <option value="assigned">{dict?.assigned || 'Назначен'}</option>
+                <option value="in_progress">{dict?.in_progress || 'В процессе'}</option>
+                <option value="container_placed">{dict?.container_placed || 'Контейнер установлен'}</option>
+                <option value="picked_up">{dict?.picked_up || 'Забран'}</option>
+                <option value="completed">{dict?.completed || 'Завершен'}</option>
               </>
             )}
           </select>

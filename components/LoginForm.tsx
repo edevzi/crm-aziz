@@ -28,7 +28,7 @@ export default function LoginForm({ lang }: { lang: string }) {
       router.push("/dashboard");
       router.refresh();
     } else {
-      setError(dict.invalid_credentials || "Invalid username or password");
+      setError(dict.invalid_credentials || "Неверное имя пользователя или пароль");
     }
   };
 
@@ -37,12 +37,12 @@ export default function LoginForm({ lang }: { lang: string }) {
       <Card className="w-full max-w-[400px]">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">{dict.login_title || "Adminka"}</CardTitle>
-          <CardDescription>{dict.login_description || "Enter your credentials to access the operator dashboard"}</CardDescription>
+          <CardDescription>{dict.login_description || "Введите свои учетные данные для доступа к панели управления"}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{dict.username || "Username"}</label>
+              <label className="text-sm font-medium">{dict.username || "Имя пользователя"}</label>
               <input
                 type="text"
                 className="w-full p-2 border rounded-md"
@@ -52,7 +52,7 @@ export default function LoginForm({ lang }: { lang: string }) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{dict.password || "Password"}</label>
+              <label className="text-sm font-medium">{dict.password || "Пароль"}</label>
               <input
                 type="password"
                 className="w-full p-2 border rounded-md"
@@ -63,7 +63,7 @@ export default function LoginForm({ lang }: { lang: string }) {
             </div>
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
             <Button type="submit" className="w-full">
-              {dict.sign_in || "Sign In"}
+              {dict.sign_in || "Войти"}
             </Button>
           </form>
         </CardContent>

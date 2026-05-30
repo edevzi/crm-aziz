@@ -7,13 +7,13 @@ import Link from 'next/link';
 import { Package, Hash, MapPin, User, Calendar, Circle, Banknote } from 'lucide-react';
 import { useSortableTable } from '@/hooks/use-sortable-table';
 
-const STATUS_CONFIG: Record<string, { label_ru: string; label_uz: string; color: string }> = {
-  new:                { label_ru: 'Новый',              label_uz: 'Yangi',          color: 'bg-sky-50 text-sky-700 border-sky-200' },
-  assigned:           { label_ru: 'Назначен',           label_uz: 'Tayinlangan',    color: 'bg-violet-50 text-violet-700 border-violet-200' },
-  in_progress:        { label_ru: 'В пути',             label_uz: 'Yo\'lda',        color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  container_placed:   { label_ru: 'Контейнер уст.',     label_uz: 'Konteyner qo\'y.', color: 'bg-orange-50 text-orange-700 border-orange-200' },
-  picked_up:          { label_ru: 'Забран',             label_uz: 'Olib ketildi',   color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  completed:          { label_ru: 'Завершён',           label_uz: 'Tugallangan',    color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+const STATUS_CONFIG: Record<string, { label_ru: string; color: string }> = {
+  new:                { label_ru: 'Новый',              color: 'bg-sky-50 text-sky-700 border-sky-200' },
+  assigned:           { label_ru: 'Назначен',           color: 'bg-violet-50 text-violet-700 border-violet-200' },
+  in_progress:        { label_ru: 'В пути',             color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  container_placed:   { label_ru: 'Контейнер уст.',     color: 'bg-orange-50 text-orange-700 border-orange-200' },
+  picked_up:          { label_ru: 'Забран',             color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  completed:          { label_ru: 'Завершён',           color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 };
 
 const PAYMENT_CONFIG: Record<string, { label_ru: string; color: string }> = {
@@ -27,7 +27,6 @@ export function DriverOrdersTable({
   page,
   limit,
   dict,
-  isUz,
 }: any) {
   const enrichedOrders = orders.map((o: any) => ({
     ...o,
@@ -63,7 +62,7 @@ export function DriverOrdersTable({
           <SortableTableHead sortKey="clientName" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={toggleSort} className="hidden sm:table-cell">
             <div className="flex items-center gap-1.5">
               <User className="h-3.5 w-3.5 text-slate-400" />
-              {isUz ? "Mijoz" : "Клиент"}
+              Клиент
             </div>
           </SortableTableHead>
           <SortableTableHead sortKey="scheduledAt" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={toggleSort}>
@@ -81,12 +80,12 @@ export function DriverOrdersTable({
           <SortableTableHead sortKey="paymentStatusStr" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={toggleSort} className="hidden md:table-cell">
             <div className="flex items-center gap-1.5">
               <Banknote className="h-3.5 w-3.5 text-slate-400" />
-              {isUz ? "To'lov" : "Оплата"}
+              Оплата
             </div>
           </SortableTableHead>
           <SortableTableHead sortKey="amount" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={toggleSort} className="text-right hidden lg:table-cell pr-6">
             <div className="flex items-center justify-end">
-              {isUz ? "Ish haqi" : "Зарплата"}
+              Зарплата
             </div>
           </SortableTableHead>
         </TableRow>
@@ -97,10 +96,10 @@ export function DriverOrdersTable({
             <TableCell colSpan={7} className="text-center py-16">
               <Package className="h-12 w-12 text-slate-200 mx-auto mb-3" />
               <p className="font-semibold text-slate-400">
-                {isUz ? "Buyurtmalar topilmadi" : "Заказы не найдены"}
+                Заказы не найдены
               </p>
               <p className="text-xs text-slate-300 mt-1">
-                {isUz ? "Filter shartlarini o'zgartiring" : "Измените условия фильтра"}
+                Измените условия фильтра
               </p>
             </TableCell>
           </TableRow>
@@ -118,7 +117,7 @@ export function DriverOrdersTable({
                     <span className="font-bold text-primary text-sm group-hover:underline">#{order.id}</span>
                     {order.isClosed && (
                       <span className="block text-[10px] font-bold text-slate-400 mt-0.5">
-                        {isUz ? "Yopiq" : "Закрыт"}
+                        Закрыт
                       </span>
                     )}
                   </Link>
@@ -137,7 +136,7 @@ export function DriverOrdersTable({
                   <Link href={`/orders/${order.id}`} className="block">
                     {order.isExternalVehicle ? (
                       <span className="text-xs font-semibold text-slate-400 italic">
-                        {isUz ? "Tashqi avto" : "Стороннее авто"}
+                        Стороннее авто
                       </span>
                     ) : (
                       <span className="text-sm font-semibold text-slate-700">
@@ -159,9 +158,7 @@ export function DriverOrdersTable({
                 <TableCell>
                   <Link href={`/orders/${order.id}`} className="block">
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border inline-flex items-center gap-1 ${statusCfg?.color || 'bg-slate-50 text-slate-600 border-slate-200'}`}>
-                      {isUz
-                        ? statusCfg?.label_uz || order.status
-                        : statusCfg?.label_ru || order.status.replace('_', ' ')}
+                      {statusCfg?.label_ru || order.status.replace('_', ' ')}
                     </span>
                   </Link>
                 </TableCell>

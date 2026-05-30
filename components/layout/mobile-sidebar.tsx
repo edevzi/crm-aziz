@@ -35,7 +35,7 @@ export function MobileSidebar({ lang = 'ru', userRole }: { lang?: string, userRo
 
   const routes = [
     { label: dict.dashboard, icon: LayoutDashboard, href: "/dashboard" },
-    { label: dict.live_tracking || "Onlayn xarita", icon: Map, href: "/map" },
+    { label: dict.live_tracking || "Онлайн карта", icon: Map, href: "/map" },
     { label: dict.orders, icon: ClipboardList, href: "/orders" },
     { label: dict.clients, icon: Users, href: "/clients" },
     { label: dict.drivers, icon: Car, href: "/drivers" },
@@ -45,7 +45,7 @@ export function MobileSidebar({ lang = 'ru', userRole }: { lang?: string, userRo
   ];
 
   if (userRole === 'admin') {
-    routes.push({ label: (dict as any).operators || "Operatorlar", icon: UserCog, href: "/operators" });
+    routes.push({ label: (dict as any).operators || "Операторы", icon: UserCog, href: "/operators" });
   }
 
   return (

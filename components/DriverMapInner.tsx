@@ -209,7 +209,7 @@ export default function DriverMapInner({ lang, dict }: { lang: string; dict: any
             </div>
             ${driver.isTracking && driver.currentOrderAddress ? `
               <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #047857;">
-                <strong>${dict.destination || 'Belgilangan manzil'}:</strong><br/>
+                <strong>${dict.destination || 'Пункт назначения'}:</strong><br/>
                 <span style="color: #0f172a;">${driver.currentOrderAddress}</span>
               </div>
             ` : ''}
@@ -294,7 +294,7 @@ export default function DriverMapInner({ lang, dict }: { lang: string; dict: any
           <div className="flex justify-between items-center">
             <CardTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <Radio className="h-5 w-5 text-emerald-500 animate-pulse" />
-              {dict.driver_location || 'Haydovchilar joylashuvi'}
+              {dict.driver_location || 'Местоположение водителей'}
             </CardTitle>
             <button 
               onClick={() => fetchDriverLocations()}
@@ -305,7 +305,7 @@ export default function DriverMapInner({ lang, dict }: { lang: string; dict: any
             </button>
           </div>
           <p className="text-xs text-slate-400 font-medium">
-            {dict.last_updated || 'Yangilandi'}: {lastRefreshed.toLocaleTimeString()}
+            {dict.last_updated || 'Последнее обновление'}: {lastRefreshed.toLocaleTimeString()}
           </p>
           {drivers.length > 0 && process.env.NODE_ENV === 'development' && (
             <div className="mt-3">
@@ -372,7 +372,7 @@ export default function DriverMapInner({ lang, dict }: { lang: string; dict: any
                     <div className="text-[10px] text-emerald-700 bg-emerald-50/50 rounded-lg p-2 border border-emerald-100/50 mt-1 font-medium flex items-start gap-1">
                       <MapPin className="h-3 w-3 mt-0.5 flex-shrink-0 text-emerald-600" />
                       <div>
-                        <span className="font-bold">{dict.destination || 'Manzil'}:</span>{' '}
+                        <span className="font-bold">{dict.destination || 'Пункт назначения'}:</span>{' '}
                         <span className="text-slate-700">{driver.currentOrderAddress}</span>
                       </div>
                     </div>
@@ -381,7 +381,7 @@ export default function DriverMapInner({ lang, dict }: { lang: string; dict: any
                   {!hasGps && (
                     <div className="text-[10px] text-slate-400 italic mt-1 border-t border-dashed border-slate-100 pt-2 flex items-center gap-1">
                       <Radio className="h-3 w-3 text-slate-300" />
-                      <span>{dict.no_gps_yet || 'GPS signal yo\'q'}</span>
+                      <span>{dict.no_gps_yet || 'GPS координаты не получены'}</span>
                     </div>
                   )}
 
@@ -394,7 +394,7 @@ export default function DriverMapInner({ lang, dict }: { lang: string; dict: any
                       }}
                     >
                       <Eye className="h-3.5 w-3.5" />
-                      {dict.view_on_map || 'Kartada ko\'rish'}
+                      {dict.view_on_map || 'Показать на карте'}
                     </button>
                   )}
                 </div>

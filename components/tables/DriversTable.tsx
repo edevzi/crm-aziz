@@ -33,7 +33,7 @@ export function DriversTable({ drivers, dict, lang }: { drivers: any[], dict: an
             {dict.total_orders}
           </SortableTableHead>
           <SortableTableHead sortKey="createdAt" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={toggleSort}>
-            {dict.joined_date || "Sana"}
+            {dict.joined_date || "Дата"}
           </SortableTableHead>
           <SortableTableHead sortKey="" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={() => {}} className="w-10"></SortableTableHead>
         </TableRow>

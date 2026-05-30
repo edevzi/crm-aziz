@@ -110,7 +110,7 @@ export function FinanceFilter({
           }`}
         >
           <TrendingDown className={`h-4 w-4 ${currentTab === 'expenses' ? 'text-rose-500' : 'text-slate-400'}`} />
-          {dict.expenses || 'Expenses'}
+          {dict.expenses || 'Расходы'}
         </button>
         <button
           onClick={() => handleTabChange('income')}
@@ -121,7 +121,7 @@ export function FinanceFilter({
           }`}
         >
           <TrendingUp className={`h-4 w-4 ${currentTab === 'income' ? 'text-emerald-500' : 'text-slate-400'}`} />
-          {dict.income || 'Income'}
+          {dict.income || 'Доходы'}
         </button>
       </div>
 
@@ -129,15 +129,15 @@ export function FinanceFilter({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         {/* Search Query */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">{dict.note || "Izoh"}</label>
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">{dict.note || "Заметка"}</label>
           <div className="relative">
             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 ${isPending ? 'animate-pulse text-primary' : ''}`} />
             <input
               type="text"
               placeholder={
                 currentTab === 'expenses'
-                  ? dict.search_expense_placeholder || "Izoh..."
-                  : dict.search_income_placeholder || "Mijoz..."
+                  ? dict.search_expense_placeholder || "Заметка..."
+                  : dict.search_income_placeholder || "Клиент..."
               }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -149,7 +149,7 @@ export function FinanceFilter({
         {/* Dropdown for Category / Source */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">
-            {currentTab === 'expenses' ? dict.category || "Toifa" : dict.income_source || "Daromad manbai"}
+            {currentTab === 'expenses' ? dict.category || "Категория" : dict.income_source || "Источник дохода"}
           </label>
           <div className="relative">
             <select
@@ -185,7 +185,7 @@ export function FinanceFilter({
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50/50 rounded-xl transition-all border border-slate-200/50 hover:border-rose-100"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            {dict.clear_filters || "Clear Filters"}
+            {dict.clear_filters || "Сбросить фильтры"}
           </button>
         </div>
       )}

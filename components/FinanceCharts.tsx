@@ -40,7 +40,7 @@ export function FinanceCharts({
       <Card className="lg:col-span-2 border-0 shadow-sm ring-1 ring-slate-100 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-xl">
         <CardHeader className="bg-white/50 border-b border-slate-100">
           <CardTitle className="text-base font-bold text-slate-800">
-            {dict.financial_overview || "Financial Overview"} ({dict.last_6_months || "6 Months"})
+            {dict.financial_overview || "Финансовый обзор"} ({dict.last_6_months || "6 месяцев"})
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
@@ -55,8 +55,8 @@ export function FinanceCharts({
                   labelStyle={{ fontWeight: 'bold', color: '#1e293b' }}
                 />
                 <Legend iconType="circle" />
-                <Bar name={dict.total_income || "Income"} dataKey="income" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar name={dict.total_expenses || "Expenses"} dataKey="expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar name={dict.total_income || "Доход"} dataKey="income" fill="#10b981" radius={[4, 4, 0, 0]} />
+                <Bar name={dict.total_expenses || "Расходы"} dataKey="expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -66,7 +66,7 @@ export function FinanceCharts({
       <Card className="border-0 shadow-sm ring-1 ring-slate-100 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-xl">
         <CardHeader className="bg-white/50 border-b border-slate-100">
           <CardTitle className="text-base font-bold text-slate-800">
-            {dict.expenses_breakdown || "Expenses Breakdown"} ({dict.all_time || "All Time"})
+            {dict.expenses_breakdown || "Распределение расходов"} ({dict.all_time || "За всё время"})
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
@@ -93,7 +93,7 @@ export function FinanceCharts({
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-slate-400 text-sm font-medium">{dict.no_expenses || "No expenses"}</div>
+              <div className="text-slate-400 text-sm font-medium">{dict.no_expenses || "Расходы отсутствуют"}</div>
             )}
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2 text-xs max-h-[70px] overflow-y-auto px-2">

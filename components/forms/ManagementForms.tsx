@@ -27,7 +27,7 @@ export function BulkReassignForm({ users, dict }: { users: any[], dict: any }) {
       await bulkReassignOperator(fromId, toId);
       toast.success("Barcha ma'lumotlar muvaffaqiyatli ko'chirildi!");
     } catch (error: any) {
-      toast.error(error.message || "Xatolik yuz berdi");
+      toast.error(error.message || "Произошла ошибка");
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export function SingleOrderReassignForm({ users, allOrders, dict }: { users: any
       await reassignOrder(orderId, toId);
       toast.success("Buyurtma muvaffaqiyatli biriktirildi!");
     } catch (error: any) {
-      toast.error(error.message || "Xatolik yuz berdi");
+      toast.error(error.message || "Произошла ошибка");
     } finally {
       setLoading(false);
     }

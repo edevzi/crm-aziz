@@ -101,7 +101,7 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
             } flex-1 md:flex-initial`}
           >
             <User className="h-4.5 w-4.5" />
-            {dict.fuel === 'Топливо' ? 'По водителям (Мастер)' : "Haydovchilar bo'yicha (Usta)"}
+            {'По водителям (Мастер)'}
           </button>
           <button
             onClick={() => setActiveTab('all')}
@@ -112,14 +112,14 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
             } flex-1 md:flex-initial`}
           >
             <Layers className="h-4.5 w-4.5" />
-            {dict.fuel === 'Топливо' ? 'Все выплаты' : 'Barcha tolovlar'}
+            {'Все выплаты'}
           </button>
         </div>
 
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
           <Input
-            placeholder={dict.fuel === 'Топливо' ? 'Поиск по водителю...' : "Haydovchi bo'yicha qidirish..."}
+            placeholder={'Поиск по водителю...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white transition-all focus:ring-primary/20"
@@ -136,18 +136,18 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
               <HardHat className="h-4 w-4" />
-              {dict.fuel === 'Топливо' ? 'Всего транзакций' : 'Jami tranzaksiyalar'}
+              {'Всего транзакций'}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-extrabold text-slate-800 flex items-baseline gap-1.5">
               {expenses.length}
               <span className="text-base font-semibold text-slate-500">
-                {dict.fuel === 'Топливо' ? 'выплат' : 'tolov'}
+                {'выплат'}
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1 font-medium">
-              {dict.fuel === 'Топливо' ? 'Количество оплат мастеру' : "Ustaga tolov soni"}
+              {'Количество оплат мастеру'}
             </p>
           </CardContent>
         </Card>
@@ -168,7 +168,7 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
               <span className="text-base font-semibold text-slate-500">RUB</span>
             </div>
             <p className="text-xs text-slate-400 mt-1 font-medium">
-              {dict.fuel === 'Топливо' ? 'Общие затраты на мастера' : "Usta uchun umumiy xarajat"}
+              {'Общие затраты на мастера'}
             </p>
           </CardContent>
         </Card>
@@ -213,16 +213,16 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
                     <div className="flex items-center gap-6">
                       <div className="text-right flex flex-col items-end">
                         <span className="text-xs text-slate-400 font-semibold block">
-                          {dict.fuel === 'Топливо' ? 'Сумма' : 'Summa'}
+                          {'Сумма'}
                         </span>
                         <span className="font-extrabold text-red-600">{stats.totalCost.toLocaleString()} RUB</span>
                         <span className="inline-flex items-center text-[9px] font-extrabold text-slate-500 bg-slate-100 border border-slate-200/80 px-1.5 py-0.5 rounded mt-1 shadow-sm">
-                          {totalCostAll > 0 ? Math.round((stats.totalCost / totalCostAll) * 100) : 0}% {dict.fuel === "Топливо" ? "от категории" : "bo'limdan"}
+                          {totalCostAll > 0 ? Math.round((stats.totalCost / totalCostAll) * 100) : 0}% от категории
                         </span>
                       </div>
                       <div className="text-right hidden md:block">
                         <span className="text-xs text-slate-400 font-semibold block">
-                          {dict.fuel === 'Топливо' ? 'Записи' : 'Yozuvlar'}
+                          {'Записи'}
                         </span>
                         <span className="font-bold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-full text-xs">{stats.count}</span>
                       </div>
@@ -239,10 +239,10 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
                   <div className="border-t border-slate-100 bg-slate-50/40 p-4 sm:p-6 space-y-4">
                     <div className="flex justify-between items-center">
                       <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        {dict.fuel === 'Топливо' ? 'История выплат мастеру для этого авто' : "Ushbu mashina uchun usta tolov tarixi"}
+                        {'История выплат мастеру для этого авто'}
                       </h4>
                       <span className="text-xs text-slate-400 font-medium">
-                        {dict.fuel === 'Топливо' ? `Всего ${stats.count} записей` : `Jami ${stats.count} ta yozuv`}
+                        {`Всего ${stats.count} записей`}
                       </span>
                     </div>
 
@@ -276,9 +276,7 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
                           {stats.expensesList.length === 0 && (
                             <TableRow>
                               <TableCell colSpan={4} className="text-center py-6 text-slate-400 font-medium">
-                                {dict.fuel === 'Топливо' 
-                                  ? 'Нет записей об оплате мастеру для этого водителя.' 
-                                  : "Bu haydovchi uchun usta tolov yozuvlari yo'q."}
+                                {'Нет записей об оплате мастеру для этого водителя.'}
                               </TableCell>
                             </TableRow>
                           )}
@@ -292,9 +290,7 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
                             className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5 hover:bg-slate-100/80 px-4 py-1.5 rounded-lg transition-all w-full"
                           >
                             <Layers className="h-4 w-4" />
-                            {dict.fuel === 'Топливо' 
-                              ? `Показать все (${stats.expensesList.length})` 
-                              : `Barchasini ko'rish (${stats.expensesList.length})`}
+                            {`Показать все (${stats.expensesList.length})`}
                           </Button>
                         </div>
                       )}
@@ -322,11 +318,11 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-slate-700">
-                      {dict.fuel === 'Топливо' ? 'Общие / Не распределено' : "Umumiy / Taqsimlanmagan"}
+                      {'Общие / Не распределено'}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-slate-400 font-semibold">
-                        {dict.fuel === 'Топливо' ? 'Общие корпоративные расходы' : "Umumiy korporativ xarajatlar"}
+                        {'Общие корпоративные расходы'}
                       </span>
                     </div>
                   </div>
@@ -336,16 +332,16 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
                   <div className="flex items-center gap-6">
                     <div className="text-right flex flex-col items-end">
                       <span className="text-xs text-slate-400 font-semibold block">
-                        {dict.fuel === 'Топливо' ? 'Сумма' : 'Summa'}
+                        {'Сумма'}
                       </span>
                       <span className="font-extrabold text-slate-700">{unassignedCost.toLocaleString()} RUB</span>
                       <span className="inline-flex items-center text-[9px] font-extrabold text-slate-500 bg-slate-100 border border-slate-200/80 px-1.5 py-0.5 rounded mt-1 shadow-sm">
-                        {totalCostAll > 0 ? Math.round((unassignedCost / totalCostAll) * 100) : 0}% {dict.fuel === "Топливо" ? "от категории" : "bo'limdan"}
+                        {totalCostAll > 0 ? Math.round((unassignedCost / totalCostAll) * 100) : 0}% от категории
                       </span>
                     </div>
                     <div className="text-right hidden md:block">
                       <span className="text-xs text-slate-400 font-semibold block">
-                        {dict.fuel === 'Топливо' ? 'Записи' : 'Yozuvlar'}
+                        {'Записи'}
                       </span>
                       <span className="font-bold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-full text-xs">{unassignedExpensesList.length}</span>
                     </div>
@@ -362,10 +358,10 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
                 <div className="border-t border-slate-100 bg-slate-50/40 p-4 sm:p-6 space-y-4">
                   <div className="flex justify-between items-center">
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      {dict.fuel === 'Топливо' ? 'История нераспределённых выплат' : "Taqsimlanmagan tolovlar tarixi"}
+                      {'История нераспределённых выплат'}
                     </h4>
                     <span className="text-xs text-slate-400 font-medium">
-                      {dict.fuel === 'Топливо' ? `Всего ${unassignedExpensesList.length} записей` : `Jami ${unassignedExpensesList.length} ta yozuv`}
+                      {`Всего ${unassignedExpensesList.length} записей`}
                     </span>
                   </div>
 
@@ -408,12 +404,10 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
             <div className="bg-white p-12 rounded-2xl border-0 ring-1 ring-slate-100 text-center flex flex-col items-center justify-center">
               <AlertCircle className="h-10 w-10 text-slate-300 mb-3" />
               <h3 className="font-bold text-lg text-slate-700">
-                {dict.fuel === 'Топливо' ? 'Водители не найдены' : "Haydovchilar topilmadi"}
+                {'Водители не найдены'}
               </h3>
               <p className="text-slate-400 text-sm mt-1 max-w-sm">
-                {dict.fuel === 'Топливо' 
-                  ? 'Ни один водитель не соответствует условиям вашего поиска.' 
-                  : "Hech qaysi haydovchi qidirув shartlariga mos kelmadi."}
+                {'Ни один водитель не соответствует условиям поиска.'}
               </p>
             </div>
           )}
@@ -424,10 +418,10 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
           <CardHeader className="border-b border-slate-100 flex flex-row items-center justify-between py-4">
             <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-slate-500" />
-              {dict.fuel === 'Топливо' ? 'Общий реестр выплат мастеру' : "Usta tolovlarning umumiy reestri"}
+              {'Общий реестр выплат мастеру'}
             </CardTitle>
             <div className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-              {filteredAllExpenses.length} {dict.fuel === 'Топливо' ? 'записей' : 'ta yozuv'}
+              {filteredAllExpenses.length} записей
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -457,7 +451,7 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
                           </div>
                         ) : (
                           <span className="text-xs text-slate-400 font-medium italic">
-                            {dict.fuel === 'Топливо' ? 'Общий расход' : "Umumiy xarajat"}
+                            {'Общий расход'}
                           </span>
                         )}
                       </TableCell>
@@ -476,9 +470,7 @@ export function DriverMasterFeeTracker({ dict, drivers, expenses }: DriverMaster
                 {filteredAllExpenses.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-slate-500 font-medium">
-                      {dict.fuel === 'Топливо' 
-                        ? 'Записи о выплатах мастеру не найдены.' 
-                        : "Usta tolov yozuvlari topilmadi."}
+                      {'Записи об оплате мастера не найдены.'}
                     </TableCell>
                   </TableRow>
                 )}

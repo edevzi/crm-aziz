@@ -88,8 +88,6 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
 
   const { sortedData: sortedAllExpenses, sortKey, sortDirection, toggleSort } = useSortableTable(filteredAllExpenses);
 
-  const isUz = dict.fuel !== "Топливо";
-
   return (
     <div className="space-y-6">
       {/* Search and Tab Toggle Header */}
@@ -104,7 +102,7 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
             } flex-1 md:flex-initial`}
           >
             <User className="h-4.5 w-4.5" />
-            {isUz ? 'Dispetcherlar bo\'yicha' : 'По диспетчерам'}
+            {'По диспетчерам'}
           </button>
           <button
             onClick={() => setActiveTab('all')}
@@ -115,14 +113,14 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
             } flex-1 md:flex-initial`}
           >
             <Layers className="h-4.5 w-4.5" />
-            {isUz ? 'Barcha to\'lovlar' : 'Все выплаты'}
+            {'Все выплаты'}
           </button>
         </div>
 
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400" />
           <Input
-            placeholder={isUz ? "Dispetcher qidirish..." : "Поиск по диспетчеру..."}
+            placeholder={"Поиск по диспетчеру..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 rounded-xl bg-slate-50/50 border-slate-200 focus:bg-white transition-all focus:ring-primary/20"
@@ -139,15 +137,15 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
               <Briefcase className="h-4 w-4" />
-              {isUz ? 'Barcha to\'lovlar soni' : 'Всего выплат'}
+              {'Всего выплат'}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-extrabold text-slate-800 flex items-baseline gap-1.5">
               {expenses.length}
-              <span className="text-base font-semibold text-slate-500">{isUz ? 'ta' : 'вып.'}</span>
+              <span className="text-base font-semibold text-slate-500">вып.</span>
             </div>
-            <p className="text-xs text-slate-400 mt-1 font-medium">{isUz ? 'Dispetcherlar uchun to\'lov tranzaksiyalari soni' : 'Количество транзакций по зарплате диспетчерам'}</p>
+            <p className="text-xs text-slate-400 mt-1 font-medium">Количество транзакций по зарплате диспетчерам</p>
           </CardContent>
         </Card>
 
@@ -166,7 +164,7 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
               {totalCostAll.toLocaleString()}
               <span className="text-base font-semibold text-slate-500">RUB</span>
             </div>
-            <p className="text-xs text-slate-400 mt-1 font-medium">{isUz ? 'Dispetcherlarga to\'langan jami summalar' : 'Общая сумма выплаченных зарплат диспетчерам'}</p>
+            <p className="text-xs text-slate-400 mt-1 font-medium">Общая сумма выплаченных зарплат диспетчерам</p>
           </CardContent>
         </Card>
       </div>
@@ -211,11 +209,11 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                         <span className="text-xs text-slate-400 font-semibold block">Сумма</span>
                         <span className="font-extrabold text-indigo-600">{stats.totalCost.toLocaleString()} RUB</span>
                         <span className="inline-flex items-center text-[9px] font-extrabold text-slate-500 bg-slate-100 border border-slate-200/80 px-1.5 py-0.5 rounded mt-1 shadow-sm">
-                          {totalCostAll > 0 ? Math.round((stats.totalCost / totalCostAll) * 100) : 0}% {isUz ? "bo'limdan" : "от категории"}
+                          {totalCostAll > 0 ? Math.round((stats.totalCost / totalCostAll) * 100) : 0}% от категории
                         </span>
                       </div>
                       <div className="text-right hidden md:block">
-                        <span className="text-xs text-slate-400 font-semibold block">{isUz ? 'To\'lovlar' : 'Выплаты'}</span>
+                        <span className="text-xs text-slate-400 font-semibold block">Выплаты</span>
                         <span className="font-bold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-full text-xs">{stats.count}</span>
                       </div>
                     </div>
@@ -230,8 +228,8 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                 {isExpanded && (
                   <div className="border-t border-slate-100 bg-slate-50/40 p-4 sm:p-6 space-y-4">
                     <div className="flex justify-between items-center">
-                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{isUz ? 'Dispetcher to\'lovlar tarixi' : 'История выплат диспетчеру'}</h4>
-                      <span className="text-xs text-slate-400 font-medium">{isUz ? `Jami ${stats.count} ta to'lov` : `Всего ${stats.count} выплат`}</span>
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">История выплат диспетчеру</h4>
+                      <span className="text-xs text-slate-400 font-medium">{`Всего ${stats.count} выплат`}</span>
                     </div>
 
                     <div className="bg-white rounded-xl overflow-hidden ring-1 ring-slate-100 shadow-inner">
@@ -265,7 +263,7 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                                       className="inline-flex items-center gap-1 text-[10px] font-extrabold text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 hover:text-blue-800 px-2 py-0.5 rounded transition-all mt-1 shadow-sm"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                      📦 {isUz ? 'Buyurtma' : 'Заказ'} #{exp.orderId}
+                                      Заказ #{exp.orderId}
                                     </Link>
                                   )}
                                 </div>
@@ -281,7 +279,7 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                           {stats.expensesList.length === 0 && (
                             <TableRow>
                               <TableCell colSpan={5} className="text-center py-6 text-slate-400 font-medium">
-                                {isUz ? 'Bu dispetcher uchun to\'lovlar topilmadi.' : 'Нет записей о зарплате для этого диспетчера.'}
+                                {'Нет записей о зарплате для этого диспетчера.'}
                               </TableCell>
                             </TableRow>
                           )}
@@ -296,7 +294,7 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                               className="text-xs font-bold text-slate-500 hover:text-slate-900 flex items-center gap-1.5 hover:bg-slate-100/80 px-4 py-1.5 rounded-lg transition-all w-full"
                             >
                               <Layers className="h-4 w-4" />
-                              {isUz ? `Barchasini ko'rish` : 'Показать все'} ({stats.expensesList.length})
+                              Показать все ({stats.expensesList.length})
                             </Button>
                           </Link>
                         </div>
@@ -324,9 +322,9 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                     <Layers className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-slate-700">{isUz ? 'Umumiy / Taqsimlanmagan' : 'Общие / Не распределено'}</h3>
+                    <h3 className="font-bold text-lg text-slate-700">Общие / Не распределено</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-slate-400 font-semibold">{isUz ? 'Umumiy dispetcherlik xarajatlari' : 'Общие корпоративные расходы'}</span>
+                      <span className="text-xs text-slate-400 font-semibold">Общие корпоративные расходы</span>
                     </div>
                   </div>
                 </div>
@@ -337,11 +335,11 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                       <span className="text-xs text-slate-400 font-semibold block">Сумма</span>
                       <span className="font-extrabold text-slate-700">{unassignedCost.toLocaleString()} RUB</span>
                       <span className="inline-flex items-center text-[9px] font-extrabold text-slate-500 bg-slate-100 border border-slate-200/80 px-1.5 py-0.5 rounded mt-1 shadow-sm">
-                        {totalCostAll > 0 ? Math.round((unassignedCost / totalCostAll) * 100) : 0}% {isUz ? "bo'limdan" : "от категории"}
+                        {totalCostAll > 0 ? Math.round((unassignedCost / totalCostAll) * 100) : 0}% от категории
                       </span>
                     </div>
                     <div className="text-right hidden md:block">
-                      <span className="text-xs text-slate-400 font-semibold block">{isUz ? 'Yozuvlar' : 'Записи'}</span>
+                      <span className="text-xs text-slate-400 font-semibold block">Записи</span>
                       <span className="font-bold text-slate-600 bg-slate-50 px-2.5 py-1 rounded-full text-xs">{unassignedExpensesList.length}</span>
                     </div>
                   </div>
@@ -356,8 +354,8 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
               {expandedDispatcherId === -1 && (
                 <div className="border-t border-slate-100 bg-slate-50/40 p-4 sm:p-6 space-y-4">
                   <div className="flex justify-between items-center">
-                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">{isUz ? 'Taqsimlanmagan oylik to\'lovlar tarixi' : 'История нераспределенных выплат'}</h4>
-                    <span className="text-xs text-slate-400 font-medium">{isUz ? `Jami ${unassignedExpensesList.length} ta yozuv` : `Всего {unassignedExpensesList.length} записей`}</span>
+                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">История нераспределенных выплат</h4>
+                    <span className="text-xs text-slate-400 font-medium">{`Всего ${unassignedExpensesList.length} записей`}</span>
                   </div>
 
                   <div className="bg-white rounded-xl overflow-hidden ring-1 ring-slate-100 shadow-inner">
@@ -391,7 +389,7 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                                     className="inline-flex items-center gap-1 text-[10px] font-extrabold text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 hover:text-blue-800 px-2 py-0.5 rounded transition-all mt-1 shadow-sm"
                                     onClick={(e) => e.stopPropagation()}
                                   >
-                                    📦 {isUz ? 'Buyurtma' : 'Заказ'} #{exp.orderId}
+                                    Заказ #{exp.orderId}
                                   </Link>
                                 )}
                               </div>
@@ -415,8 +413,8 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
           {filteredDispatchers.length === 0 && (
             <div className="bg-white p-12 rounded-2xl border-0 ring-1 ring-slate-100 text-center flex flex-col items-center justify-center">
               <AlertCircle className="h-10 w-10 text-slate-300 mb-3" />
-              <h3 className="font-bold text-lg text-slate-700">{isUz ? 'Dispetcherlar topilmadi' : 'Диспетчеры не найдены'}</h3>
-              <p className="text-slate-400 text-sm mt-1 max-w-sm">{isUz ? 'Qidiruv shartlariga mos keluvchi dispetcher topilmadi.' : 'Ни один диспетчер не соответствует условиям вашего поиска.'}</p>
+              <h3 className="font-bold text-lg text-slate-700">Диспетчеры не найдены</h3>
+              <p className="text-slate-400 text-sm mt-1 max-w-sm">Ни один диспетчер не соответствует условиям вашего поиска.</p>
             </div>
           )}
         </div>
@@ -426,10 +424,10 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
           <CardHeader className="border-b border-slate-100 flex flex-row items-center justify-between py-4">
             <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-slate-500" />
-              {isUz ? 'Jami dispetcherlik oylik to\'lovlari daftari' : 'Общий реестр зарплат диспетчеров'}
+              {'Общий реестр зарплат диспетчеров'}
             </CardTitle>
             <div className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-              {filteredAllExpenses.length} {isUz ? 'ta yozuv' : 'записей'}
+              {filteredAllExpenses.length} записей
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -458,7 +456,7 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                             <span className="text-[9px] text-slate-400 font-extrabold tracking-wider">{dispatcher.phone}</span>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-400 font-medium italic">{isUz ? 'Umumiy xarajat' : 'Общий расход'}</span>
+                          <span className="text-xs text-slate-400 font-medium italic">Общий расход</span>
                         )}
                       </TableCell>
                       <TableCell className="text-xs font-medium text-slate-600">
@@ -470,7 +468,7 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                               className="inline-flex items-center gap-1 text-[10px] font-extrabold text-blue-600 bg-blue-50 border border-blue-100 hover:bg-blue-100 hover:text-blue-800 px-2 py-0.5 rounded transition-all mt-1 shadow-sm"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              📦 {isUz ? 'Buyurtma' : 'Заказ'} #{expense.orderId}
+                              Заказ #{expense.orderId}
                             </Link>
                           )}
                         </div>
@@ -487,7 +485,7 @@ export function DispatcherSalaryTracker({ dict, dispatchers, expenses }: Dispatc
                 {filteredAllExpenses.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-slate-500 font-medium">
-                      {isUz ? 'Oylik to\'lovlari topilmadi.' : 'Записи о зарплатах не найдены.'}
+                      {'Записи о зарплатах не найдены.'}
                     </TableCell>
                   </TableRow>
                 )}

@@ -79,7 +79,7 @@ export function UtilizationForm({ dict, log, drivers }: { dict: any, log?: any, 
               });
             }} required>
               <SelectTrigger>
-                <SelectValue placeholder={dict.select_driver || "Select driver"} />
+                <SelectValue placeholder={dict.select_driver || "Выберите водителя"} />
               </SelectTrigger>
               <SelectContent>
                 {drivers.map(d => (
