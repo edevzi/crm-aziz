@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogBody, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -255,8 +255,9 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
         )}
       </DialogTrigger>
 
-      <DialogContent className="sm:!max-w-2xl sm:!rounded-3xl">
-        <DialogHeader>
+      <DialogContent className="!p-0 !pt-0 sm:!max-w-2xl sm:!rounded-3xl">
+        {/* Sticky header */}
+        <div className="sticky top-0 z-[5] bg-white border-b border-slate-100 px-4 sm:px-6 py-3 sm:py-4 pr-14">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
               {order ? <Edit2 className="h-4.5 w-4.5 text-primary" /> : <Plus className="h-4.5 w-4.5 text-primary" />}
@@ -265,9 +266,9 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
               {order ? 'Редактировать заказ' : dict.new_order}
             </DialogTitle>
           </div>
-        </DialogHeader>
+        </div>
 
-        <form onSubmit={onSubmit} className="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 pb-4 pt-3 sm:pt-4 space-y-4">
+        <form onSubmit={onSubmit} className="px-4 sm:px-6 pb-6 pt-4 space-y-4">
 
           {/* Error */}
           {error && (
@@ -657,10 +658,10 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
       </DialogContent>
 
       <Dialog open={mapOpen} onOpenChange={setMapOpen}>
-        <DialogContent className="sm:!max-w-4xl sm:!max-h-[85vh]">
-          <DialogHeader>
+        <DialogContent className="!p-0 !pt-0 sm:!max-w-4xl sm:!max-h-[85vh] !flex !flex-col">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 pr-14 flex-shrink-0">
             <DialogTitle className="font-bold">Выберите местоположение</DialogTitle>
-          </DialogHeader>
+          </div>
           <div className="flex-1 relative min-h-[300px]">
             <YMaps query={{ apikey: 'd6b97705-cb47-41ab-85a7-d8c7c93cb4a0', lang: 'ru_RU', load: 'package.full' }}>
               <YandexMap

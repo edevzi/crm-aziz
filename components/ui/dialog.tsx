@@ -22,7 +22,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-[100] bg-black/60 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-[100] bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -56,7 +56,7 @@ function useBodyScrollLock(open: boolean) {
   }, [open]);
 }
 
-/* ─── Content wrapper with scroll lock ─── */
+/* ─── Content ─── */
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
@@ -82,35 +82,29 @@ const DialogContent = React.forwardRef<
         ref={callbackRef}
         onCloseAutoFocus={() => setIsOpen(false)}
         className={cn(
-          // Base
-          "fixed z-[100] grid w-full bg-background shadow-2xl duration-200",
+          "fixed z-[100] w-full bg-background shadow-2xl duration-200 overflow-y-auto overscroll-contain",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-          // Mobile: full-screen sheet from bottom
-          "inset-x-0 bottom-0 top-0 max-h-dvh rounded-none border-0",
-          "data-[state=open]:slide-in-from-bottom-4 data-[state=closed]:slide-out-to-bottom-4",
-          // Desktop: centered floating dialog
+          // Mobile: fullscreen
+          "inset-0 rounded-none border-0 p-4 pt-14",
+          // Desktop: centered dialog
           "sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]",
-          "sm:max-w-lg sm:max-h-[90vh] sm:rounded-2xl sm:border sm:border-slate-200/60",
-          "sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0",
+          "sm:max-w-lg sm:max-h-[85vh] sm:rounded-2xl sm:border sm:border-slate-200/60 sm:p-6 sm:pt-6",
           "sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
+          "sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=closed]:slide-out-to-top-[48%]",
+          "sm:data-[state=open]:slide-in-from-left-1/2 sm:data-[state=open]:slide-in-from-top-[48%]",
           className
         )}
         {...props}
       >
-        {/* Scrollable inner container */}
-        <div className="flex flex-col max-h-dvh sm:max-h-[90vh] overflow-hidden">
-          {children}
-        </div>
+        {children}
 
-        {/* Close button */}
+        {/* Close button — absolute to dialog, above everything */}
         <DialogPrimitive.Close
           className={cn(
-            "absolute z-[10] rounded-full transition-all",
+            "absolute right-3 top-3 z-[10] rounded-full p-2 transition-all",
+            "bg-slate-100 hover:bg-slate-200 active:scale-95",
             "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            // Mobile: prominent close button
-            "right-3 top-3 p-2 bg-slate-100/90 hover:bg-slate-200 active:scale-95",
-            // Desktop: subtle close button
-            "sm:right-4 sm:top-4 sm:p-1.5 sm:rounded-lg sm:bg-transparent sm:hover:bg-slate-100 sm:opacity-70 sm:hover:opacity-100",
+            "sm:right-4 sm:top-4 sm:p-1.5 sm:rounded-lg sm:bg-transparent sm:hover:bg-slate-100",
           )}
         >
           <X className="h-5 w-5 sm:h-4 sm:w-4 text-slate-600" />
@@ -122,14 +116,14 @@ const DialogContent = React.forwardRef<
 })
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
-/* ─── Header (sticky inside scroll) ─── */
+/* ─── Header ─── */
 const DialogHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 px-4 pt-4 pb-3 pr-12 sm:px-6 sm:pt-5 sm:pb-4 sm:pr-14 border-b border-slate-100 flex-shrink-0 text-left",
+      "flex flex-col space-y-1.5 text-left mb-4 sm:mb-5 pr-8",
       className
     )}
     {...props}
@@ -137,29 +131,26 @@ const DialogHeader = ({
 )
 DialogHeader.displayName = "DialogHeader"
 
-/* ─── Scrollable body ─── */
+/* ─── Body (optional scrollable area) ─── */
 const DialogBody = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn(
-      "flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5",
-      className
-    )}
+    className={cn("space-y-4", className)}
     {...props}
   />
 )
 DialogBody.displayName = "DialogBody"
 
-/* ─── Footer (sticky bottom) ─── */
+/* ─── Footer ─── */
 const DialogFooter = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse gap-2 px-4 py-3 sm:px-6 sm:py-4 sm:flex-row sm:justify-end sm:gap-3 border-t border-slate-100 flex-shrink-0",
+      "flex flex-col-reverse gap-2 mt-4 sm:flex-row sm:justify-end sm:gap-3",
       className
     )}
     {...props}
@@ -174,7 +165,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-base sm:text-lg font-semibold leading-tight tracking-tight text-slate-900",
+      "text-lg font-semibold leading-none tracking-tight",
       className
     )}
     {...props}
