@@ -255,20 +255,20 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
         )}
       </DialogTrigger>
 
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0 rounded-3xl border border-slate-200/60 shadow-2xl bg-white">
+      <DialogContent className="!p-0 !pt-0 !gap-0 sm:!max-w-2xl sm:!rounded-3xl overflow-y-auto border border-slate-200/60 shadow-2xl bg-white">
         {/* Header */}
-        <DialogHeader className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-slate-100 px-6 py-4 rounded-t-3xl">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+        <DialogHeader className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-slate-100 px-4 sm:px-6 py-3 sm:py-4 sm:rounded-t-3xl">
+          <div className="flex items-center gap-3 pr-10">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
               {order ? <Edit2 className="h-4.5 w-4.5 text-primary" /> : <Plus className="h-4.5 w-4.5 text-primary" />}
             </div>
-            <DialogTitle className="text-lg font-extrabold text-slate-900">
+            <DialogTitle className="text-base sm:text-lg font-extrabold text-slate-900 truncate">
               {order ? 'Редактировать заказ' : dict.new_order}
             </DialogTitle>
           </div>
         </DialogHeader>
 
-        <form onSubmit={onSubmit} className="px-6 pb-6 pt-5 space-y-4">
+        <form onSubmit={onSubmit} className="px-4 sm:px-6 pb-6 pt-4 sm:pt-5 space-y-4">
 
           {/* Error */}
           {error && (
@@ -312,7 +312,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
               </section>
 
               {/* Date and Time */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
                     <Clock className="h-3.5 w-3.5 text-amber-500" /> Дата *
@@ -330,7 +330,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
               </div>
 
               {/* Amount and Payment Type */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
                     <CreditCard className="h-3.5 w-3.5 text-emerald-500" /> {dict.amount} *
@@ -393,7 +393,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
                   addNewLabel="+ Новый клиент"
                   onAddNew={() => selectClient('new')}
                 />
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
                     <Label className="text-[11px] font-semibold text-slate-400 mb-1 block">Имя *</Label>
                     <Input value={form.clientName} onChange={e => set('clientName', e.target.value)} placeholder="Имя клиента" required={!form.isExternalVehicle} className="h-9 rounded-xl text-sm" />
@@ -419,7 +419,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
                     addNewLabel="+ Новый диспетчер"
                     onAddNew={() => selectDispatcher('new')}
                   />
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
                       <Label className="text-[11px] font-semibold text-indigo-500 mb-1 block">Имя</Label>
                       <Input value={form.dispatcherName} onChange={e => set('dispatcherName', e.target.value)} placeholder="Имя" className="h-9 rounded-xl text-sm" />
@@ -478,7 +478,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
               </section>
 
               {/* ══ DATE + CONTAINER SIZE ══ */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="grid grid-cols-2 gap-1.5">
                   <div>
                     <Label className="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
@@ -515,7 +515,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
               </div>
 
               {/* ══ CONTAINER NUMBER + RENTAL ══ */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-[11px] font-semibold text-slate-400 mb-1 block">Номер контейнера</Label>
                   <Input value={form.containerNumber} onChange={e => set('containerNumber', e.target.value)}
@@ -548,7 +548,7 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
               </div>
 
               {/* ══ AMOUNT + PAYMENT TYPE ══ */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1.5">
                     <CreditCard className="h-3.5 w-3.5 text-emerald-500" /> {dict.amount} *
@@ -658,9 +658,9 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
       </DialogContent>
 
       <Dialog open={mapOpen} onOpenChange={setMapOpen}>
-        <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0 overflow-hidden bg-white rounded-3xl border border-slate-200">
-          <DialogHeader className="px-6 py-4 border-b border-slate-100 bg-white/95 z-10 shrink-0">
-            <DialogTitle className="text-lg font-bold">Выберите местоположение</DialogTitle>
+        <DialogContent className="!p-0 !pt-0 !gap-0 sm:!max-w-4xl sm:!h-[80vh] sm:!rounded-3xl flex flex-col overflow-hidden bg-white border border-slate-200">
+          <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 bg-white/95 z-10 shrink-0">
+            <DialogTitle className="text-base sm:text-lg font-bold pr-10">Выберите местоположение</DialogTitle>
           </DialogHeader>
           <div className="flex-1 relative">
             <YMaps query={{ apikey: 'd6b97705-cb47-41ab-85a7-d8c7c93cb4a0', lang: 'ru_RU', load: 'package.full' }}>

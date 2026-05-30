@@ -113,4 +113,42 @@
     from { opacity: 0; transform: translateY(16px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+
+  /* Hide scrollbar but keep scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── MOBILE RESPONSIVE OVERRIDES ── */
+@media (max-width: 639px) {
+  /* Page titles: smaller on mobile */
+  h1.text-3xl {
+    font-size: 1.375rem;
+    line-height: 1.75rem;
+  }
+
+  /* Page header icons */
+  .h-14.w-14 {
+    height: 2.75rem;
+    width: 2.75rem;
+  }
+  .h-12.w-12 {
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+
+  /* Tables: ensure horizontal scroll works */
+  table {
+    min-width: 600px;
+  }
+
+  /* Cards: reduce padding */
+  .rounded-3xl {
+    border-radius: 1rem;
+  }
 }

@@ -283,7 +283,7 @@ export default async function DashboardPage({
         <DashboardDatePicker />
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         <MetricCard 
           title={'Оборот'} 
           value={currentMetrics.revenue} 
@@ -412,24 +412,24 @@ export default async function DashboardPage({
       )}
       
       <Card className="border-0 shadow-sm ring-1 ring-slate-100 rounded-2xl overflow-hidden">
-        <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-slate-100 flex flex-row items-center justify-between">
+        <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <CardTitle>{dict.recent_orders}</CardTitle>
-          <div className="flex gap-4">
-            <Link href="/orders?status=active" className="text-sm font-medium text-blue-600 hover:underline">
+          <div className="flex flex-wrap gap-2 sm:gap-4">
+            <Link href="/orders?status=active" className="text-xs sm:text-sm font-medium text-blue-600 hover:underline whitespace-nowrap">
               {'Активные'} ({activeOrders})
             </Link>
-            <Link href="/orders?status=pending_confirmation" className="text-sm font-medium text-amber-600 hover:underline">
+            <Link href="/orders?status=pending_confirmation" className="text-xs sm:text-sm font-medium text-amber-600 hover:underline whitespace-nowrap">
               {'Ждут подтверждения'} ({pendingConfirmation})
             </Link>
             {overdueContainers > 0 && (
-              <Link href="/orders?status=overdue_containers" className="text-sm font-medium text-rose-600 hover:underline">
+              <Link href="/orders?status=overdue_containers" className="text-xs sm:text-sm font-medium text-rose-600 hover:underline whitespace-nowrap">
                 {'Просрочены'} ({overdueContainers})
               </Link>
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <Table>
+        <CardContent className="p-0 overflow-x-auto">
+          <Table className="min-w-[600px]">
             <TableHeader className="bg-slate-50/80 backdrop-blur-sm">
               <TableRow>
                 <TableHead>{dict.date}</TableHead>

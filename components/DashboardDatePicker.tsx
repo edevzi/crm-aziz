@@ -9,8 +9,21 @@ import * as Popover from "@radix-ui/react-popover";
 import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { Button } from "./ui/button";
+import { useEffect as useLayoutEffect } from "react";
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useLayoutEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
 
 export function DashboardDatePicker() {
+  const isMobile = useIsMobile();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -99,7 +112,7 @@ export function DashboardDatePicker() {
 
       <Popover.Root open={open} onOpenChange={setOpen}>
         <Popover.Trigger asChild>
-          <button className={`flex justify-center items-center min-w-[260px] gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border ${hasFilter ? 'border-indigo-300 text-indigo-700' : 'border-slate-200 text-slate-700'} hover:bg-slate-50 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500`}>
+          <button className={`flex justify-center items-center min-w-0 sm:min-w-[260px] gap-2 bg-white px-3 sm:px-4 py-2 rounded-xl shadow-sm border ${hasFilter ? 'border-indigo-300 text-indigo-700' : 'border-slate-200 text-slate-700'} hover:bg-slate-50 transition-colors text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500`}>
             <CalendarIcon className={`w-4 h-4 ${hasFilter ? 'text-indigo-500' : 'text-slate-400'}`} />
             {date?.from ? (
               date.to ? (
@@ -117,9 +130,9 @@ export function DashboardDatePicker() {
           </button>
         </Popover.Trigger>
         <Popover.Portal>
-          <Popover.Content 
-            className="z-50 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 mt-2" 
-            align="end" 
+          <Popover.Content
+            className="z-50 bg-white rounded-2xl shadow-xl border border-slate-100 p-3 sm:p-4 mt-2 max-w-[calc(100vw-1rem)] overflow-auto"
+            align="end"
             sideOffset={4}
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
@@ -145,7 +158,7 @@ export function DashboardDatePicker() {
               defaultMonth={date?.from}
               selected={date}
               onSelect={setDate}
-              numberOfMonths={2}
+              numberOfMonths={isMobile ? 1 : 2}
               locale={ru}
               showOutsideDays={true}
               fixedWeeks={true}

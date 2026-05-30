@@ -41,17 +41,17 @@ export function MetricCard({ title, value, prevValue, unit, trend, icon, colorSc
 
   const cardContent = (
     <Card className={`h-full border border-slate-200/60 shadow-sm rounded-2xl overflow-hidden bg-white transition-all duration-200 ${href ? 'hover:shadow-md hover:border-slate-300 cursor-pointer active:scale-[0.99]' : 'hover:shadow-md'} ${isActive ? `ring-2 ${activeRing} shadow-md` : ''}`}>
-      <CardHeader className="pb-2 pt-5 px-5 flex flex-row items-center justify-between">
-        <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">{title}</CardTitle>
+      <CardHeader className="pb-2 pt-4 sm:pt-5 px-4 sm:px-5 flex flex-row items-center justify-between">
+        <CardTitle className="text-xs sm:text-sm font-semibold text-slate-500 uppercase tracking-wider leading-tight">{title}</CardTitle>
         {icon && (
           <div className={`p-2 rounded-xl ${iconBg}`}>
             {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
           </div>
         )}
       </CardHeader>
-      <CardContent className="px-5 pb-5">
+      <CardContent className="px-4 sm:px-5 pb-4 sm:pb-5">
         <div className="flex flex-col gap-1">
-          <div className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-end gap-2 flex-wrap">
+          <div className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-end gap-1.5 sm:gap-2 flex-wrap">
             <span>
               {typeof value === 'number' ? value.toLocaleString() : value}
               {unit && <span className="text-base font-semibold text-slate-400 ml-1">{unit}</span>}

@@ -57,11 +57,11 @@ export function DriverForm({ dict, driver }: { dict: any, driver?: any }) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:!rounded-2xl">
         <DialogHeader>
-          <DialogTitle>{driver ? dict.add_driver.replace('+', '✎') : dict.add_driver}</DialogTitle>
+          <DialogTitle className="pr-8">{driver ? dict.add_driver.replace('+', '✎') : dict.add_driver}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
             <Label htmlFor="name">{dict.name}</Label>
             <Input id="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
