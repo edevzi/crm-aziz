@@ -100,6 +100,17 @@ export async function PUT(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    // When driver completes the order: auto-enter payment for non-cash orders
+    if (status === 'completed' && previousStatus !== 'completed') {
+      const completedOrder = updated[0];
+      if (completedOrder.paymentType !== 'cash' && completedOrder.paymentStatus !== 'entered') {
+        await db.update(orders).set({
+          paymentStatus: 'entered',
+          isClosed: true,
+        }).where(eq(orders.id, orderId));
+      }
+    }
+
     // Generate dispatcher and referral expenses when order is 'completed'
     if (status === 'completed' && previousStatus !== 'completed') {
       // Dispatcher fee as expense

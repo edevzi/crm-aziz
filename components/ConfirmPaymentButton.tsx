@@ -8,7 +8,7 @@ import { CheckCircle2 } from 'lucide-react';
 export function ConfirmPaymentButton({ orderId, currentStatus }: { orderId: number, currentStatus: string }) {
   const [loading, setLoading] = useState(false);
 
-  if (currentStatus !== 'received') return null;
+  if (currentStatus === 'entered') return null;
 
   const handleConfirm = async (e: React.MouseEvent) => {
     e.preventDefault();
