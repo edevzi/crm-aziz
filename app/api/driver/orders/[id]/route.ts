@@ -114,7 +114,7 @@ export async function PUT(
     // Generate dispatcher and referral expenses when order is 'completed'
     if (status === 'completed' && previousStatus !== 'completed') {
       // Dispatcher fee as expense
-      if (order.dispatcherFee && order.dispatcherFee > 0) {
+      if (order.dispatcherFee && order.dispatcherFee > 0 && order.dispatcherId) {
         const [existingDisp] = await db.select().from(expenses).where(
           and(eq(expenses.orderId, orderId), eq(expenses.category, 'dispatcher_salary'))
         );
@@ -123,6 +123,23 @@ export async function PUT(
             category: 'dispatcher_salary',
             amountRub: order.dispatcherFee,
             note: `Услуга диспетчера за заказ #${orderId}`,
+            orderId: orderId,
+            dispatcherId: order.dispatcherId,
+            operatorId: undefined,
+          });
+        }
+      }
+
+      // Driver salary expense
+      if (order.driverFee && order.driverFee > 0 && order.driverId) {
+        const [existingDriver] = await db.select().from(expenses).where(
+          and(eq(expenses.orderId, orderId), eq(expenses.category, 'driver_salary'))
+        );
+        if (!existingDriver) {
+          await db.insert(expenses).values({
+            category: 'driver_salary',
+            amountRub: order.driverFee,
+            note: `Зарплата водителя за заказ #${orderId}`,
             orderId: orderId,
             operatorId: undefined,
           });

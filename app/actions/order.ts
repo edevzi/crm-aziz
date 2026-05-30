@@ -15,9 +15,11 @@ export async function updateOrderStatus(orderId: number, status: any) {
   const updateData: any = { status };
   
   if (status === 'completed' && previousStatus !== 'completed') {
-    updateData.paymentStatus = 'entered';
+    if (order.paymentType !== 'cash') {
+      updateData.paymentStatus = 'entered';
+    }
     updateData.isClosed = true;
-    
+
     const user = await getCurrentUser();
     if (user) {
       updateData.operatorId = user.id;
@@ -57,6 +59,22 @@ export async function updateOrderStatus(orderId: number, status: any) {
           category: 'referral_fee',
           amountRub: Math.round(feeAmount),
           note: `Процент для 3-го лица (${order.referralName || 'Аноним'}) за заказ #${order.id}`,
+          orderId: order.id,
+          operatorId: user ? user.id : undefined,
+        });
+      }
+    }
+
+    // Driver salary expense
+    if (order.driverFee && order.driverFee > 0 && order.driverId) {
+      const [existingDriver] = await db.select().from(expenses).where(
+        and(eq(expenses.orderId, order.id), eq(expenses.category, 'driver_salary'))
+      );
+      if (!existingDriver) {
+        await db.insert(expenses).values({
+          category: 'driver_salary',
+          amountRub: order.driverFee,
+          note: `Зарплата водителя за заказ #${order.id}`,
           orderId: order.id,
           operatorId: user ? user.id : undefined,
         });
@@ -133,7 +151,23 @@ export async function updateOrderPayment(orderId: number, paymentStatus: any) {
       }
     }
     
-    // 3. ALSO generate referral fee if it doesn't exist yet!
+    // 3. Driver salary expense
+    if (order.driverFee && order.driverFee > 0 && order.driverId) {
+      const [existingDriver] = await db.select().from(expenses).where(
+        and(eq(expenses.orderId, order.id), eq(expenses.category, 'driver_salary'))
+      );
+      if (!existingDriver) {
+        await db.insert(expenses).values({
+          category: 'driver_salary',
+          amountRub: order.driverFee,
+          note: `Зарплата водителя за заказ #${order.id}`,
+          orderId: order.id,
+          operatorId: user ? user.id : undefined,
+        });
+      }
+    }
+
+    // 4. ALSO generate referral fee if it doesn't exist yet!
     if (order.referralPercent && order.referralPercent > 0) {
       const [existingRef] = await db.select().from(expenses).where(
         and(eq(expenses.orderId, order.id), eq(expenses.category, 'referral_fee'))

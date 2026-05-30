@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { cookies } from 'next/headers';
 import { getDictionary } from '@/lib/dictionaries';
 import { ArrowLeft, DollarSign, Truck, Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TableRowLink } from '@/components/TableRowLink';
 import { DashboardDatePicker } from '@/components/DashboardDatePicker';
+import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +22,14 @@ export default async function RevenueDetailPage({
   const lang: string = 'ru';
   const dict = getDictionary(lang);
 
-  const allOrders = await getDashboardData();
-  const { allExpenses } = await getFinanceData();
-  const driversList = await getDrivers();
+  const [allOrders, , driversList, user] = await Promise.all([
+    getDashboardData(),
+    getFinanceData(),
+    getDrivers(),
+    getCurrentUser()
+  ]);
+  const isOperator = user?.role === 'operator';
+  const currentUserId = user?.id;
   const driverMap = new Map(driversList.map(d => [d.id, d.name]));
 
   // Date Parsing Logic
@@ -70,8 +75,9 @@ export default async function RevenueDetailPage({
   const externalOrdersList: any[] = [];
 
   for (const order of allOrders) {
+    if (isOperator && order.operatorId !== currentUserId) continue;
     const orderDate = new Date(order.createdAt);
-    
+
     if (order.paymentStatus === 'entered') {
       const amt = order.paymentAmount;
       const isExt = order.isExternalVehicle;

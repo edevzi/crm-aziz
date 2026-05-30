@@ -79,7 +79,9 @@ export default async function DashboardPage({
     revenueOwn: 0, revenueExternal: 0,
     dispatcherOrders: 0, dispatcherFee: 0, dispatcherSalary: 0,
     fuel: 0, gai: 0, utilizationM3: 0, utilizationExpense: 0,
-    spareParts: 0, driverSalary: 0
+    spareParts: 0, driverSalary: 0,
+    repair: 0, baseRent: 0, workerSalary: 0, referralFee: 0,
+    other: 0, masterFee: 0, tractor: 0
   };
 
   let prevMetrics = {
@@ -87,7 +89,9 @@ export default async function DashboardPage({
     revenueOwn: 0, revenueExternal: 0,
     dispatcherOrders: 0, dispatcherFee: 0, dispatcherSalary: 0,
     fuel: 0, gai: 0, utilizationM3: 0, utilizationExpense: 0,
-    spareParts: 0, driverSalary: 0
+    spareParts: 0, driverSalary: 0,
+    repair: 0, baseRent: 0, workerSalary: 0, referralFee: 0,
+    other: 0, masterFee: 0, tractor: 0
   };
 
   let pendingPayments = 0;
@@ -157,7 +161,6 @@ export default async function DashboardPage({
         currentMetrics.safeTotal += s.transaction.amountRub;
       } else {
         currentMetrics.safeTotal -= s.transaction.amountRub;
-        currentMetrics.revenue -= s.transaction.amountRub;
       }
     }
     if (isPrev(sDate)) {
@@ -165,7 +168,6 @@ export default async function DashboardPage({
         prevMetrics.safeTotal += s.transaction.amountRub;
       } else {
         prevMetrics.safeTotal -= s.transaction.amountRub;
-        prevMetrics.revenue -= s.transaction.amountRub;
       }
     }
   }
@@ -184,6 +186,13 @@ export default async function DashboardPage({
       if (e.category === 'spare_parts') currentMetrics.spareParts += amt;
       if (e.category === 'driver_salary') currentMetrics.driverSalary += amt;
       if (e.category === 'dispatcher_salary') currentMetrics.dispatcherSalary += amt;
+      if (e.category === 'repair') currentMetrics.repair += amt;
+      if (e.category === 'base_rent') currentMetrics.baseRent += amt;
+      if (e.category === 'worker_salary') currentMetrics.workerSalary += amt;
+      if (e.category === 'referral_fee') currentMetrics.referralFee += amt;
+      if (e.category === 'other') currentMetrics.other += amt;
+      if (e.category === 'master_fee') currentMetrics.masterFee += amt;
+      if (e.category === 'tractor') currentMetrics.tractor += amt;
     }
     if (isPrev(eDate)) {
       prevMetrics.expenses += amt;
@@ -193,6 +202,13 @@ export default async function DashboardPage({
       if (e.category === 'spare_parts') prevMetrics.spareParts += amt;
       if (e.category === 'driver_salary') prevMetrics.driverSalary += amt;
       if (e.category === 'dispatcher_salary') prevMetrics.dispatcherSalary += amt;
+      if (e.category === 'repair') prevMetrics.repair += amt;
+      if (e.category === 'base_rent') prevMetrics.baseRent += amt;
+      if (e.category === 'worker_salary') prevMetrics.workerSalary += amt;
+      if (e.category === 'referral_fee') prevMetrics.referralFee += amt;
+      if (e.category === 'other') prevMetrics.other += amt;
+      if (e.category === 'master_fee') prevMetrics.masterFee += amt;
+      if (e.category === 'tractor') prevMetrics.tractor += amt;
     }
   }
 
@@ -211,15 +227,15 @@ export default async function DashboardPage({
     .filter(o => !o.isClosed && o.status !== 'completed' && (!isOperator || o.operatorId === currentUserId))
     .slice(0, 8);
 
-  // Generate last 7 days list for charts
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(todayDate.getDate() - i);
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }).reverse();
+  // Generate chart days based on selected date range
+  const chartDays: Date[] = [];
+  const chartStart = new Date(currentFrom);
+  while (chartStart <= currentTo) {
+    chartDays.push(new Date(chartStart));
+    chartStart.setDate(chartStart.getDate() + 1);
+  }
 
-  const chartFinanceData = last7Days.map(date => {
+  const chartFinanceData = chartDays.map(date => {
     const dateStr = format(date, 'dd.MM');
     const targetDateStr = format(date, 'yyyy-MM-dd');
     let income = 0;
@@ -230,14 +246,6 @@ export default async function DashboardPage({
       const orderDate = new Date(order.createdAt);
       if (format(orderDate, 'yyyy-MM-dd') === targetDateStr && order.paymentStatus === 'entered') {
         income += order.paymentAmount;
-      }
-    });
-
-    safeData.forEach(s => {
-      if (isOperator && s.transaction.operatorId !== currentUserId) return;
-      const sDate = new Date(s.transaction.recordedAt);
-      if (format(sDate, 'yyyy-MM-dd') === targetDateStr && s.transaction.type === 'expense') {
-        income -= s.transaction.amountRub;
       }
     });
 
@@ -383,6 +391,13 @@ export default async function DashboardPage({
                   { key: 'utilization', label: dict.utilization || 'Утилизация', color: 'bg-purple-500', value: currentMetrics.utilizationExpense },
                   { key: 'spare_parts', label: dict.spare_parts || 'Запчасти', color: 'bg-slate-500', value: currentMetrics.spareParts },
                   { key: 'gai', label: dict.gai || 'ГАИ', color: 'bg-rose-500', value: currentMetrics.gai },
+                  { key: 'repair', label: dict.repair || 'Ремонт', color: 'bg-orange-500', value: currentMetrics.repair },
+                  { key: 'base_rent', label: dict.base_rent || 'Аренда базы', color: 'bg-teal-500', value: currentMetrics.baseRent },
+                  { key: 'worker_salary', label: dict.worker_salary || 'Зарплата рабочих', color: 'bg-cyan-500', value: currentMetrics.workerSalary },
+                  { key: 'referral_fee', label: dict.referral_fee || 'Реферальные', color: 'bg-pink-500', value: currentMetrics.referralFee },
+                  { key: 'master_fee', label: dict.master_fee || 'Мастер', color: 'bg-violet-500', value: currentMetrics.masterFee },
+                  { key: 'tractor', label: dict.tractor || 'Трактор', color: 'bg-lime-500', value: currentMetrics.tractor },
+                  { key: 'other', label: dict.other || 'Прочее', color: 'bg-gray-500', value: currentMetrics.other },
                 ]
                 .filter(item => item.value > 0)
                 .map(item => {
