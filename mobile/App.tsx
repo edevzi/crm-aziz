@@ -301,6 +301,18 @@ type Order = {
   driverFee?: number | null;
 };
 
+type WarehouseTransaction = {
+  id: number;
+  type: string;
+  volumeM3: number;
+  containerSizeM3?: number | null;
+  containerCount?: number | null;
+  driverAmount?: number | null;
+  svalkaAmount?: number | null;
+  note?: string | null;
+  recordedAt: string;
+};
+
 function startOfDay(d: Date): Date {
   const local = new Date(d);
   local.setHours(0, 0, 0, 0);
@@ -468,6 +480,7 @@ function AppInner() {
   const [driver, setDriver] = useState<{ id: number; name: string; vehiclePlate: string } | null>(null);
 
   const [orders, setOrders] = useState<Order[]>([]);
+  const [warehouseTransactions, setWarehouseTransactions] = useState<WarehouseTransaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'calendar' | 'history' | 'profile'>('home');
@@ -856,6 +869,16 @@ function AppInner() {
 
       setOrders(data);
       detectNewOrders(data);
+
+      try {
+        const whRes = await fetch(`${getApiUrl()}/driver/warehouse?driverId=${driver.id}&t=${Date.now()}`, {
+          headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'Expires': '0' },
+        });
+        if (whRes.ok) {
+          const whData = await whRes.json();
+          if (Array.isArray(whData)) setWarehouseTransactions(whData);
+        }
+      } catch {}
     } catch (error: unknown) {
       console.error(error);
       showAlert(t(locale, 'loginError'), t(locale, 'loadErrorRetry'));
@@ -1270,17 +1293,25 @@ function AppInner() {
     [orders]
   );
 
-  const todayEarned = useMemo(() => {
+  const todayOrderEarned = useMemo(() => {
     const today = startOfDay(new Date());
     return historyOrders
       .filter(o => {
-        // Match by scheduledAt OR updatedAt so orders completed today show up
         const scheduledDate = new Date(o.scheduledAt);
         const updatedDate = new Date(o.updatedAt);
         return isSameDay(scheduledDate, today) || isSameDay(updatedDate, today);
       })
-      .reduce((sum, o) => sum + (Number(o.paymentAmount) || 0), 0);
+      .reduce((sum, o) => sum + (Number(o.driverFee) || 0), 0);
   }, [historyOrders]);
+
+  const todaySvalkaEarned = useMemo(() => {
+    const today = startOfDay(new Date());
+    return warehouseTransactions
+      .filter(t => isSameDay(new Date(t.recordedAt), today))
+      .reduce((sum, t) => sum + (Number(t.driverAmount) || 0), 0);
+  }, [warehouseTransactions]);
+
+  const todayEarned = todayOrderEarned + todaySvalkaEarned;
 
   const historyChartData = useMemo(() => {
     const periods: { label: string, fullLabel: string, dateStart: Date, dateEnd: Date, totalAmount: number, orderCount: number }[] = [];
@@ -1330,15 +1361,25 @@ function AppInner() {
       const time = new Date(o.scheduledAt).getTime();
       for (let i = 0; i < periods.length; i++) {
         if (time >= periods[i].dateStart.getTime() && time < periods[i].dateEnd.getTime()) {
-          periods[i].totalAmount += (Number(o.paymentAmount) || 0);
+          periods[i].totalAmount += (Number(o.driverFee) || 0);
           periods[i].orderCount++;
           break;
         }
       }
     });
-    
+
+    warehouseTransactions.forEach(t => {
+      const time = new Date(t.recordedAt).getTime();
+      for (let i = 0; i < periods.length; i++) {
+        if (time >= periods[i].dateStart.getTime() && time < periods[i].dateEnd.getTime()) {
+          periods[i].totalAmount += (Number(t.driverAmount) || 0);
+          break;
+        }
+      }
+    });
+
     return periods;
-  }, [historyFilter, historyOffset, historyOrders, locale]);
+  }, [historyFilter, historyOffset, historyOrders, warehouseTransactions, locale]);
 
   useEffect(() => {
     setSelectedHistoryIndex(historyFilter === 'day' ? 6 : historyFilter === 'week' ? 3 : 5);
@@ -1738,15 +1779,17 @@ function AppInner() {
             <View style={styles.histHeader}><TrendingUp size={20} color="#1A73E8" /><Text style={styles.histTitle}>Финансы</Text></View>
             {(() => {
               const todayOrders = historyOrders.filter(o => isSameDay(new Date(o.scheduledAt), new Date()));
-              const todayCash = todayOrders.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.paymentAmount || 0), 0);
-              const todayBeznal = todayOrders.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+              const todayFromOrders = todayOrders.reduce((s, o) => s + (Number(o.driverFee) || 0), 0);
+              const todayFromSvalka = warehouseTransactions
+                .filter(t => isSameDay(new Date(t.recordedAt), new Date()))
+                .reduce((s, t) => s + (Number(t.driverAmount) || 0), 0);
               return (
                 <View style={styles.histSummary}>
                   <Text style={styles.histSummaryLabel}>Сегодня</Text>
-                  <Text style={styles.histSummaryTotal}>{(todayCash + todayBeznal).toLocaleString()} ₽</Text>
+                  <Text style={styles.histSummaryTotal}>{(todayFromOrders + todayFromSvalka).toLocaleString()} ₽</Text>
                   <View style={styles.histSummaryRow}>
-                    <View style={styles.histSummaryChip}><Text style={styles.histSummaryChipLabel}>Наличные</Text><Text style={styles.histSummaryChipVal}>{todayCash.toLocaleString()} ₽</Text></View>
-                    <View style={styles.histSummaryChip}><Text style={styles.histSummaryChipLabel}>Безнал</Text><Text style={[styles.histSummaryChipVal, { color: '#1A73E8' }]}>{todayBeznal.toLocaleString()} ₽</Text></View>
+                    <View style={styles.histSummaryChip}><Text style={styles.histSummaryChipLabel}>Заказы</Text><Text style={styles.histSummaryChipVal}>{todayFromOrders.toLocaleString()} ₽</Text></View>
+                    <View style={styles.histSummaryChip}><Text style={styles.histSummaryChipLabel}>Свалка</Text><Text style={[styles.histSummaryChipVal, { color: '#1A73E8' }]}>{todayFromSvalka.toLocaleString()} ₽</Text></View>
                   </View>
                 </View>
               );
@@ -1779,8 +1822,8 @@ function AppInner() {
             {selectedHistoryIndex !== null && historyChartData[selectedHistoryIndex] && (() => {
               const p = historyChartData[selectedHistoryIndex];
               const po = historyOrders.filter(o => { const tt = new Date(o.scheduledAt).getTime(); return tt >= p.dateStart.getTime() && tt < p.dateEnd.getTime(); });
-              const pCash = po.filter(o => o.paymentType === 'cash').reduce((s, o) => s + (o.paymentAmount || 0), 0);
-              const pBez = po.filter(o => o.paymentType === 'card' || o.paymentType === 'online').reduce((s, o) => s + (o.paymentAmount || 0), 0);
+              const pOrders = po.reduce((s, o) => s + (Number(o.driverFee) || 0), 0);
+              const pSvalka = warehouseTransactions.filter(t => { const tt = new Date(t.recordedAt).getTime(); return tt >= p.dateStart.getTime() && tt < p.dateEnd.getTime(); }).reduce((s, t) => s + (Number(t.driverAmount) || 0), 0);
               return (
                 <View style={styles.histPeriod}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1789,8 +1832,8 @@ function AppInner() {
                   </View>
                   <View style={{ height: 1, backgroundColor: '#F0F0F0', marginVertical: 10 }} />
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 12, color: '#757575' }}>Нал: {pCash.toLocaleString()} ₽</Text>
-                    <Text style={{ fontSize: 12, color: '#757575' }}>Безнал: {pBez.toLocaleString()} ₽</Text>
+                    <Text style={{ fontSize: 12, color: '#757575' }}>Заказы: {pOrders.toLocaleString()} ₽</Text>
+                    <Text style={{ fontSize: 12, color: '#757575' }}>Свалка: {pSvalka.toLocaleString()} ₽</Text>
                   </View>
                 </View>
               );
@@ -1811,7 +1854,7 @@ function AppInner() {
             </View>
             <View style={styles.profStats}>
               <View style={styles.profStatItem}><Text style={styles.profStatVal}>{historyOrders.length}</Text><Text style={styles.profStatLabel}>Выполнено</Text></View>
-              <View style={[styles.profStatItem, { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#F0F0F0' }]}><Text style={[styles.profStatVal, { color: '#43A047' }]}>{historyOrders.reduce((s, o) => s + (Number(o.driverFee) || 0), 0).toLocaleString()}</Text><Text style={styles.profStatLabel}>Заработано ₽</Text></View>
+              <View style={[styles.profStatItem, { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#F0F0F0' }]}><Text style={[styles.profStatVal, { color: '#43A047' }]}>{(historyOrders.reduce((s, o) => s + (Number(o.driverFee) || 0), 0) + warehouseTransactions.reduce((s, t) => s + (Number(t.driverAmount) || 0), 0)).toLocaleString()}</Text><Text style={styles.profStatLabel}>Заработано ₽</Text></View>
               <View style={styles.profStatItem}><Text style={[styles.profStatVal, { color: '#EF6C00' }]}>{activeOrders.length}</Text><Text style={styles.profStatLabel}>Активных</Text></View>
             </View>
             <View style={styles.profTodayBanner}><View style={{ flex: 1 }}><Text style={styles.profTodayLabel}>Заработано сегодня</Text><Text style={styles.profTodayVal}>{todayEarned.toLocaleString()} ₽</Text></View><TrendingUp size={28} color="#43A047" /></View>

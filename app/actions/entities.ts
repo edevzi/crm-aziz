@@ -271,6 +271,18 @@ export async function addWarehouseTransaction(data: {
     }
   }
 
+  if (data.type === 'outbound' && data.driverId && data.driverAmount && data.driverAmount > 0) {
+    const [driver] = await db.select().from(drivers).where(eq(drivers.id, data.driverId));
+    if (driver && driver.expoPushToken) {
+      await sendPushNotification(
+        driver.expoPushToken,
+        "Баланс пополнен!",
+        `Вам начислено ${data.driverAmount.toLocaleString()} ₽ за вывоз мусора на свалку`,
+        {}
+      );
+    }
+  }
+
   revalidateTag('warehouseTransactions');
   revalidateTag('expenses');
   revalidatePath('/warehouse');
