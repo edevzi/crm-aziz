@@ -25,32 +25,45 @@ export function WarehouseTransactionForm({ dict, drivers = [] }: { dict: any, dr
 
   const OUTBOUND_OPTIONS = [20, 27, 30];
 
+  const [error, setError] = useState('');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
     try {
       const size = parseInt(containerSizeM3) || 0;
       const count = parseInt(containerCount) || 1;
       const totalVolume = size * count;
 
+      if (totalVolume <= 0) {
+        setError('Выберите размер контейнера');
+        return;
+      }
+
+      const parsedDriverAmount = driverAmount ? parseInt(driverAmount.replace(/\D/g, '')) : undefined;
+      const parsedSvalkaAmount = svalkaAmount ? parseInt(svalkaAmount.replace(/\D/g, '')) : undefined;
+      const parsedDriverId = driverId ? parseInt(driverId) : undefined;
+
       await addWarehouseTransaction({
         type,
         volumeM3: totalVolume,
         containerSizeM3: size,
         containerCount: count,
-        note,
-        driverId: driverId ? parseInt(driverId) : undefined,
-        driverAmount: driverAmount ? parseInt(driverAmount) : undefined,
-        svalkaAmount: svalkaAmount ? parseInt(svalkaAmount) : undefined,
+        note: note || undefined,
+        driverId: parsedDriverId,
+        driverAmount: parsedDriverAmount && parsedDriverAmount > 0 ? parsedDriverAmount : undefined,
+        svalkaAmount: parsedSvalkaAmount && parsedSvalkaAmount > 0 ? parsedSvalkaAmount : undefined,
       });
       setOpen(false);
-      // reset
       setContainerSizeM3('');
       setContainerCount('1');
       setNote('');
       setDriverId('');
       setDriverAmount('');
       setSvalkaAmount('');
+    } catch (err: any) {
+      setError(err?.message || 'Ошибка при создании записи');
     } finally {
       setLoading(false);
     }
@@ -117,36 +130,40 @@ export function WarehouseTransactionForm({ dict, drivers = [] }: { dict: any, dr
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Водитель</Label>
-            <SearchableSelect
-              options={drivers.map(d => ({ value: String(d.id), label: d.name }))}
-              value={driverId}
-              onChange={setDriverId}
-              placeholder="Выберите водителя..."
-            />
-          </div>
+          {type === 'outbound' && (
+            <>
+              <div className="space-y-2">
+                <Label>Водитель</Label>
+                <SearchableSelect
+                  options={drivers.map(d => ({ value: String(d.id), label: d.name }))}
+                  value={driverId}
+                  onChange={setDriverId}
+                  placeholder="Выберите водителя..."
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="driverAmount">Оплата водителю</Label>
-              <FormattedNumberInput
-                id="driverAmount"
-                placeholder="Сумма"
-                value={driverAmount}
-                onChange={setDriverAmount}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="svalkaAmount">Оплата свалке</Label>
-              <FormattedNumberInput
-                id="svalkaAmount"
-                placeholder="Сумма"
-                value={svalkaAmount}
-                onChange={setSvalkaAmount}
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="driverAmount">Оплата водителю</Label>
+                  <FormattedNumberInput
+                    id="driverAmount"
+                    placeholder="Сумма"
+                    value={driverAmount}
+                    onChange={setDriverAmount}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="svalkaAmount">Оплата свалке</Label>
+                  <FormattedNumberInput
+                    id="svalkaAmount"
+                    placeholder="Сумма"
+                    value={svalkaAmount}
+                    onChange={setSvalkaAmount}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="note">{dict.note || 'Заметка'}</Label>
@@ -158,8 +175,14 @@ export function WarehouseTransactionForm({ dict, drivers = [] }: { dict: any, dr
             />
           </div>
 
+          {error && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
+              {error}
+            </div>
+          )}
+
           <Button type="submit" className="w-full" disabled={loading || !containerSizeM3}>
-            {loading ? '...' : (dict.create || 'Сохранить')}
+            {loading ? '...' : (dict.create || 'Создать')}
           </Button>
         </form>
       </DialogContent>

@@ -220,9 +220,9 @@ export async function updateExpense(id: number, data: any) {
 }
 
 // Warehouse Transactions
-export async function addWarehouseTransaction(data: { 
-  type: 'inbound' | 'outbound', 
-  volumeM3: number, 
+export async function addWarehouseTransaction(data: {
+  type: 'inbound' | 'outbound',
+  volumeM3: number,
   containerSizeM3?: number,
   containerCount?: number,
   note?: string,
@@ -233,47 +233,48 @@ export async function addWarehouseTransaction(data: {
   const user = await getCurrentUser();
   if (!user) throw new Error('Unauthorized');
 
-  await db.transaction(async (tx) => {
-    // 1. Log Warehouse Transaction
-    await tx.insert(warehouseTransactions).values({
-      type: data.type,
-      volumeM3: data.volumeM3,
-      containerSizeM3: data.containerSizeM3,
-      containerCount: data.containerCount,
-      note: data.note,
-      driverId: data.driverId,
-      driverAmount: data.driverAmount,
-      svalkaAmount: data.svalkaAmount,
-      operatorId: user.id
-    });
+  if (!data.volumeM3 || data.volumeM3 <= 0) {
+    throw new Error('Укажите объем');
+  }
 
-    // 2. Log expenses if it's outbound and has amounts
-    if (data.type === 'outbound') {
-      if (data.driverAmount && data.driverAmount > 0 && data.driverId) {
-        await tx.insert(expenses).values({
-          category: 'driver_salary',
-          amountRub: data.driverAmount,
-          driverId: data.driverId,
-          note: `Оплата водителю за вывоз мусора (Склад)`,
-          operatorId: user.id
-        });
-      }
-      
-      if (data.svalkaAmount && data.svalkaAmount > 0) {
-        await tx.insert(expenses).values({
-          category: 'utilization',
-          amountRub: data.svalkaAmount,
-          driverId: data.driverId, // Link to driver if available
-          note: `Оплата свалке за вывоз мусора (Склад)`,
-          operatorId: user.id
-        });
-      }
-    }
+  await db.insert(warehouseTransactions).values({
+    type: data.type,
+    volumeM3: data.volumeM3,
+    containerSizeM3: data.containerSizeM3 || null,
+    containerCount: data.containerCount || null,
+    note: data.note || null,
+    driverId: data.driverId || null,
+    driverAmount: data.driverAmount || null,
+    svalkaAmount: data.svalkaAmount || null,
+    operatorId: user.id
   });
+
+  if (data.type === 'outbound') {
+    if (data.driverAmount && data.driverAmount > 0 && data.driverId) {
+      await db.insert(expenses).values({
+        category: 'driver_salary',
+        amountRub: data.driverAmount,
+        driverId: data.driverId,
+        note: `Оплата водителю за вывоз мусора (Склад)`,
+        operatorId: user.id
+      });
+    }
+
+    if (data.svalkaAmount && data.svalkaAmount > 0) {
+      await db.insert(expenses).values({
+        category: 'utilization',
+        amountRub: data.svalkaAmount,
+        driverId: data.driverId || null,
+        note: `Оплата свалке за вывоз мусора (Склад)`,
+        operatorId: user.id
+      });
+    }
+  }
 
   revalidateTag('warehouseTransactions');
   revalidateTag('expenses');
   revalidatePath('/warehouse');
+  revalidatePath('/dashboard');
   revalidatePath('/finance');
 }
 
