@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mobile-design",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-p", "4444", "mobile-design"],
+      "port": 4444
+    }
+  ]
+}

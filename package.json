@@ -11,7 +11,8 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "node --env-file=.env --import tsx lib/seed.ts",
     "db:check": "node --env-file=.env --import tsx lib/check-orders.ts",
-    "db:clear-driver-orders": "node --env-file=.env --import tsx lib/clear-driver-orders.ts"
+    "db:clear-driver-orders": "node --env-file=.env --import tsx lib/clear-driver-orders.ts",
+    "db:clean": "node --env-file=.env --import tsx lib/clean.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3",
