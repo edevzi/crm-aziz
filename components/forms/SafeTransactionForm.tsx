@@ -59,7 +59,7 @@ export function SafeTransactionForm({ dict, type }: { dict: any, type: 'income' 
             {isIncome ? dict.log_safe_income : dict.log_safe_expense}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="amountRub">{dict.amount} (RUB)</Label>
             <FormattedNumberInput 

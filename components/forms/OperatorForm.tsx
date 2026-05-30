@@ -60,13 +60,13 @@ export function OperatorForm({ dict, operator }: { dict: any, operator?: any }) 
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:!max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
             {operator ? (dict.edit_operator || "Edit Operator") : (dict.add_operator || "Add Operator")}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">{dict.name || "Name"}</label>
             <Input name="name" defaultValue={operator?.name} required placeholder="Ism Familiya" />

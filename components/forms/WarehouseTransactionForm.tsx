@@ -67,7 +67,7 @@ export function WarehouseTransactionForm({ dict, drivers = [] }: { dict: any, dr
         <DialogHeader>
           <DialogTitle>{dict.log_waste || 'Добавить новую запись'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-6 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
             <Label>Тип транзакции</Label>
             <RadioGroup 

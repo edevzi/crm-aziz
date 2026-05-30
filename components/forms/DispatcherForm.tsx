@@ -56,11 +56,11 @@ export function DispatcherForm({ dict, dispatcher }: { dict: any, dispatcher?: a
           )}
         </div>
       </DialogTrigger>
-      <DialogContent className="rounded-3xl">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{dispatcher ? editLabel : addLabel}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">{dict.name}</Label>
             <Input id="name" value={formData.name} onChange={e => set('name', e.target.value)} required />

@@ -14,6 +14,7 @@ const DialogPortal = DialogPrimitive.Portal
 
 const DialogClose = DialogPrimitive.Close
 
+/* ─── Overlay ─── */
 const DialogOverlay = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
@@ -21,7 +22,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-[100] bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-[100] bg-black/60 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
     {...props}
@@ -29,40 +30,106 @@ const DialogOverlay = React.forwardRef<
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
+/* ─── Body scroll lock ─── */
+function useBodyScrollLock(open: boolean) {
+  React.useEffect(() => {
+    if (!open) return;
+    const scrollY = window.scrollY;
+    const body = document.body;
+    const prev = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+    };
+    body.style.overflow = 'hidden';
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.width = '100%';
+    return () => {
+      body.style.overflow = prev.overflow;
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      window.scrollTo(0, scrollY);
+    };
+  }, [open]);
+}
+
+/* ─── Content wrapper with scroll lock ─── */
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DialogPortal>
-    <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed z-[100] grid w-full border bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        "inset-0 max-w-none gap-4 p-4 pt-14 rounded-none overflow-y-auto",
-        "sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:gap-4 sm:p-6 sm:pt-6 sm:rounded-lg sm:overflow-y-visible sm:max-h-[90vh]",
-        "sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95 sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=closed]:slide-out-to-top-[48%] sm:data-[state=open]:slide-in-from-left-1/2 sm:data-[state=open]:slide-in-from-top-[48%]",
-        className
-      )}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="fixed right-3 top-3 z-[110] rounded-full p-2.5 bg-white shadow-md border border-slate-200 hover:bg-slate-100 ring-offset-background transition-all hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none sm:absolute sm:right-4 sm:top-4 sm:rounded-sm sm:bg-transparent sm:hover:bg-transparent sm:p-0 sm:shadow-none sm:border-0 sm:z-50">
-        <X className="h-5 w-5 sm:h-4 sm:w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </DialogPortal>
-))
+>(({ className, children, ...props }, ref) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const callbackRef = React.useCallback((node: HTMLDivElement | null) => {
+    if (node) setIsOpen(true);
+    if (typeof ref === 'function') ref(node);
+    else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+  }, [ref]);
+
+  React.useEffect(() => {
+    return () => setIsOpen(false);
+  }, []);
+
+  useBodyScrollLock(isOpen);
+
+  return (
+    <DialogPortal>
+      <DialogOverlay />
+      <DialogPrimitive.Content
+        ref={callbackRef}
+        onCloseAutoFocus={() => setIsOpen(false)}
+        className={cn(
+          // Base
+          "fixed z-[100] grid w-full bg-background shadow-2xl duration-200",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          // Mobile: full-screen sheet from bottom
+          "inset-x-0 bottom-0 top-0 max-h-dvh rounded-none border-0",
+          "data-[state=open]:slide-in-from-bottom-4 data-[state=closed]:slide-out-to-bottom-4",
+          // Desktop: centered floating dialog
+          "sm:inset-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]",
+          "sm:max-w-lg sm:max-h-[90vh] sm:rounded-2xl sm:border sm:border-slate-200/60",
+          "sm:data-[state=open]:slide-in-from-bottom-0 sm:data-[state=closed]:slide-out-to-bottom-0",
+          "sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
+          className
+        )}
+        {...props}
+      >
+        {/* Scrollable inner container */}
+        <div className="flex flex-col max-h-dvh sm:max-h-[90vh] overflow-hidden">
+          {children}
+        </div>
+
+        {/* Close button */}
+        <DialogPrimitive.Close
+          className={cn(
+            "absolute z-[10] rounded-full transition-all",
+            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+            // Mobile: prominent close button
+            "right-3 top-3 p-2 bg-slate-100/90 hover:bg-slate-200 active:scale-95",
+            // Desktop: subtle close button
+            "sm:right-4 sm:top-4 sm:p-1.5 sm:rounded-lg sm:bg-transparent sm:hover:bg-slate-100 sm:opacity-70 sm:hover:opacity-100",
+          )}
+        >
+          <X className="h-5 w-5 sm:h-4 sm:w-4 text-slate-600" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </DialogPortal>
+  );
+})
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
+/* ─── Header (sticky inside scroll) ─── */
 const DialogHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-1.5 text-center sm:text-left",
+      "flex flex-col space-y-1.5 px-4 pt-4 pb-3 pr-12 sm:px-6 sm:pt-5 sm:pb-4 sm:pr-14 border-b border-slate-100 flex-shrink-0 text-left",
       className
     )}
     {...props}
@@ -70,13 +137,29 @@ const DialogHeader = ({
 )
 DialogHeader.displayName = "DialogHeader"
 
+/* ─── Scrollable body ─── */
+const DialogBody = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn(
+      "flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5",
+      className
+    )}
+    {...props}
+  />
+)
+DialogBody.displayName = "DialogBody"
+
+/* ─── Footer (sticky bottom) ─── */
 const DialogFooter = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      "flex flex-col-reverse gap-2 px-4 py-3 sm:px-6 sm:py-4 sm:flex-row sm:justify-end sm:gap-3 border-t border-slate-100 flex-shrink-0",
       className
     )}
     {...props}
@@ -91,7 +174,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
+      "text-base sm:text-lg font-semibold leading-tight tracking-tight text-slate-900",
       className
     )}
     {...props}
@@ -119,6 +202,7 @@ export {
   DialogTrigger,
   DialogContent,
   DialogHeader,
+  DialogBody,
   DialogFooter,
   DialogTitle,
   DialogDescription,

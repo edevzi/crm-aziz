@@ -67,7 +67,7 @@ export function UtilizationForm({ dict, log, drivers }: { dict: any, log?: any, 
         <DialogHeader>
           <DialogTitle>{log ? "Редактировать запись свалки" : "Добавить запись на свалку"}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="driverId">{dict.driver}</Label>
             <Select value={formData.driverId.toString()} onValueChange={val => {

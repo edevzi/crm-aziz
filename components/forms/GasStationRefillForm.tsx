@@ -48,7 +48,7 @@ export function GasStationRefillForm({ dict }: { dict: any }) {
         <DialogHeader>
           <DialogTitle>{dict.refill_station || 'Пополнение собственной заправки'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="liters">{dict.liters || 'Литры'}</Label>
             <FormattedNumberInput 

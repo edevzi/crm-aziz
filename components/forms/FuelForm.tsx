@@ -66,7 +66,7 @@ export function FuelForm({ dict, log, drivers }: { dict: any, log?: any, drivers
         <DialogHeader>
           <DialogTitle>{log ? dict.log_fuel.replace('+', '✎') : dict.log_fuel}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="driverId">{dict.driver}</Label>
             <Select value={formData.driverId.toString()} onValueChange={val => {

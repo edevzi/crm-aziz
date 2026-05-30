@@ -108,11 +108,11 @@ export function CloseShiftForm({ dict }: { dict: any }) {
           Закрыть смену
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:!max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Закрытие смены</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Чистая прибыль за смену (RUB)</Label>
             <FormattedNumberInput 

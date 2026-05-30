@@ -29,7 +29,7 @@ export function OrderPhotoViewer({ photoUrl }: { photoUrl: string }) {
       </DialogTrigger>
       <DialogContent className="sm:!max-w-2xl" onClick={(e) => e.stopPropagation()}>
         <DialogHeader>
-          <DialogTitle className="pr-8">Фото с места выполнения заказа</DialogTitle>
+          <DialogTitle>Фото с места выполнения заказа</DialogTitle>
         </DialogHeader>
         <div className="flex justify-center mt-2 sm:mt-4">
           {photoUrl.startsWith('data:image') ? (

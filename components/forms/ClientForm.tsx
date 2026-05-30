@@ -49,11 +49,11 @@ export function ClientForm({ dict, client }: { dict: any, client?: any }) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:!rounded-3xl">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="pr-8">{client ? dict.add_client.replace('+', '✎') : dict.add_client}</DialogTitle>
+          <DialogTitle>{client ? dict.add_client.replace('+', '✎') : dict.add_client}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">{dict.name}</Label>
             <Input id="name" value={formData.name} onChange={e => set('name', e.target.value)} required />

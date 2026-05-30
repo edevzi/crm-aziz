@@ -80,7 +80,7 @@ export function ExpenseForm({ dict, expense, drivers = [], dispatchers = [] }: {
         <DialogHeader>
           <DialogTitle>{expense ? dict.edit_expense : dict.add_expense}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="category">{dict.category}</Label>
             <Select value={formData.category} onValueChange={val => setFormData({...formData, category: val})} required>
