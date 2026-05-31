@@ -313,6 +313,10 @@ type WarehouseTransaction = {
   recordedAt: string;
 };
 
+function fmt(n: number): string {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
 function startOfDay(d: Date): Date {
   const local = new Date(d);
   local.setHours(0, 0, 0, 0);
@@ -1481,7 +1485,7 @@ function AppInner() {
                 <Text style={styles.cardClient}>{order.clientName}</Text>
                 <View style={styles.cardPricePill}>
                   <PaymentTypeIcon type={order.paymentType} size={11} color="#1A73E8" />
-                  <Text style={styles.cardPriceText}>{(order.paymentAmount || 0).toLocaleString()} ₽</Text>
+                  <Text style={styles.cardPriceText}>{(order.paymentAmount || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text>
                 </View>
               </View>
             </View>
@@ -1644,7 +1648,7 @@ function AppInner() {
             <View style={styles.earningsBanner}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <View style={styles.earningsIcon}><TrendingUp size={20} color="#FFF" /></View>
-                <View><Text style={styles.earningsLabel}>Сегодня</Text><Text style={styles.earningsVal}>{todayEarned.toLocaleString()} ₽</Text></View>
+                <View><Text style={styles.earningsLabel}>Сегодня</Text><Text style={styles.earningsVal}>{todayEarned.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text></View>
               </View>
               <Text style={styles.earningsCount}>{activeOrders.filter(o => isSameDay(new Date(o.scheduledAt), new Date())).length} заказов</Text>
             </View>
@@ -1700,8 +1704,8 @@ function AppInner() {
                           </View>
                           <View style={styles.heroInfoGrid}>
                             <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Клиент</Text><Text style={styles.heroInfoVal}>{activeTripOrder.clientName}</Text></View>
-                            <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Оплата</Text><Text style={styles.heroInfoVal}>{activeTripOrder.paymentAmount.toLocaleString()} ₽</Text></View>
-                            <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Контейнер</Text><Text style={styles.heroInfoVal}>{activeTripOrder.containerSizeM3} m³</Text></View>
+                            <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Оплата</Text><Text style={styles.heroInfoVal}>{activeTripOrder.paymentAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text></View>
+                            <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Контейнер</Text><Text style={styles.heroInfoVal}>{activeTripOrder.containerSizeM3} м³</Text></View>
                           </View>
                           {activeTripOrder.status === 'assigned' && <Text style={styles.heroHint}>{t(locale, 'earlyTripHint')}</Text>}
                           {renderPrimaryButton(activeTripOrder, true)}
@@ -1786,10 +1790,10 @@ function AppInner() {
               return (
                 <View style={styles.histSummary}>
                   <Text style={styles.histSummaryLabel}>Сегодня</Text>
-                  <Text style={styles.histSummaryTotal}>{(todayFromOrders + todayFromSvalka).toLocaleString()} ₽</Text>
+                  <Text style={styles.histSummaryTotal}>{(todayFromOrders + todayFromSvalka).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text>
                   <View style={styles.histSummaryRow}>
-                    <View style={styles.histSummaryChip}><Text style={styles.histSummaryChipLabel}>Заказы</Text><Text style={styles.histSummaryChipVal}>{todayFromOrders.toLocaleString()} ₽</Text></View>
-                    <View style={styles.histSummaryChip}><Text style={styles.histSummaryChipLabel}>Свалка</Text><Text style={[styles.histSummaryChipVal, { color: '#1A73E8' }]}>{todayFromSvalka.toLocaleString()} ₽</Text></View>
+                    <View style={styles.histSummaryChip}><Text style={styles.histSummaryChipLabel}>Заказы</Text><Text style={styles.histSummaryChipVal}>{todayFromOrders.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text></View>
+                    <View style={styles.histSummaryChip}><Text style={styles.histSummaryChipLabel}>Свалка</Text><Text style={[styles.histSummaryChipVal, { color: '#1A73E8' }]}>{todayFromSvalka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text></View>
                   </View>
                 </View>
               );
@@ -1828,12 +1832,12 @@ function AppInner() {
                 <View style={styles.histPeriod}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <View><Text style={styles.histPeriodTitle}>{p.fullLabel}</Text><Text style={{ fontSize: 12, color: '#9E9E9E', marginTop: 2 }}>Заказов: {p.orderCount}</Text></View>
-                    <Text style={styles.histPeriodAmt}>{p.totalAmount.toLocaleString()} ₽</Text>
+                    <Text style={styles.histPeriodAmt}>{p.totalAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text>
                   </View>
                   <View style={{ height: 1, backgroundColor: '#F0F0F0', marginVertical: 10 }} />
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 12, color: '#757575' }}>Заказы: {pOrders.toLocaleString()} ₽</Text>
-                    <Text style={{ fontSize: 12, color: '#757575' }}>Свалка: {pSvalka.toLocaleString()} ₽</Text>
+                    <Text style={{ fontSize: 12, color: '#757575' }}>Заказы: {pOrders.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text>
+                    <Text style={{ fontSize: 12, color: '#757575' }}>Свалка: {pSvalka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text>
                   </View>
                 </View>
               );
@@ -1854,10 +1858,10 @@ function AppInner() {
             </View>
             <View style={styles.profStats}>
               <View style={styles.profStatItem}><Text style={styles.profStatVal}>{historyOrders.length}</Text><Text style={styles.profStatLabel}>Выполнено</Text></View>
-              <View style={[styles.profStatItem, { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#F0F0F0' }]}><Text style={[styles.profStatVal, { color: '#43A047' }]}>{(historyOrders.reduce((s, o) => s + (Number(o.driverFee) || 0), 0) + warehouseTransactions.reduce((s, t) => s + (Number(t.driverAmount) || 0), 0)).toLocaleString()}</Text><Text style={styles.profStatLabel}>Заработано ₽</Text></View>
+              <View style={[styles.profStatItem, { borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#F0F0F0' }]}><Text style={[styles.profStatVal, { color: '#43A047' }]}>{(historyOrders.reduce((s, o) => s + (Number(o.driverFee) || 0), 0) + warehouseTransactions.reduce((s, t) => s + (Number(t.driverAmount) || 0), 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')}</Text><Text style={styles.profStatLabel}>Заработано ₽</Text></View>
               <View style={styles.profStatItem}><Text style={[styles.profStatVal, { color: '#EF6C00' }]}>{activeOrders.length}</Text><Text style={styles.profStatLabel}>Активных</Text></View>
             </View>
-            <View style={styles.profTodayBanner}><View style={{ flex: 1 }}><Text style={styles.profTodayLabel}>Заработано сегодня</Text><Text style={styles.profTodayVal}>{todayEarned.toLocaleString()} ₽</Text></View><TrendingUp size={28} color="#43A047" /></View>
+            <View style={styles.profTodayBanner}><View style={{ flex: 1 }}><Text style={styles.profTodayLabel}>Заработано сегодня</Text><Text style={styles.profTodayVal}>{todayEarned.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text></View><TrendingUp size={28} color="#43A047" /></View>
             <View style={{ paddingHorizontal: 16, marginTop: 16, gap: 8 }}>
               <TouchableOpacity style={styles.profAction} onPress={() => fetchOrders(true)} activeOpacity={0.7}>
                 <View style={[styles.profActionDot, { backgroundColor: '#E8EAF6' }]}><RefreshCw size={16} color="#1A73E8" /></View>
@@ -1919,9 +1923,9 @@ function AppInner() {
                   </TouchableOpacity>
                   {showOrderDetails && (
                     <View style={styles.sheetDetailsGrid}>
-                      <View style={styles.sheetDetailItem}><Text style={styles.sheetDetailLabel}>{t(locale, 'container')}</Text><Text style={styles.sheetDetailVal}>{order.containerSizeM3} m³</Text></View>
+                      <View style={styles.sheetDetailItem}><Text style={styles.sheetDetailLabel}>{t(locale, 'container')}</Text><Text style={styles.sheetDetailVal}>{order.containerSizeM3} м³</Text></View>
                       <View style={styles.sheetDetailItem}><Text style={styles.sheetDetailLabel}>{t(locale, 'duration')}</Text><Text style={styles.sheetDetailVal}>{getRentalLabel(locale, order.rentalDuration)}</Text></View>
-                      <View style={styles.sheetDetailItem}><Text style={styles.sheetDetailLabel}>Оплата</Text><Text style={styles.sheetDetailVal}>{order.paymentAmount.toLocaleString()} ₽</Text></View>
+                      <View style={styles.sheetDetailItem}><Text style={styles.sheetDetailLabel}>Оплата</Text><Text style={styles.sheetDetailVal}>{order.paymentAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text></View>
                       <View style={styles.sheetDetailItem}><Text style={styles.sheetDetailLabel}>Тип</Text><Text style={styles.sheetDetailVal}>{getPaymentLabel(locale, order.paymentType)}</Text></View>
                     </View>
                   )}

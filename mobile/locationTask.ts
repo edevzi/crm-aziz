@@ -100,8 +100,8 @@ export async function startBackgroundLocationTracking(): Promise<boolean> {
       timeInterval: 10000,
       showsBackgroundLocationIndicator: true,
       foregroundService: {
-        notificationTitle: 'Haydovchi — joylashuv',
-        notificationBody: 'Yo\'lda: joylashuvingiz operatorga yuborilmoqda',
+        notificationTitle: 'Водитель — геолокация',
+        notificationBody: 'В пути: ваше местоположение отправляется оператору',
         notificationColor: '#4f46e5',
       },
     });

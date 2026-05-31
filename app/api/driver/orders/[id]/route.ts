@@ -141,6 +141,7 @@ export async function PUT(
             amountRub: order.driverFee,
             note: `Зарплата водителя за заказ #${orderId}`,
             orderId: orderId,
+            driverId: order.driverId,
             operatorId: undefined,
           });
         }

@@ -104,25 +104,23 @@ export async function updateDriver(id: number, data: any) {
 // Fuel
 export async function createFuelLog(data: any) {
   const user = await getCurrentUser();
-  await db.transaction(async (tx) => {
-    const cleanPrice = parseInt(String(data.priceRub).replace(/\D/g, '')) || 0;
-    await tx.insert(fuelLogs).values({
-      driverId: parseInt(data.driverId),
-      stationName: data.stationName,
-      liters: parseInt(data.liters),
-      priceRub: cleanPrice,
-      vehicle: data.vehicle,
-      operatorId: user ? user.id : null,
-    });
+  const cleanPrice = parseInt(String(data.priceRub).replace(/\D/g, '')) || 0;
+  await db.insert(fuelLogs).values({
+    driverId: parseInt(data.driverId),
+    stationName: data.stationName,
+    liters: parseInt(data.liters),
+    priceRub: cleanPrice,
+    vehicle: data.vehicle,
+    operatorId: user ? user.id : null,
+  });
 
-    await tx.insert(expenses).values({
-      category: 'fuel',
-      amountRub: cleanPrice,
-      note: `Автоматически добавлено из заправки: ${data.vehicle} (${data.liters}L) - ${data.stationName}`,
-      driverId: parseInt(data.driverId),
-      liters: parseInt(data.liters),
-      operatorId: user ? user.id : null,
-    });
+  await db.insert(expenses).values({
+    category: 'fuel',
+    amountRub: cleanPrice,
+    note: `Автоматически добавлено из заправки: ${data.vehicle} (${data.liters}L) - ${data.stationName}`,
+    driverId: parseInt(data.driverId),
+    liters: parseInt(data.liters),
+    operatorId: user ? user.id : null,
   });
 
   revalidateTag('fuelLogs');
@@ -146,26 +144,24 @@ export async function updateFuelLog(id: number, data: any) {
 // Utilization
 export async function createUtilizationLog(data: any) {
   const user = await getCurrentUser();
-  await db.transaction(async (tx) => {
-    const cleanPrice = parseInt(String(data.amountRub).replace(/\D/g, '')) || 0;
-    const m3Val = parseInt(data.m3) || 0;
-    await tx.insert(utilizationLogs).values({
-      driverId: parseInt(data.driverId),
-      vehiclePlate: data.vehiclePlate,
-      m3: m3Val,
-      amountRub: cleanPrice,
-      note: data.note,
-      operatorId: user ? user.id : null,
-    });
+  const cleanPrice = parseInt(String(data.amountRub).replace(/\D/g, '')) || 0;
+  const m3Val = parseInt(data.m3) || 0;
+  await db.insert(utilizationLogs).values({
+    driverId: parseInt(data.driverId),
+    vehiclePlate: data.vehiclePlate,
+    m3: m3Val,
+    amountRub: cleanPrice,
+    note: data.note,
+    operatorId: user ? user.id : null,
+  });
 
-    await tx.insert(expenses).values({
-      category: 'utilization',
-      amountRub: cleanPrice,
-      note: `Автоматически добавлено из свалки: ${data.vehiclePlate} (${m3Val} м³) - ${data.note || ''}`,
-      driverId: parseInt(data.driverId),
-      liters: m3Val, // Store m3 in liters column for unified expense tracking
-      operatorId: user ? user.id : null,
-    });
+  await db.insert(expenses).values({
+    category: 'utilization',
+    amountRub: cleanPrice,
+    note: `Автоматически добавлено из свалки: ${data.vehiclePlate} (${m3Val} м³) - ${data.note || ''}`,
+    driverId: parseInt(data.driverId),
+    liters: m3Val,
+    operatorId: user ? user.id : null,
   });
 
   revalidateTag('utilizationLogs');
