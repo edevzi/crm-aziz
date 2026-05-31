@@ -36,12 +36,22 @@ function OrderRow({ t }: { t: OrderTimeline }) {
 
   return (
     <div className="rounded-2xl border border-slate-200/60 bg-white shadow-sm p-4 sm:p-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3 pb-3 border-b border-slate-100">
-        <span className="font-extrabold text-slate-900">#{t.orderId}</span>
-        {t.scheduledAt && (
-          <span className="text-[11px] text-slate-400 font-medium tabular-nums">
-            план {format(t.scheduledAt, 'd MMM, HH:mm', { locale: ru })}
-          </span>
+      <div className="flex items-start justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
+        <div className="min-w-0">
+          <p className="font-extrabold text-slate-900 text-base sm:text-lg leading-tight">#{t.orderId}</p>
+          {t.scheduledAt && (
+            <p className="text-[11px] text-slate-400 font-medium tabular-nums mt-0.5">
+              план {format(t.scheduledAt, 'd MMM, HH:mm', { locale: ru })}
+            </p>
+          )}
+        </div>
+        {t.durations.total != null && (
+          <div className="text-right flex-shrink-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Время выполнения</p>
+            <p className="text-base sm:text-lg font-extrabold text-emerald-600 tabular-nums leading-tight mt-1">
+              {formatDuration(t.durations.total)}
+            </p>
+          </div>
         )}
       </div>
       <ol>
