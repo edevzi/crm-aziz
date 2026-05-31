@@ -46,7 +46,7 @@ export default async function FinancePage({
             <p className="text-slate-500 mt-1 font-medium">{dict.track_finance}</p>
           </div>
         </div>
-        <div className="flex gap-3 items-center w-full sm:w-auto justify-end">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-end sm:items-center">
           <DashboardDatePicker />
           <ExpenseForm dict={dict} drivers={allDrivers} dispatchers={allDispatchers} />
         </div>
@@ -442,9 +442,9 @@ async function FinancePageContent({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-extrabold text-emerald-600 tracking-tight">
+            <div className="text-2xl sm:text-4xl font-extrabold text-emerald-600 tracking-tight">
               {filteredTotalIncome.toLocaleString()}{' '}
-              <span className="text-xl font-semibold opacity-70">RUB</span>
+              <span className="text-lg sm:text-xl font-semibold opacity-70">RUB</span>
             </div>
             {isFiltered && (
               <p className="text-xs font-semibold text-emerald-700/60 mt-1">
@@ -465,9 +465,9 @@ async function FinancePageContent({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-extrabold text-rose-600 tracking-tight">
+            <div className="text-2xl sm:text-4xl font-extrabold text-rose-600 tracking-tight">
               {filteredTotalExpenses.toLocaleString()}{' '}
-              <span className="text-xl font-semibold opacity-70">RUB</span>
+              <span className="text-lg sm:text-xl font-semibold opacity-70">RUB</span>
             </div>
             {isFiltered && (
               <p className="text-xs font-semibold text-rose-700/60 mt-1">
@@ -488,9 +488,9 @@ async function FinancePageContent({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-4xl font-extrabold tracking-tight ${filteredNetProfit >= 0 ? "text-blue-600" : "text-orange-600"}`}>
+            <div className={`text-2xl sm:text-4xl font-extrabold tracking-tight ${filteredNetProfit >= 0 ? "text-blue-600" : "text-orange-600"}`}>
               {filteredNetProfit.toLocaleString()}{' '}
-              <span className="text-xl font-semibold opacity-70">RUB</span>
+              <span className="text-lg sm:text-xl font-semibold opacity-70">RUB</span>
             </div>
             {isFiltered && (
               <p className={`text-xs font-semibold mt-1 ${filteredNetProfit >= 0 ? "text-blue-700/60" : "text-orange-700/60"}`}>
@@ -525,7 +525,7 @@ async function FinancePageContent({
             <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-slate-100">
               <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">{dict.expenses_breakdown}</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="p-0 overflow-x-auto">
               <Table>
                 <TableHeader className="bg-slate-50/80">
                   <TableRow>
@@ -559,7 +559,7 @@ async function FinancePageContent({
             <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-slate-100">
               <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">{dict.expense_ledger || dict.recent_expenses}</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="p-0 overflow-x-auto">
               <ExpenseLedgerTable 
                 expenses={filteredExpenses.map(expense => {
                   let resolvedCategoryLabel = dict[expense.category as keyof typeof dict] || expense.category.replace('_', ' ');
@@ -586,7 +586,7 @@ async function FinancePageContent({
             <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-slate-100">
               <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">{"Распределение доходов по источникам"}</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="p-0 overflow-x-auto">
               <Table>
                 <TableHeader className="bg-slate-50/80">
                   <TableRow>
@@ -620,7 +620,7 @@ async function FinancePageContent({
             <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-slate-100">
               <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">{dict.income_ledger || "Daromadlar daftari"}</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="p-0 overflow-x-auto">
               <IncomeLedgerTable incomes={filteredIncomes} dict={dict} />
             </CardContent>
           </Card>

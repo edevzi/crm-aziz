@@ -178,7 +178,7 @@ async function OrdersListContent({
       </div>
 
       <Card className="border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl">
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           <OrdersTable 
             orders={allOrders} 
             page={page} 

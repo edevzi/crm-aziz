@@ -49,7 +49,7 @@ export default async function SafePage({
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">{dict.safe || 'Сейф'}</h1>
           <p className="text-muted-foreground mt-2">{dict.safe_overview || 'Учет наличных средств в сейфе.'}</p>
         </div>
-        <div className="flex space-x-2 w-full sm:w-auto justify-end">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
           <CloseShiftForm dict={dict} />
           <SafeTransactionForm dict={dict} type="expense" />
           <SafeTransactionForm dict={dict} type="income" />
@@ -82,7 +82,7 @@ export default async function SafePage({
         <CardHeader>
           <CardTitle>{dict.safe_transactions || 'Транзакции сейфа'}</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           <SafeTransactionsTable transactions={filteredTransactions} dict={dict} />
         </CardContent>
       </Card>

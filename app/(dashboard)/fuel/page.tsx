@@ -92,8 +92,8 @@ export default async function FuelPage() {
                   Остаток на заправке
                 </p>
                 <div className="flex items-end gap-3">
-                  <h2 className="text-4xl font-black text-slate-900">
-                    {currentBalance.toLocaleString()} <span className="text-2xl text-slate-500 font-bold">L</span>
+                  <h2 className="text-2xl sm:text-4xl font-black text-slate-900">
+                    {currentBalance.toLocaleString()} <span className="text-xl sm:text-2xl text-slate-500 font-bold">L</span>
                   </h2>
                 </div>
               </div>

@@ -83,7 +83,7 @@ export default async function WarehousePage({
             <p className="text-slate-500 mt-1 font-medium">Управление объемом отходов</p>
           </div>
         </div>
-        <div className="flex space-x-3 w-full sm:w-auto justify-end">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-end sm:items-center">
           <DashboardDatePicker />
           <WarehouseTransactionForm dict={dict} drivers={allDrivers} />
         </div>
@@ -109,8 +109,8 @@ export default async function WarehousePage({
             <CardTitle className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Всего Приход</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-extrabold text-emerald-600 tracking-tight">
-              {totalInbound.toLocaleString()} <span className="text-xl font-semibold opacity-70">m³</span>
+            <div className="text-2xl sm:text-4xl font-extrabold text-emerald-600 tracking-tight">
+              {totalInbound.toLocaleString()} <span className="text-lg sm:text-xl font-semibold opacity-70">m³</span>
             </div>
           </CardContent>
         </Card>
@@ -123,8 +123,8 @@ export default async function WarehousePage({
             <CardTitle className="text-xs font-bold text-rose-800 uppercase tracking-wider">Всего Расход</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-extrabold text-rose-600 tracking-tight">
-              {totalOutbound.toLocaleString()} <span className="text-xl font-semibold opacity-70">m³</span>
+            <div className="text-2xl sm:text-4xl font-extrabold text-rose-600 tracking-tight">
+              {totalOutbound.toLocaleString()} <span className="text-lg sm:text-xl font-semibold opacity-70">m³</span>
             </div>
           </CardContent>
         </Card>
@@ -134,7 +134,7 @@ export default async function WarehousePage({
         <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-slate-100">
           <CardTitle className="text-sm font-bold text-slate-800 uppercase tracking-wider">История</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           <WarehouseTransactionTable transactions={filteredTransactions} dict={dict} />
         </CardContent>
       </Card>

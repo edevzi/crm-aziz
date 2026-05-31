@@ -45,7 +45,7 @@ export default function LoginForm({ lang }: { lang: string }) {
               <label className="text-sm font-medium">{dict.username || "Имя пользователя"}</label>
               <input
                 type="text"
-                className="w-full p-2 border rounded-md"
+                className="w-full p-3 border rounded-md text-base"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -55,7 +55,7 @@ export default function LoginForm({ lang }: { lang: string }) {
               <label className="text-sm font-medium">{dict.password || "Пароль"}</label>
               <input
                 type="password"
-                className="w-full p-2 border rounded-md"
+                className="w-full p-3 border rounded-md text-base"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

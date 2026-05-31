@@ -100,33 +100,35 @@ export function DashboardDatePicker() {
   const hasFilter = searchParams.has("from") || searchParams.has("to");
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-3">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
       {/* Preset Buttons */}
-      <div className="flex bg-slate-100/80 p-1 rounded-xl shadow-inner border border-slate-200/50">
-        <button onClick={() => setPreset('today')} disabled={isPending} className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
+      <div className="flex bg-slate-100/80 p-1 rounded-xl shadow-inner border border-slate-200/50 w-full sm:w-auto">
+        <button onClick={() => setPreset('today')} disabled={isPending} className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
           {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : null}Сегодня
         </button>
-        <button onClick={() => setPreset('week')} disabled={isPending} className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">Неделя</button>
-        <button onClick={() => setPreset('month')} disabled={isPending} className="px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">Месяц</button>
+        <button onClick={() => setPreset('week')} disabled={isPending} className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">Неделя</button>
+        <button onClick={() => setPreset('month')} disabled={isPending} className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">Месяц</button>
       </div>
 
       <Popover.Root open={open} onOpenChange={setOpen}>
         <Popover.Trigger asChild>
-          <button className={`flex justify-center items-center min-w-0 sm:min-w-[260px] gap-2 bg-white px-3 sm:px-4 py-2 rounded-xl shadow-sm border ${hasFilter ? 'border-indigo-300 text-indigo-700' : 'border-slate-200 text-slate-700'} hover:bg-slate-50 transition-colors text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500`}>
-            <CalendarIcon className={`w-4 h-4 ${hasFilter ? 'text-indigo-500' : 'text-slate-400'}`} />
+          <button className={`flex justify-center items-center w-full sm:w-auto sm:min-w-[240px] gap-2 bg-white px-3 sm:px-4 py-2 rounded-xl shadow-sm border ${hasFilter ? 'border-indigo-300 text-indigo-700' : 'border-slate-200 text-slate-700'} hover:bg-slate-50 transition-colors text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500`}>
+            <CalendarIcon className={`w-4 h-4 flex-shrink-0 ${hasFilter ? 'text-indigo-500' : 'text-slate-400'}`} />
+            <span className="truncate">
             {date?.from ? (
               date.to ? (
                 <>
-                  {format(date.from, "dd.MM.yyyy")}
-                  <ArrowRight className={`w-3.5 h-3.5 mx-1 ${hasFilter ? 'text-indigo-300' : 'text-slate-300'}`} />
-                  {format(date.to, "dd.MM.yyyy")}
+                  {isMobile ? format(date.from, "dd.MM") : format(date.from, "dd.MM.yyyy")}
+                  <ArrowRight className={`w-3 h-3 inline mx-0.5 ${hasFilter ? 'text-indigo-300' : 'text-slate-300'}`} />
+                  {isMobile ? format(date.to, "dd.MM") : format(date.to, "dd.MM.yyyy")}
                 </>
               ) : (
                 format(date.from, "dd.MM.yyyy")
               )
             ) : (
-              <span>Выберите период</span>
+              'Выберите период'
             )}
+            </span>
           </button>
         </Popover.Trigger>
         <Popover.Portal>

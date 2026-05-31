@@ -322,7 +322,7 @@ export default async function DriverDetailPage({
           </div>
         </CardHeader>
 
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           <DriverOrdersTable 
             orders={filtered}
             page={page}

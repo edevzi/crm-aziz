@@ -41,7 +41,7 @@ export default async function OperatorsPage() {
       </div>
 
       <Card className="border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl">
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           <Table>
             <TableHeader className="bg-slate-50/80 border-b border-slate-100">
               <TableRow className="hover:bg-transparent">

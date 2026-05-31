@@ -505,7 +505,7 @@ export default async function ExpensesDetailPage({
               {filteredExpensesList.length} {'записей'}
             </div>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader className="bg-slate-50/80">
                 <TableRow>

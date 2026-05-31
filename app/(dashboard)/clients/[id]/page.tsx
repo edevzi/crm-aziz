@@ -60,13 +60,13 @@ export default async function ClientDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
+      <div className="flex items-center gap-3 min-w-0">
+        <Button variant="outline" size="icon" asChild className="flex-shrink-0">
           <Link href="/clients"><ArrowLeft className="h-4 w-4" /></Link>
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">{client.name}</h1>
-          <p className="text-muted-foreground mt-1">{dict.manage_clients} - {dict.details}</p>
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 truncate">{client.name}</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{dict.manage_clients} - {dict.details}</p>
         </div>
       </div>
 
@@ -100,11 +100,11 @@ export default async function ClientDetailPage({
         </Card>
 
         <Card className="col-span-1 md:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
             <CardTitle>{dict.orders} ({clientOrders.length})</CardTitle>
             <DashboardDatePicker />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0 overflow-x-auto">
             {clientOrders.length > 0 ? (
               <ClientOrdersTable clientOrders={clientOrders} dict={dict} />
             ) : (

@@ -279,7 +279,7 @@ export default async function RevenueDetailPage({
               {'Поступления: Свои машины'} ({ownOrdersList.length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader className="bg-slate-50/20">
                 <TableRow>
@@ -327,7 +327,7 @@ export default async function RevenueDetailPage({
               {'Поступления: Сторонние машины'} ({externalOrdersList.length})
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader className="bg-slate-50/20">
                 <TableRow>

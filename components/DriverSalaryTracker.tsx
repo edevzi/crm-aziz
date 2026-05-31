@@ -231,7 +231,7 @@ export function DriverSalaryTracker({ dict, drivers, expenses }: DriverSalaryTra
                       <span className="text-xs text-slate-400 font-medium">Всего {stats.count} выплат</span>
                     </div>
 
-                    <div className="bg-white rounded-xl overflow-hidden ring-1 ring-slate-100 shadow-inner">
+                    <div className="bg-white rounded-xl overflow-x-auto ring-1 ring-slate-100 shadow-inner">
                       <Table>
                         <TableHeader className="bg-slate-50">
                           <TableRow>
@@ -346,7 +346,7 @@ export function DriverSalaryTracker({ dict, drivers, expenses }: DriverSalaryTra
                     <span className="text-xs text-slate-400 font-medium">Всего {unassignedExpensesList.length} записей</span>
                   </div>
 
-                  <div className="bg-white rounded-xl overflow-hidden ring-1 ring-slate-100 shadow-inner">
+                  <div className="bg-white rounded-xl overflow-x-auto ring-1 ring-slate-100 shadow-inner">
                     <Table>
                       <TableHeader className="bg-slate-50">
                         <TableRow>
@@ -407,7 +407,7 @@ export function DriverSalaryTracker({ dict, drivers, expenses }: DriverSalaryTra
               {filteredAllExpenses.length} записей
             </div>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader className="bg-slate-50/80">
                 <TableRow>
