@@ -351,17 +351,19 @@ export default async function DashboardPage({
               </div>
               <div className="min-w-0">
                 <p className="text-white/70 text-[11px] font-bold uppercase tracking-wider">Статистика водителей</p>
-                <h3 className="text-white text-lg sm:text-xl font-extrabold tracking-tight">Активность и время выполнения</h3>
+                <h3 className="text-white text-lg sm:text-xl font-extrabold tracking-tight">Как быстро водители принимают и выполняют заказы</h3>
               </div>
             </div>
-            <div className="flex items-center gap-5 sm:gap-7">
+            <div className="flex items-center gap-4 sm:gap-6">
               <div className="text-right">
-                <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wide">Ср. приёмка</p>
+                <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wide">Среднее время</p>
+                <p className="text-white/80 text-[10px] font-medium hidden sm:block">от открытия до принятия</p>
                 <p className="text-white text-base sm:text-lg font-extrabold">{formatDuration(driverStats.global.avg.approve)}</p>
               </div>
-              <div className="text-right">
-                <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wide">Ср. выполнение</p>
-                <p className="text-white text-base sm:text-lg font-extrabold">{formatDuration(driverStats.global.avg.total)}</p>
+              <div className="text-right hidden sm:block">
+                <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wide">Завершено заказов</p>
+                <p className="text-white/80 text-[10px] font-medium">за выбранный период</p>
+                <p className="text-white text-base sm:text-lg font-extrabold">{driverStats.global.completedCount}</p>
               </div>
               <ChevronRight className="h-6 w-6 text-white/80 flex-shrink-0" />
             </div>

@@ -99,15 +99,40 @@ export function DashboardDatePicker() {
 
   const hasFilter = searchParams.has("from") || searchParams.has("to");
 
+  // Detect which preset (if any) matches the currently-selected range so we can
+  // highlight it. Operators kept asking "which range am I looking at?" — this
+  // makes it obvious.
+  const activePreset: 'today' | 'week' | 'month' | null = (() => {
+    if (!date?.from || !date?.to) return null;
+    const sod = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime(); };
+    const today = sod(new Date());
+    const f = sod(date.from);
+    const t = sod(date.to);
+    if (t !== today) return null;
+    if (f === today) return 'today';
+    const dayMs = 24 * 60 * 60 * 1000;
+    if ((today - f) / dayMs === 6) return 'week';
+    const firstOfMonth = sod(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    if (f === firstOfMonth) return 'month';
+    return null;
+  })();
+
+  const presetBtn = (active: boolean) =>
+    `flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 ${
+      active
+        ? 'bg-white text-indigo-700 ring-1 ring-indigo-200 shadow-sm'
+        : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+    }`;
+
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
       {/* Preset Buttons */}
       <div className="flex bg-slate-100/80 p-1 rounded-xl shadow-inner border border-slate-200/50 w-full sm:w-auto">
-        <button onClick={() => setPreset('today')} disabled={isPending} className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1">
+        <button onClick={() => setPreset('today')} disabled={isPending} className={presetBtn(activePreset === 'today')}>
           {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : null}Сегодня
         </button>
-        <button onClick={() => setPreset('week')} disabled={isPending} className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">Неделя</button>
-        <button onClick={() => setPreset('month')} disabled={isPending} className="flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">Месяц</button>
+        <button onClick={() => setPreset('week')} disabled={isPending} className={presetBtn(activePreset === 'week')}>Неделя</button>
+        <button onClick={() => setPreset('month')} disabled={isPending} className={presetBtn(activePreset === 'month')}>Месяц</button>
       </div>
 
       <Popover.Root open={open} onOpenChange={setOpen}>

@@ -1,18 +1,35 @@
 import React from 'react';
 import { format } from 'date-fns';
-import { ArrowRight, Package } from 'lucide-react';
+import { ru } from 'date-fns/locale';
+import { Package, FilePlus2, Eye, CheckCircle2, Truck, PackagePlus, Recycle, Flag, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { formatDuration, type OrderTimeline } from '@/lib/driver-stats';
+import { formatDuration, type OrderTimeline } from '@/lib/driver-stats-compute';
+import { stageQuality, type StageKey, type Quality } from '@/lib/driver-stats-meta';
 
-const STEPS: { key: keyof OrderTimeline; label: string; dot: string }[] = [
-  { key: 'createdAt', label: 'Создан', dot: 'bg-slate-300' },
-  { key: 'viewedAt', label: 'Просмотрел', dot: 'bg-sky-400' },
-  { key: 'assignedAt', label: 'Принял', dot: 'bg-amber-400' },
-  { key: 'inProgressAt', label: 'Выехал', dot: 'bg-orange-500' },
-  { key: 'containerPlacedAt', label: 'Поставил', dot: 'bg-teal-500' },
-  { key: 'pickedUpAt', label: 'Забрал', dot: 'bg-emerald-500' },
-  { key: 'completedAt', label: 'Завершил', dot: 'bg-violet-600' },
+const NODES: { event: string; label: string; key: keyof OrderTimeline; icon: any; grad: string; actor: string }[] = [
+  { event: 'created', label: 'Заказ создан', key: 'createdAt', icon: FilePlus2, grad: 'from-slate-400 to-slate-500', actor: 'оператор' },
+  { event: 'viewed', label: 'Открыл в приложении', key: 'viewedAt', icon: Eye, grad: 'from-sky-400 to-cyan-500', actor: 'водитель' },
+  { event: 'assigned', label: 'Принял заказ', key: 'assignedAt', icon: CheckCircle2, grad: 'from-violet-500 to-indigo-500', actor: 'водитель' },
+  { event: 'in_progress', label: 'Выехал к клиенту', key: 'inProgressAt', icon: Truck, grad: 'from-sky-500 to-blue-500', actor: 'водитель' },
+  { event: 'container_placed', label: 'Поставил контейнер', key: 'containerPlacedAt', icon: PackagePlus, grad: 'from-teal-500 to-emerald-500', actor: 'водитель' },
+  { event: 'picked_up', label: 'Забрал контейнер', key: 'pickedUpAt', icon: Recycle, grad: 'from-fuchsia-500 to-purple-500', actor: 'водитель' },
+  { event: 'completed', label: 'Завершил заказ', key: 'completedAt', icon: Flag, grad: 'from-emerald-500 to-green-600', actor: 'водитель' },
 ];
+
+const TO_STAGE: Record<string, StageKey | undefined> = {
+  assigned: 'approve',
+  in_progress: 'start',
+  container_placed: 'place',
+  picked_up: 'pickup',
+  completed: 'complete',
+};
+
+const QGAP: Record<Quality, string> = {
+  good: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
+  ok: 'bg-amber-50 text-amber-700 ring-amber-100',
+  slow: 'bg-rose-50 text-rose-700 ring-rose-100',
+  neutral: 'bg-slate-50 text-slate-600 ring-slate-100',
+};
 
 function statusBadge(status: string) {
   switch (status) {
@@ -27,57 +44,74 @@ function statusBadge(status: string) {
 }
 
 function OrderRow({ t }: { t: OrderTimeline }) {
-  // Keep only the steps that actually happened, with the gap from the previous one.
-  const present: { label: string; dot: string; time: Date; deltaFromPrev: number | null }[] = [];
-  let prev: Date | null = null;
-  for (const s of STEPS) {
-    const time = t[s.key] as Date | null;
-    if (!time) continue;
-    const deltaFromPrev = prev ? Math.max(0, Math.round((time.getTime() - prev.getTime()) / 1000)) : null;
-    present.push({ label: s.label, dot: s.dot, time, deltaFromPrev });
-    prev = time;
-  }
+  const present = NODES.map((n) => ({ ...n, time: t[n.key] as Date | null })).filter((n) => n.time);
 
   return (
-    <div className="rounded-2xl border border-slate-200/60 bg-white shadow-sm p-4 sm:p-5">
-      {/* Order header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="font-extrabold text-slate-800">#{t.orderId}</span>
-          {statusBadge(t.status)}
-          <span className="text-sm text-slate-500 truncate">{t.clientName || t.address || '—'}</span>
+    <div className="ds-fade rounded-2xl border border-slate-200/60 bg-white shadow-sm p-4 sm:p-5">
+      {/* header */}
+      <div className="flex flex-wrap items-start justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-extrabold text-slate-800">Заказ #{t.orderId}</span>
+            {statusBadge(t.status)}
+          </div>
+          {(t.clientName || t.address) && (
+            <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
+              {t.address && <MapPin className="h-3.5 w-3.5 text-slate-400" />}
+              <span className="truncate">{t.clientName || ''}{t.clientName && t.address ? ' · ' : ''}{t.address || ''}</span>
+            </p>
+          )}
         </div>
-        <div className="flex items-center gap-3 text-xs text-slate-400 font-medium">
-          {t.scheduledAt && <span>План: {format(t.scheduledAt, 'dd.MM.yyyy HH:mm')}</span>}
-          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold">
-            Итого: {formatDuration(t.durations.total)}
-          </span>
-        </div>
+        {t.scheduledAt && (
+          <div className="text-right">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Плановое время</p>
+            <p className="text-sm font-bold text-slate-700">{format(t.scheduledAt, 'd MMM, HH:mm', { locale: ru })}</p>
+          </div>
+        )}
       </div>
 
-      {/* Timeline of steps that actually happened */}
-      <div className="flex flex-wrap items-center gap-y-3">
-        {present.map((p, i) => (
-          <React.Fragment key={p.label}>
-            {i > 0 && (
-              <div className="flex items-center gap-1 px-1.5 text-slate-400">
-                <ArrowRight className="h-3.5 w-3.5" />
-                <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">
-                  {formatDuration(p.deltaFromPrev)}
+      {/* timeline */}
+      <ol className="space-y-0">
+        {present.map((node, i) => {
+          const Icon = node.icon;
+          const next = present[i + 1];
+          let gapNode: React.ReactNode = null;
+          if (next) {
+            const seconds = Math.max(0, Math.round((next.time!.getTime() - node.time!.getTime()) / 1000));
+            const stageKey = TO_STAGE[next.event];
+            const q: Quality = stageKey ? stageQuality(stageKey, seconds) : 'neutral';
+            gapNode = (
+              <div className="ml-3.5 flex items-center gap-2 py-1.5">
+                <div className="w-0.5 h-5 bg-slate-200" />
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ring-1 ${QGAP[q]}`}>
+                  {formatDuration(seconds)}
                 </span>
-                <ArrowRight className="h-3.5 w-3.5" />
               </div>
-            )}
-            <div className="flex items-center gap-2 rounded-xl bg-slate-50 border border-slate-200/70 px-3 py-1.5">
-              <span className={`h-2.5 w-2.5 rounded-full ${p.dot} flex-shrink-0`} />
-              <div className="leading-tight">
-                <div className="text-[11px] font-bold text-slate-600">{p.label}</div>
-                <div className="text-[11px] text-slate-400 font-mono">{format(p.time, 'dd.MM HH:mm')}</div>
+            );
+          }
+          return (
+            <li key={node.event}>
+              <div className="flex items-start gap-3">
+                <div
+                  className={`h-7 w-7 rounded-full bg-gradient-to-br ${node.grad} flex items-center justify-center shadow-sm flex-shrink-0 mt-0.5`}
+                >
+                  <Icon className="h-3.5 w-3.5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0 flex items-baseline justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-slate-800 leading-tight">{node.label}</p>
+                    <p className="text-[11px] text-slate-400">{node.actor}</p>
+                  </div>
+                  <p className="text-xs text-slate-600 font-bold tabular-nums whitespace-nowrap">
+                    {format(node.time!, 'd MMM, HH:mm', { locale: ru })}
+                  </p>
+                </div>
               </div>
-            </div>
-          </React.Fragment>
-        ))}
-      </div>
+              {gapNode}
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }
@@ -96,7 +130,7 @@ export function DriverActivityTimeline({ timelines }: { timelines: OrderTimeline
   }
 
   return (
-    <div className="space-y-3">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
       {timelines.map((t) => (
         <OrderRow key={t.orderId} t={t} />
       ))}

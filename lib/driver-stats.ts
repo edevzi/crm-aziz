@@ -13,14 +13,63 @@ import {
 export { averageDurations, formatDuration } from './driver-stats-compute';
 export type { StageDurations, OrderTimeline, DriverStat } from './driver-stats-compute';
 
+export interface PeriodInfo {
+  from: string;
+  to: string;
+  label: string;
+  name: string;
+}
+
 export interface DriverStatsOverview {
   drivers: DriverStat[];
   global: {
     driverCount: number;
     orderCount: number;
     completedCount: number;
+    activeCount: number;
     avg: ReturnType<typeof averageDurations>;
   };
+  activeOrders: OrderTimeline[];
+  period: PeriodInfo;
+}
+
+function fmtDmy(d: Date): string {
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+}
+
+function startOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+/** Detect a friendly preset name from a date range (today / 7 days / current month / custom). */
+export function periodMetadata(from: Date, to: Date): PeriodInfo {
+  const sameDay = from.toDateString() === to.toDateString();
+  const label = sameDay ? fmtDmy(from) : `${fmtDmy(from)} — ${fmtDmy(to)}`;
+
+  const today = startOfDay(new Date());
+  const f = startOfDay(from);
+  const t = startOfDay(to);
+
+  let name = 'Произвольный период';
+  if (f.getTime() === today.getTime() && t.getTime() === today.getTime()) {
+    name = 'Сегодня';
+  } else if (t.getTime() === today.getTime()) {
+    const days = Math.round((today.getTime() - f.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    if (days === 7) name = 'За 7 дней';
+    else if (days === 30) name = 'За 30 дней';
+    else {
+      const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      if (f.getTime() === firstOfMonth.getTime()) name = 'За месяц';
+    }
+  }
+
+  return { from: from.toISOString(), to: to.toISOString(), label, name };
+}
+
+function isActiveStatus(s: string): boolean {
+  return s !== 'completed' && s !== 'new';
 }
 
 function scheduledRangeConditions(from?: string, to?: string) {
@@ -38,6 +87,9 @@ function scheduledRangeConditions(from?: string, to?: string) {
 
 /** Aggregate activity stats for every driver (+ global averages) in the given period. */
 export async function getDriverStatsOverview(from?: string, to?: string): Promise<DriverStatsOverview> {
+  const now = new Date();
+  const periodFrom = from ? new Date(from) : new Date(now.getFullYear(), now.getMonth(), 1);
+  const periodTo = to ? new Date(to) : now;
   const conditions = [isNotNull(orders.driverId), ...scheduledRangeConditions(from, to)];
 
   const rows = await db
@@ -47,10 +99,13 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
       event: orderEvents.event,
       at: orderEvents.createdAt,
       status: orders.status,
+      address: orders.address,
+      clientName: clients.name,
       scheduledAt: orders.scheduledAt,
     })
     .from(orderEvents)
     .innerJoin(orders, eq(orderEvents.orderId, orders.id))
+    .leftJoin(clients, eq(orders.clientId, clients.id))
     .where(and(...conditions));
 
   const allDrivers = await db.select().from(drivers).orderBy(drivers.name);
@@ -60,7 +115,14 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
     let entry = byOrder.get(r.orderId);
     if (!entry) {
       entry = {
-        base: { orderId: r.orderId, driverId: r.driverId, status: r.status, address: null, clientName: null, scheduledAt: toDate(r.scheduledAt) },
+        base: {
+          orderId: r.orderId,
+          driverId: r.driverId,
+          status: r.status,
+          address: r.address,
+          clientName: r.clientName,
+          scheduledAt: toDate(r.scheduledAt),
+        },
         events: [],
       };
       byOrder.set(r.orderId, entry);
@@ -69,6 +131,13 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
   }
 
   const timelines: OrderTimeline[] = Array.from(byOrder.values()).map((e) => buildTimeline(e.base, e.events));
+  const activeOrders = timelines
+    .filter((t) => isActiveStatus(t.status))
+    .sort((a, b) => {
+      const ta = (a.scheduledAt ?? a.createdAt)?.getTime() ?? 0;
+      const tb = (b.scheduledAt ?? b.createdAt)?.getTime() ?? 0;
+      return ta - tb;
+    });
 
   const byDriver = new Map<number, OrderTimeline[]>();
   for (const t of timelines) {
@@ -99,8 +168,11 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
       driverCount: driverStats.length,
       orderCount: timelines.length,
       completedCount: timelines.filter((t) => t.completedAt != null).length,
+      activeCount: activeOrders.length,
       avg: averageDurations(timelines),
     },
+    activeOrders,
+    period: periodMetadata(periodFrom, periodTo),
   };
 }
 
