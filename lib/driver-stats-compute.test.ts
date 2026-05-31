@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { buildTimeline, averageDurations, formatDuration, type OrderTimelineBase } from './driver-stats-compute';
+import {
+  buildTimeline,
+  averageDurations,
+  stageStats,
+  formatDuration,
+  type OrderTimelineBase,
+} from './driver-stats-compute';
 
 const base: OrderTimelineBase = {
   orderId: 1,
@@ -82,6 +88,99 @@ describe('buildTimeline — out-of-order guard', () => {
 
   it('returns null for negative durations', () => {
     expect(t.durations.approve).toBeNull();
+  });
+});
+
+describe('buildTimeline — dataQuality', () => {
+  it('flags a missing core event within the elapsed span (the #2082 case)', () => {
+    // No container_placed, but the order reached picked_up + completed.
+    const t = buildTimeline(base, [
+      { event: 'created', at: D('10:00:00') },
+      { event: 'viewed', at: D('10:05:00') },
+      { event: 'assigned', at: D('10:08:00') },
+      { event: 'in_progress', at: D('10:18:00') },
+      { event: 'picked_up', at: D('10:38:00') },
+      { event: 'completed', at: D('10:40:00') },
+    ]);
+    expect(t.dataQuality.missingEvents).toContain('container_placed');
+    expect(t.dataQuality.outOfOrder).toBe(false);
+  });
+
+  it('does not flag events that simply have not happened yet', () => {
+    const t = buildTimeline(
+      { ...base, status: 'in_progress' },
+      [
+        { event: 'created', at: D('10:00:00') },
+        { event: 'assigned', at: D('10:05:00') },
+        { event: 'in_progress', at: D('10:10:00') },
+      ],
+    );
+    expect(t.dataQuality.missingEvents).toEqual([]);
+    expect(t.dataQuality.outOfOrder).toBe(false);
+  });
+
+  it('flags non-monotonic timestamps', () => {
+    const t = buildTimeline(base, [
+      { event: 'viewed', at: D('10:10:00') },
+      { event: 'assigned', at: D('10:05:00') }, // before viewed
+    ]);
+    expect(t.dataQuality.outOfOrder).toBe(true);
+  });
+
+  it('a clean full sequence has no data-quality flags', () => {
+    const t = buildTimeline(base, [
+      { event: 'created', at: D('10:00:00') },
+      { event: 'viewed', at: D('10:05:00') },
+      { event: 'assigned', at: D('10:08:00') },
+      { event: 'in_progress', at: D('10:18:00') },
+      { event: 'container_placed', at: D('10:48:00') },
+      { event: 'picked_up', at: D('11:18:00') },
+      { event: 'completed', at: D('11:20:00') },
+    ]);
+    expect(t.dataQuality.missingEvents).toEqual([]);
+    expect(t.dataQuality.outOfOrder).toBe(false);
+  });
+});
+
+describe('stageStats', () => {
+  it('computes median/mean/min/max and the REAL per-stage n (ignoring nulls)', () => {
+    const mk = (assignMin: number) =>
+      buildTimeline(base, [
+        { event: 'viewed', at: D('10:00:00') },
+        { event: 'assigned', at: D(`10:${String(assignMin).padStart(2, '0')}:00`) },
+      ]);
+    const a = mk(2); // approve 120
+    const b = mk(6); // approve 360
+    const c = mk(12); // approve 720
+
+    const s = stageStats([a, b, c]);
+    expect(s.approve.n).toBe(3);
+    expect(s.approve.median).toBe(360);
+    expect(s.approve.mean).toBe(400); // (120+360+720)/3
+    expect(s.approve.min).toBe(120);
+    expect(s.approve.max).toBe(720);
+    // None of these orders departed, so `start` has no samples at all.
+    expect(s.start.n).toBe(0);
+    expect(s.start.median).toBeNull();
+  });
+
+  it('median resists an outlier that would drag the mean (rental-dwell scenario)', () => {
+    const short = buildTimeline(base, [
+      { event: 'container_placed', at: D('10:00:00') },
+      { event: 'picked_up', at: D('11:00:00') }, // pickup 1h
+    ]);
+    const short2 = buildTimeline(base, [
+      { event: 'container_placed', at: D('10:00:00') },
+      { event: 'picked_up', at: D('12:00:00') }, // pickup 2h
+    ]);
+    const marathon = buildTimeline(base, [
+      { event: 'container_placed', at: D('10:00:00') },
+      { event: 'picked_up', at: D('22:00:00') }, // pickup 12h
+    ]);
+    const s = stageStats([short, short2, marathon]);
+    expect(s.pickup.median).toBe(7200); // 2h — unmoved by the 12h outlier
+    expect(s.pickup.mean).toBe(18000); // 5h — dragged up by it
+    expect(s.pickup.max).toBe(43200);
   });
 });
 

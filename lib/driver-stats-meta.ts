@@ -12,15 +12,16 @@ export interface StageMeta {
   good?: number; // <= good (sec) → fast (green)
   ok?: number; // <= ok (sec) → medium (amber); above → slow (red)
   neutral?: boolean; // not a driver-speed metric (e.g. rental period)
+  controllable: boolean; // true = reflects driver speed; false = external (rental dwell)
 }
 
 // Ordered along the real order lifecycle.
 export const STAGES: StageMeta[] = [
-  { key: 'approve', title: 'Принял заказ', flow: 'увидел → принял', good: 10 * 60, ok: 30 * 60 },
-  { key: 'start', title: 'Выехал', flow: 'принял → выехал', good: 30 * 60, ok: 90 * 60 },
-  { key: 'place', title: 'Установил', flow: 'выехал → поставил', good: 60 * 60, ok: 120 * 60 },
-  { key: 'pickup', title: 'Забрал', flow: 'поставил → забрал', neutral: true }, // зависит от срока аренды
-  { key: 'complete', title: 'Завершил', flow: 'забрал → завершил', good: 15 * 60, ok: 45 * 60 },
+  { key: 'approve', title: 'Принял заказ', flow: 'увидел → принял', good: 10 * 60, ok: 30 * 60, controllable: true },
+  { key: 'start', title: 'Выехал', flow: 'принял → выехал', good: 30 * 60, ok: 90 * 60, controllable: true },
+  { key: 'place', title: 'Установил', flow: 'выехал → поставил', good: 60 * 60, ok: 120 * 60, controllable: true },
+  { key: 'pickup', title: 'Забрал', flow: 'поставил → забрал', neutral: true, controllable: false }, // зависит от срока аренды
+  { key: 'complete', title: 'Завершил', flow: 'забрал → завершил', good: 15 * 60, ok: 45 * 60, controllable: true },
 ];
 
 export const STAGE_BY_KEY: Record<StageKey, StageMeta> = Object.fromEntries(
@@ -41,6 +42,28 @@ export const QUALITY_LABEL: Record<Quality, string> = {
   slow: 'Медленно',
   neutral: '',
 };
+
+export interface StageClassification {
+  quality: Quality;
+  controllable: boolean;
+  breached: boolean; // a controllable stage that ran slower than its `ok` limit
+  target: number | null; // `good` target (sec) — the goal
+  limit: number | null; // `ok` upper bound (sec) — breaching this turns it red
+}
+
+/** One call gives the UI everything it needs: verdict, whether it's a real breach, and the thresholds. */
+export function classifyStage(key: StageKey, seconds: number | null | undefined): StageClassification {
+  const meta = STAGE_BY_KEY[key];
+  const quality = stageQuality(key, seconds);
+  const controllable = !!meta?.controllable;
+  return {
+    quality,
+    controllable,
+    breached: controllable && quality === 'slow',
+    target: meta?.good ?? null,
+    limit: meta?.ok ?? null,
+  };
+}
 
 /** Overall driver speed = worst of the judged (non-rental) stages that have data. */
 export function overallRating(d: StageDurations): Quality {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { FilePlus2, Eye, CheckCircle2, Truck, PackagePlus, Recycle, Flag } from 'lucide-react';
+import { FilePlus2, Eye, CheckCircle2, Truck, PackagePlus, Recycle, Flag, AlertTriangle } from 'lucide-react';
 import { formatDuration, type OrderTimeline } from '@/lib/driver-stats-compute';
 import { stageQuality, type StageKey, type Quality } from '@/lib/driver-stats-meta';
 
@@ -30,9 +30,19 @@ const QGAP: Record<Quality, string> = {
   neutral: 'bg-slate-50 text-slate-500 ring-slate-200',
 };
 
+const EVENT_LABEL: Record<string, string> = {
+  assigned: 'принял',
+  in_progress: 'выехал',
+  container_placed: 'поставил контейнер',
+  picked_up: 'забрал',
+  completed: 'завершил',
+};
+
 /** Single-order replay — confirmed clear by the user. Kept lean. */
 function OrderRow({ t }: { t: OrderTimeline }) {
   const present = NODES.map((n) => ({ ...n, time: t[n.key] as Date | null })).filter((n) => n.time);
+  const missing = t.dataQuality.missingEvents;
+  const hasIssue = missing.length > 0 || t.dataQuality.outOfOrder;
 
   return (
     <div className="rounded-2xl border border-slate-200/60 bg-white shadow-sm p-4 sm:p-5">
@@ -54,6 +64,20 @@ function OrderRow({ t }: { t: OrderTimeline }) {
           </div>
         )}
       </div>
+      {hasIssue && (
+        <div className="flex items-start gap-1.5 rounded-lg bg-amber-50 ring-1 ring-amber-100 px-2.5 py-1.5 mb-3">
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-px" />
+          <p className="text-[11px] text-amber-700 leading-snug">
+            {missing.length > 0 && (
+              <>
+                Нет события: {missing.map((e) => EVENT_LABEL[e] ?? e).join(', ')}. Время соседнего этапа может быть
+                завышено.
+              </>
+            )}
+            {t.dataQuality.outOfOrder && <> События отметок времени не по порядку.</>}
+          </p>
+        </div>
+      )}
       <ol>
         {present.map((node, i) => {
           const Icon = node.icon;

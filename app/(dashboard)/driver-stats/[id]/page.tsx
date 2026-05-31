@@ -12,7 +12,7 @@ import { ResponseGauge } from '@/components/stats/ResponseGauge';
 import { JourneyBars } from '@/components/stats/JourneyBars';
 import { OrderList } from '@/components/stats/OrderList';
 import { DriverActivityTimeline } from '@/components/DriverActivityTimeline';
-import { getDriverActivity, averageDurations, formatDuration } from '@/lib/driver-stats';
+import { getDriverActivity, averageDurations, stageStats, formatDuration } from '@/lib/driver-stats';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,6 +39,7 @@ export default async function DriverStatsDetailPage({
   const completedTimelines = timelines.filter((t) => t.completedAt != null);
   const openTimelines = timelines.filter((t) => isOpen(t.status));
   const avg = averageDurations(timelines);
+  const stats = stageStats(timelines);
 
   const qs = new URLSearchParams();
   if (from) qs.set('from', from);
@@ -106,9 +107,9 @@ export default async function DriverStatsDetailPage({
         <Card className="border border-slate-200/60 shadow-sm rounded-2xl bg-white">
           <CardContent className="p-5 sm:p-6">
             <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-1">
-              Путь заказа · среднее время на этап
+              Путь заказа · время на этап
             </h2>
-            <JourneyBars durations={avg} sampleCount={timelines.length} />
+            <JourneyBars stats={stats} />
           </CardContent>
         </Card>
 

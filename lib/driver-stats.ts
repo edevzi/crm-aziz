@@ -4,14 +4,15 @@ import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import {
   buildTimeline,
   averageDurations,
+  stageStats,
   toDate,
   type OrderTimeline,
   type DriverStat,
 } from './driver-stats-compute';
 
 // Re-export the pure helpers/types so existing call sites keep importing from '@/lib/driver-stats'.
-export { averageDurations, formatDuration } from './driver-stats-compute';
-export type { StageDurations, OrderTimeline, DriverStat } from './driver-stats-compute';
+export { averageDurations, stageStats, formatDuration } from './driver-stats-compute';
+export type { StageDurations, StageStat, StageStats, DataQuality, OrderTimeline, DriverStat } from './driver-stats-compute';
 
 export interface PeriodInfo {
   from: string;
@@ -31,6 +32,7 @@ export interface DriverStatsOverview {
     completedCount: number;
     activeCount: number;
     avg: ReturnType<typeof averageDurations>;
+    stats: ReturnType<typeof stageStats>;
   };
   activeOrders: OrderTimeline[];
   period: PeriodInfo;
@@ -185,6 +187,7 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
       completedCount: timelines.filter((t) => t.completedAt != null).length,
       activeCount: activeOrders.length,
       avg: averageDurations(timelines),
+      stats: stageStats(timelines),
     },
     activeOrders,
     period: periodMetadata(periodFrom, periodTo),
