@@ -12,7 +12,9 @@
     "db:seed": "node --env-file=.env --import tsx lib/seed.ts",
     "db:check": "node --env-file=.env --import tsx lib/check-orders.ts",
     "db:clear-driver-orders": "node --env-file=.env --import tsx lib/clear-driver-orders.ts",
-    "db:clean": "node --env-file=.env --import tsx lib/clean.ts"
+    "db:clean": "node --env-file=.env --import tsx lib/clean.ts",
+    "db:add-events": "node --env-file=.env --import tsx lib/add-order-events.ts",
+    "db:seed-events": "node --env-file=.env --import tsx lib/seed-driver-events.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3",

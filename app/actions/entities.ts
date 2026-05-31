@@ -17,6 +17,7 @@ import { eq, and, desc } from 'drizzle-orm';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { getCurrentUser } from '@/lib/auth';
 import { sendPushNotification } from '@/lib/push-notifications';
+import { logOrderEvent, type OrderEventName } from '@/lib/order-events';
 
 // Gas Station Inbounds
 export async function addGasStationInbound(data: { liters: number; note?: string; recordedAt?: Date }) {
@@ -463,6 +464,14 @@ export async function createOrder(data: any) {
       isClosed,
     }).returning();
 
+    // Record creation as the first activity event (baseline for driver statistics)
+    await logOrderEvent({
+      orderId: newOrder.id,
+      driverId: newOrder.driverId,
+      event: 'created',
+      actor: 'operator',
+    });
+
     // Send Push Notification if assigned to a driver
     if (!isExternalVehicle && newOrder.driverId) {
       const [driver] = await db.select().from(drivers).where(eq(drivers.id, newOrder.driverId));
@@ -659,6 +668,16 @@ export async function updateOrder(id: number, data: any) {
       externalDriverName: isExternalVehicle ? data.externalDriverName : null,
       isClosed,
     }).where(eq(orders.id, id));
+
+    // Record an operator-driven status change as an activity event (for driver statistics)
+    if (status && status !== previousStatus) {
+      await logOrderEvent({
+        orderId: id,
+        driverId: (!isExternalVehicle && data.driverId) ? parseInt(data.driverId) : null,
+        event: status as OrderEventName,
+        actor: 'operator',
+      });
+    }
 
     // Send Push Notification if driver changed or assigned
     if (!isExternalVehicle && data.driverId && order.driverId !== parseInt(data.driverId)) {

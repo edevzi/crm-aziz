@@ -8,12 +8,13 @@ import { format } from 'date-fns';
 import { cookies } from 'next/headers';
 import { getDictionary } from '@/lib/dictionaries';
 import { TableRowLink } from '@/components/TableRowLink';
-import { LayoutDashboard, Users, Truck, DollarSign, Fuel, CarFront, FileWarning, Recycle, Wrench, Briefcase, HandCoins, Warehouse } from 'lucide-react';
+import { LayoutDashboard, Users, Truck, DollarSign, Fuel, CarFront, FileWarning, Recycle, Wrench, Briefcase, HandCoins, Warehouse, Activity, ChevronRight } from 'lucide-react';
 import { DashboardCharts } from '@/components/DashboardCharts';
 import { DashboardDatePicker } from '@/components/DashboardDatePicker';
 import { MetricCard } from '@/components/MetricCard';
 import { getCurrentUser } from '@/lib/auth';
 import { isOverdue } from '@/lib/utils';
+import { getDriverStatsOverview, formatDuration } from '@/lib/driver-stats';
 
 export const dynamic = 'force-dynamic';
 
@@ -276,6 +277,8 @@ export default async function DashboardPage({
   const resolvedFromParam = fromParam || format(currentFrom, 'yyyy-MM-dd');
   const resolvedToParam = toParam || format(currentTo, 'yyyy-MM-dd');
 
+  const driverStats = await getDriverStatsOverview(resolvedFromParam, resolvedToParam);
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -338,7 +341,35 @@ export default async function DashboardPage({
         />
       </div>
 
-      <DashboardCharts 
+      {/* Driver statistics shortcut */}
+      <Link href="/driver-stats" className="block">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-purple-500/20 p-5 sm:p-6 hover:brightness-105 transition-all active:scale-[0.99]">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
+                <Activity className="h-6 w-6 text-white" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/70 text-[11px] font-bold uppercase tracking-wider">Статистика водителей</p>
+                <h3 className="text-white text-lg sm:text-xl font-extrabold tracking-tight">Активность и время выполнения</h3>
+              </div>
+            </div>
+            <div className="flex items-center gap-5 sm:gap-7">
+              <div className="text-right">
+                <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wide">Ср. приёмка</p>
+                <p className="text-white text-base sm:text-lg font-extrabold">{formatDuration(driverStats.global.avg.approve)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wide">Ср. выполнение</p>
+                <p className="text-white text-base sm:text-lg font-extrabold">{formatDuration(driverStats.global.avg.total)}</p>
+              </div>
+              <ChevronRight className="h-6 w-6 text-white/80 flex-shrink-0" />
+            </div>
+          </div>
+        </div>
+      </Link>
+
+      <DashboardCharts
         financeData={chartFinanceData} 
         expensesByCategory={chartExpensesByCategory} 
         dict={dict} 

@@ -504,6 +504,7 @@ function AppInner() {
 
   const knownOrderIds = useRef<Set<number>>(new Set());
   const initialFetchDone = useRef(false);
+  const viewedOrderIds = useRef<Set<number>>(new Set());
 
   const [isTrackingGps, setIsTrackingGps] = useState(false);
   const locationSubscription = useRef<Location.LocationSubscription | null>(null);
@@ -527,6 +528,23 @@ function AppInner() {
     const portSuffix = port ? `:${port}` : '';
     return `http://${serverIp}${portSuffix}/api`;
   }, [serverIp, port]);
+
+  // Report (once per session) that the driver has opened/seen an order — used for
+  // driver statistics ("time to accept" is measured from this moment). Fire-and-forget;
+  // the backend stores only the first view per order.
+  const markOrderViewed = useCallback((orderId: number) => {
+    if (!driver) return;
+    if (viewedOrderIds.current.has(orderId)) return;
+    viewedOrderIds.current.add(orderId);
+    fetch(`${getApiUrl()}/driver/orders/${orderId}/viewed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ driverId: driver.id }),
+    }).catch((e) => {
+      console.warn('Failed to report order view:', e);
+      viewedOrderIds.current.delete(orderId);
+    });
+  }, [driver, getApiUrl]);
 
   const formatDate = useCallback((dateStr: string) => {
     try {
@@ -914,6 +932,9 @@ function AppInner() {
 
   const handleUpdateStatus = async (orderId: number, newStatus: string) => {
     if (updatingOrderId !== null) return;
+    // Ensure a "viewed" timestamp exists at-or-before the first action (e.g. accepting
+    // straight from the list without opening the detail).
+    markOrderViewed(orderId);
     setUpdatingOrderId(orderId);
     try {
       const response = await fetch(`${getApiUrl()}/driver/orders/${orderId}`, {
@@ -1397,6 +1418,7 @@ function AppInner() {
   }, [historyFilter]);
 
   const openOrder = (order: Order) => {
+    markOrderViewed(order.id);
     setShowOrderDetails(false);
     setSelectedOrder(order);
   };

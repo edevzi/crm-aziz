@@ -3,6 +3,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { db } from '@/lib/db';
 import { orders, expenses } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
+import { logOrderEvent, type OrderEventName } from '@/lib/order-events';
 
 export async function PUT(
   request: Request,
@@ -98,6 +99,16 @@ export async function PUT(
 
     if (updated.length === 0) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    // Record the driver's status-change as an activity event (for driver statistics)
+    if (status && status !== previousStatus) {
+      await logOrderEvent({
+        orderId,
+        driverId: order.driverId,
+        event: status as OrderEventName,
+        actor: 'driver',
+      });
     }
 
     // When driver completes the order: auto-enter payment for non-cash orders

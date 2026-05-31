@@ -17,7 +17,8 @@ import {
   Users,
   Car,
   Sliders,
-  Phone
+  Phone,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDictionary } from "@/lib/dictionaries";
@@ -39,6 +40,7 @@ export function MobileSidebar({ lang = 'ru', userRole }: { lang?: string, userRo
     { label: dict.orders, icon: ClipboardList, href: "/orders" },
     { label: dict.clients, icon: Users, href: "/clients" },
     { label: dict.drivers, icon: Car, href: "/drivers" },
+    { label: dict.driver_stats || 'Статистика водителей', icon: Activity, href: "/driver-stats" },
     { label: 'Диспетчеры', icon: Phone, href: "/dispatchers" },
     { label: dict.warehouse, icon: Warehouse, href: "/warehouse" },
     { label: dict.safe, icon: Wallet, href: "/safe" },

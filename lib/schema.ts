@@ -146,6 +146,15 @@ export const safeTransactions = pgTable('safe_transactions', {
   recordedAt: timestamp('recorded_at').defaultNow().notNull(),
 });
 
+export const orderEvents = pgTable('order_events', {
+  id: serial('id').primaryKey(),
+  orderId: integer('order_id').references(() => orders.id).notNull(),
+  driverId: integer('driver_id').references(() => drivers.id),
+  event: text('event').notNull(), // 'created'|'viewed'|'assigned'|'in_progress'|'container_placed'|'picked_up'|'completed'
+  actor: text('actor').default('driver').notNull(), // 'driver'|'operator'|'system'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
 export const gasStationInbounds = pgTable('gas_station_inbounds', {
   id: serial('id').primaryKey(),
   liters: integer('liters').notNull(),

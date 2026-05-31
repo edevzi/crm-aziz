@@ -5,6 +5,7 @@ import { orders, warehouseTransactions, expenses } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { getCurrentUser } from '@/lib/auth';
+import { logOrderEvent, type OrderEventName } from '@/lib/order-events';
 
 export async function updateOrderStatus(orderId: number, status: any) {
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
@@ -28,9 +29,19 @@ export async function updateOrderStatus(orderId: number, status: any) {
 
   await db.update(orders).set(updateData).where(eq(orders.id, orderId));
 
+  // Record the operator's status-change as an activity event (for driver statistics)
+  if (status && status !== previousStatus) {
+    await logOrderEvent({
+      orderId,
+      driverId: order.driverId,
+      event: status as OrderEventName,
+      actor: 'operator',
+    });
+  }
+
   if (status === 'completed' && previousStatus !== 'completed') {
     const user = await getCurrentUser();
-    
+
     // Check if dispatcher fee expense already exists for this order
     if (order.dispatcherFee && order.dispatcherFee > 0 && order.dispatcherId) {
       const [existingDisp] = await db.select().from(expenses).where(

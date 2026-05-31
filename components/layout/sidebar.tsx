@@ -18,6 +18,7 @@ import {
   Phone,
   Recycle,
   Bell,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDictionary } from "@/lib/dictionaries";
@@ -40,6 +41,7 @@ export function Sidebar({
     { label: dict.orders,                        icon: ClipboardList,    href: "/orders",      color: "text-indigo-400" },
     { label: dict.clients,                       icon: Users,            href: "/clients",     color: "text-violet-400" },
     { label: dict.drivers,                       icon: Car,              href: "/drivers",     color: "text-amber-400" },
+    { label: dict.driver_stats || 'Статистика водителей', icon: Activity, href: "/driver-stats", color: "text-purple-400" },
     { label: 'Диспетчеры', icon: Phone, href: "/dispatchers", color: "text-teal-400" },
     { label: dict.warehouse,                     icon: Warehouse,        href: "/warehouse",   color: "text-rose-400" },
     { label: dict.safe,                          icon: Wallet,           href: "/safe",        color: "text-green-400" },
