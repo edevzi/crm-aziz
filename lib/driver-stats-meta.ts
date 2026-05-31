@@ -1,6 +1,6 @@
 // Presentation metadata for driver statistics: plain-language labels, "good/ok/slow"
 // thresholds and a simple verdict — so a non-technical user instantly understands the numbers.
-import type { StageDurations } from './driver-stats-compute';
+import type { StageDurations, OrderTimeline } from './driver-stats-compute';
 
 export type StageKey = 'approve' | 'start' | 'place' | 'pickup' | 'complete';
 export type Quality = 'good' | 'ok' | 'slow' | 'neutral';
@@ -83,3 +83,45 @@ export const RATING_BADGE: Record<Quality, string> = {
   slow: 'Есть задержки',
   neutral: 'Мало данных',
 };
+
+// ---- Per-order step tracker (used by the horizontal StatusTracker) ----
+
+export interface TrackerSegment {
+  key: StageKey;
+  title: string;
+  durationSec: number | null;
+  quality: Quality;
+  controllable: boolean;
+  unreliable: boolean; // computed off a fallback baseline (predecessor event missing)
+  reached: boolean; // the destination event exists
+}
+
+// The event that must exist for a controllable stage's duration to be trustworthy.
+const STAGE_PREDECESSOR: Partial<Record<StageKey, (t: OrderTimeline) => Date | null>> = {
+  start: (t) => t.assignedAt,
+  place: (t) => t.inProgressAt,
+  complete: (t) => t.pickedUpAt,
+};
+
+function stageUnreliable(key: StageKey, t: OrderTimeline): boolean {
+  const pred = STAGE_PREDECESSOR[key];
+  return pred ? pred(t) == null : false;
+}
+
+const STAGE_REACHED: Record<StageKey, (t: OrderTimeline) => boolean> = {
+  approve: (t) => t.assignedAt != null,
+  start: (t) => t.inProgressAt != null,
+  place: (t) => t.containerPlacedAt != null,
+  pickup: (t) => t.pickedUpAt != null,
+  complete: (t) => t.completedAt != null,
+};
+
+/** The 5 lifecycle segments for one order, ready for a horizontal step tracker. */
+export function trackerSegments(t: OrderTimeline): TrackerSegment[] {
+  return STAGES.map((s) => {
+    const sec = t.durations[s.key];
+    const unreliable = stageUnreliable(s.key, t);
+    const quality: Quality = !s.controllable || unreliable ? 'neutral' : stageQuality(s.key, sec);
+    return { key: s.key, title: s.title, durationSec: sec, quality, controllable: s.controllable, unreliable, reached: STAGE_REACHED[s.key](t) };
+  });
+}

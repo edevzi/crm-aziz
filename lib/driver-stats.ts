@@ -5,6 +5,8 @@ import {
   buildTimeline,
   averageDurations,
   stageStats,
+  workSeconds,
+  median,
   toDate,
   type OrderTimeline,
   type DriverStat,
@@ -33,6 +35,7 @@ export interface DriverStatsOverview {
     activeCount: number;
     avg: ReturnType<typeof averageDurations>;
     stats: ReturnType<typeof stageStats>;
+    medianWorkSec: number | null;
   };
   activeOrders: OrderTimeline[];
   period: PeriodInfo;
@@ -161,6 +164,7 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
   const driverStats: DriverStat[] = allDrivers
     .map((d) => {
       const list = byDriver.get(d.id) ?? [];
+      const dStats = stageStats(list);
       return {
         driverId: d.id,
         name: d.name,
@@ -168,6 +172,9 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
         orderCount: list.length,
         completedCount: list.filter((t) => t.completedAt != null).length,
         avg: averageDurations(list),
+        stats: dStats,
+        medianWorkSec: median(list.map(workSeconds)),
+        medianTotalSec: dStats.total.median,
       };
     })
     .sort((a, b) => {
@@ -188,6 +195,7 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
       activeCount: activeOrders.length,
       avg: averageDurations(timelines),
       stats: stageStats(timelines),
+      medianWorkSec: median(timelines.map(workSeconds)),
     },
     activeOrders,
     period: periodMetadata(periodFrom, periodTo),

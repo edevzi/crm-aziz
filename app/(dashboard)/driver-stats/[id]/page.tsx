@@ -6,18 +6,24 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { drivers } from '@/lib/schema';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { PeriodChips } from '@/components/stats/PeriodChips';
-import { ResponseGauge } from '@/components/stats/ResponseGauge';
-import { JourneyBars } from '@/components/stats/JourneyBars';
-import { OrderList } from '@/components/stats/OrderList';
-import { DriverActivityTimeline } from '@/components/DriverActivityTimeline';
-import { getDriverActivity, averageDurations, stageStats, formatDuration } from '@/lib/driver-stats';
+import { StepBreakdown } from '@/components/stats/StepBreakdown';
+import { OrderBreakdownList } from '@/components/stats/OrderBreakdownList';
+import { StepVsFleetChart } from '@/components/stats/charts/StepVsFleetChart';
+import { TrendChart } from '@/components/stats/charts/TrendChart';
+import { getDriverActivity, getDriverStatsOverview, stageStats, formatDuration } from '@/lib/driver-stats';
+import { median, workSeconds, dailyWorkSeries } from '@/lib/driver-stats-compute';
 
 export const dynamic = 'force-dynamic';
 
-function isOpen(s: string): boolean {
-  return s !== 'completed';
+function Kpi({ label, value, sub }: { label: string; value: React.ReactNode; sub: string }) {
+  return (
+    <div className="rounded-3xl bg-white border border-zinc-100 shadow-sm px-4 py-3.5">
+      <div className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">{label}</div>
+      <div className="mt-1 text-2xl sm:text-3xl font-black tabular-nums tracking-tight text-zinc-900">{value}</div>
+      <div className="text-[11px] text-zinc-400 mt-0.5">{sub}</div>
+    </div>
+  );
 }
 
 export default async function DriverStatsDetailPage({
@@ -36,107 +42,69 @@ export default async function DriverStatsDetailPage({
   const from = searchParams?.from;
   const to = searchParams?.to;
   const timelines = await getDriverActivity(driverId, from, to);
-  const completedTimelines = timelines.filter((t) => t.completedAt != null);
-  const openTimelines = timelines.filter((t) => isOpen(t.status));
-  const avg = averageDurations(timelines);
+  const completed = timelines.filter((t) => t.completedAt != null);
   const stats = stageStats(timelines);
+  const medWork = median(timelines.map(workSeconds));
+
+  // Fleet baseline for the "vs парк" comparison.
+  const overview = await getDriverStatsOverview(from, to);
+  const fleet = overview.global.stats;
+
+  // Daily trend over the selected window (defaults to the last 7 days).
+  const toDate = to ? new Date(to) : new Date();
+  const fromDate = from ? new Date(from) : new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
+  const series = dailyWorkSeries(timelines, fromDate, toDate);
 
   const qs = new URLSearchParams();
   if (from) qs.set('from', from);
   if (to) qs.set('to', to);
-  const backSuffix = qs.toString() ? `?${qs.toString()}` : '';
+  const back = qs.toString() ? `?${qs.toString()}` : '';
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="icon" asChild className="rounded-xl bg-white shadow-sm border-slate-200">
-            <Link href={`/driver-stats${backSuffix}`}>
-              <ArrowLeft className="h-4 w-4 text-slate-700" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="outline" size="icon" asChild className="rounded-xl bg-white shadow-sm border-zinc-200">
+            <Link href={`/driver-stats${back}`}>
+              <ArrowLeft className="h-4 w-4 text-zinc-700" />
             </Link>
           </Button>
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              {driver.name}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-400 font-mono">{driver.vehiclePlate}</p>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 leading-none truncate">{driver.name}</h1>
+            <p className="text-xs text-zinc-400 font-mono mt-1">{driver.vehiclePlate}</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <PeriodChips />
-          <div className="flex items-center gap-4 text-xs sm:text-sm text-slate-500">
-            <span><span className="font-extrabold text-slate-900">{timelines.length}</span> заказов</span>
-            <span><span className="font-extrabold text-emerald-600">{completedTimelines.length}</span> завершено</span>
-          </div>
-        </div>
+        <PeriodChips />
       </div>
 
-      {/* Hero */}
-      <Card className="border border-slate-200/60 shadow-sm rounded-3xl bg-white">
-        <CardContent className="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-5 sm:gap-7 items-center">
-          <ResponseGauge seconds={avg.approve} size={132} />
-          <div className="grid grid-cols-3 gap-3 sm:gap-6 w-full">
-            <div className="flex flex-col">
-              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Завершено</span>
-              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tabular-nums leading-tight">
-                {completedTimelines.length}
-              </span>
-              <span className="text-[11px] text-slate-400">из {timelines.length}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Открыто</span>
-              <span className="text-2xl sm:text-3xl font-extrabold text-sky-600 tabular-nums leading-tight">
-                {openTimelines.length}
-              </span>
-              <span className="text-[11px] text-slate-400">сейчас</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Всё время</span>
-              <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums leading-tight">
-                {formatDuration(avg.total)}
-              </span>
-              <span className="text-[11px] text-slate-400">средн.</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Journey + open orders */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-        <Card className="border border-slate-200/60 shadow-sm rounded-2xl bg-white">
-          <CardContent className="p-5 sm:p-6">
-            <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-1">
-              Путь заказа · время на этап
-            </h2>
-            <JourneyBars stats={stats} />
-          </CardContent>
-        </Card>
-
-        <div>
-          <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-3 px-1">
-            Открытые заказы
-            {openTimelines.length > 0 && (
-              <span className="ml-2 text-[11px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md ring-1 ring-sky-100">
-                {openTimelines.length}
-              </span>
-            )}
-          </h2>
-          <OrderList orders={openTimelines} emptyMessage="Открытых заказов нет" />
-        </div>
+      {/* KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Kpi label="Заказов" value={`${completed.length}/${timelines.length}`} sub="завершено / всего" />
+        <Kpi label="Работа / заказ" value={formatDuration(medWork)} sub="медиана, без аренды" />
+        <Kpi label="Полный цикл" value={formatDuration(stats.total.median)} sub="медиана с арендой" />
+        <Kpi label="Приём заказа" value={formatDuration(stats.approve.median)} sub="медиана реакции" />
       </div>
 
-      {/* Completed orders with full timeline */}
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <StepVsFleetChart stats={stats} fleet={fleet} />
+        <TrendChart series={series} />
+      </div>
+
+      {/* Per-step averages (detail numbers) */}
       <div>
-        <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-3 px-1">
-          Завершённые заказы
-          {completedTimelines.length > 0 && (
-            <span className="ml-2 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md ring-1 ring-emerald-100">
-              {completedTimelines.length}
-            </span>
-          )}
+        <h2 className="text-xs font-black uppercase tracking-wider text-zinc-400 mb-3 px-1">Среднее время по этапам</h2>
+        <StepBreakdown stats={stats} fleet={fleet} />
+      </div>
+
+      {/* Per-order breakdown */}
+      <div>
+        <h2 className="text-xs font-black uppercase tracking-wider text-zinc-400 mb-3 px-1 flex items-center gap-2">
+          Заказы по этапам
+          <span className="text-[11px] font-bold text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded-full">{timelines.length}</span>
         </h2>
-        <DriverActivityTimeline timelines={completedTimelines} />
+        <OrderBreakdownList timelines={timelines} />
       </div>
     </div>
   );

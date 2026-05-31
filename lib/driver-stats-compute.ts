@@ -57,7 +57,78 @@ export interface DriverStat {
   vehiclePlate: string;
   orderCount: number;
   completedCount: number;
-  avg: StageDurations;
+  avg: StageDurations; // mean per step
+  stats: StageStats; // median/mean/p90/n per step
+  medianWorkSec: number | null; // median driver-controlled time per order (no rental)
+  medianTotalSec: number | null; // median full cycle per order
+}
+
+// The four stages the driver actually controls (rental dwell "pickup" excluded).
+export const CONTROLLABLE_KEYS: (keyof StageDurations)[] = ['approve', 'start', 'place', 'complete'];
+
+/** Sum of the driver-controlled stage durations for one order (null if none present). */
+export function workSeconds(t: OrderTimeline): number | null {
+  let sum = 0;
+  let has = false;
+  for (const k of CONTROLLABLE_KEYS) {
+    const v = t.durations[k];
+    if (v != null) {
+      sum += v;
+      has = true;
+    }
+  }
+  return has ? sum : null;
+}
+
+/** Median of a list (nulls ignored). */
+export function median(nums: (number | null)[]): number | null {
+  const v = nums.filter((n): n is number => n != null).sort((a, b) => a - b);
+  if (!v.length) return null;
+  const m = Math.floor(v.length / 2);
+  return v.length % 2 ? v[m] : Math.round((v[m - 1] + v[m]) / 2);
+}
+
+export interface DaySeriesPoint {
+  date: string; // ISO yyyy-mm-dd
+  label: string; // dd.mm
+  orders: number;
+  workMedianSec: number | null;
+}
+
+const dayKey = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+/** Daily trend over [fromDate, toDate]: order count + median driver-work per day (every day filled). */
+export function dailyWorkSeries(timelines: OrderTimeline[], fromDate: Date, toDate: Date): DaySeriesPoint[] {
+  const works = new Map<string, number[]>();
+  const counts = new Map<string, number>();
+  for (const t of timelines) {
+    const d = t.scheduledAt ?? t.createdAt;
+    if (!d) continue;
+    const k = dayKey(d);
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+    const w = workSeconds(t);
+    if (w != null) {
+      const arr = works.get(k) ?? [];
+      arr.push(w);
+      works.set(k, arr);
+    }
+  }
+  const out: DaySeriesPoint[] = [];
+  const day = 24 * 60 * 60 * 1000;
+  const start = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate()).getTime();
+  const end = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate()).getTime();
+  for (let t = start; t <= end; t += day) {
+    const d = new Date(t);
+    const k = dayKey(d);
+    out.push({
+      date: k,
+      label: `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`,
+      orders: counts.get(k) ?? 0,
+      workMedianSec: median(works.get(k) ?? []),
+    });
+  }
+  return out;
 }
 
 export interface OrderTimelineBase {
