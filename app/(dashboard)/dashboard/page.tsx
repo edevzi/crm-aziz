@@ -344,26 +344,24 @@ export default async function DashboardPage({
       {/* Driver statistics shortcut */}
       <Link href="/driver-stats" className="block">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-purple-500/20 p-5 sm:p-6 hover:brightness-105 transition-all active:scale-[0.99]">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 min-w-0">
               <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0">
                 <Activity className="h-6 w-6 text-white" />
               </div>
               <div className="min-w-0">
                 <p className="text-white/70 text-[11px] font-bold uppercase tracking-wider">Статистика водителей</p>
-                <h3 className="text-white text-lg sm:text-xl font-extrabold tracking-tight">Как быстро водители принимают и выполняют заказы</h3>
+                <h3 className="text-white text-lg sm:text-xl font-extrabold tracking-tight">
+                  {driverStats.global.driverCount} / {driverStats.global.totalDriverCount} водителей · {driverStats.global.completedCount} завершено
+                </h3>
               </div>
             </div>
-            <div className="flex items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 sm:gap-5">
               <div className="text-right">
-                <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wide">Среднее время</p>
-                <p className="text-white/80 text-[10px] font-medium hidden sm:block">от открытия до принятия</p>
-                <p className="text-white text-base sm:text-lg font-extrabold">{formatDuration(driverStats.global.avg.approve)}</p>
-              </div>
-              <div className="text-right hidden sm:block">
-                <p className="text-white/60 text-[10px] font-semibold uppercase tracking-wide">Завершено заказов</p>
-                <p className="text-white/80 text-[10px] font-medium">за выбранный период</p>
-                <p className="text-white text-base sm:text-lg font-extrabold">{driverStats.global.completedCount}</p>
+                <p className="text-white text-xl sm:text-2xl font-extrabold tabular-nums leading-none">
+                  {formatDuration(driverStats.global.avg.approve)}
+                </p>
+                <p className="text-white/70 text-[10px] font-semibold uppercase tracking-wide">реакция</p>
               </div>
               <ChevronRight className="h-6 w-6 text-white/80 flex-shrink-0" />
             </div>

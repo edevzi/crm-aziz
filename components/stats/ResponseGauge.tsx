@@ -10,17 +10,16 @@ const COLOR: Record<Quality, string> = {
 };
 
 /**
- * Speedometer-style ring for "time to accept". Fuller and greener = faster.
- * Subtle one-time fill on mount, no other motion. Value rendered as plain text.
+ * Single-purpose dial: how fast did this team/driver accept orders on average?
+ * Greener and fuller = faster. Single bar, single number, single quality label.
  */
-export function ResponseGauge({ seconds, size = 132 }: { seconds: number | null; size?: number }) {
+export function ResponseGauge({ seconds, size = 120 }: { seconds: number | null; size?: number }) {
   const q = stageQuality('approve', seconds);
   const color = COLOR[q];
   const R = 52;
   const C = 2 * Math.PI * R;
-  // map 0..60 minutes → 1..0.06 (fuller for faster reactions)
-  const frac = seconds == null ? 0 : Math.max(0.06, Math.min(1, 1 - seconds / (60 * 60)));
-  const target = C * (1 - frac);
+  const frac = seconds == null ? 0 : Math.max(0.05, Math.min(1, 1 - seconds / (60 * 60)));
+  const offset = C * (1 - frac);
 
   return (
     <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
@@ -35,17 +34,18 @@ export function ResponseGauge({ seconds, size = 132 }: { seconds: number | null;
           strokeWidth="10"
           strokeLinecap="round"
           strokeDasharray={C}
-          className="ds-gauge"
-          style={{ ['--circ' as any]: `${C}`, ['--target' as any]: `${target}` }}
+          strokeDashoffset={offset}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-xl sm:text-2xl font-extrabold leading-none" style={{ color }}>
           {formatDuration(seconds)}
         </span>
-        <span className="text-[10px] font-bold uppercase tracking-wide mt-1" style={{ color }}>
-          {QUALITY_LABEL[q] || '—'}
-        </span>
+        {QUALITY_LABEL[q] && (
+          <span className="text-[10px] font-bold uppercase tracking-wide mt-1" style={{ color }}>
+            {QUALITY_LABEL[q]}
+          </span>
+        )}
       </div>
     </div>
   );

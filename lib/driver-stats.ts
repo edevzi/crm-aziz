@@ -23,7 +23,10 @@ export interface PeriodInfo {
 export interface DriverStatsOverview {
   drivers: DriverStat[];
   global: {
+    /** Drivers with ≥1 order in the period. */
     driverCount: number;
+    /** Drivers in the company total (for the "X из Y" framing). */
+    totalDriverCount: number;
     orderCount: number;
     completedCount: number;
     activeCount: number;
@@ -43,7 +46,7 @@ function startOfDay(d: Date): Date {
   return x;
 }
 
-/** Detect a friendly preset name from a date range (today / 7 days / current month / custom). */
+/** Detect a friendly preset name from a date range (Сегодня / 7 дней / 30 дней / Период). */
 export function periodMetadata(from: Date, to: Date): PeriodInfo {
   const sameDay = from.toDateString() === to.toDateString();
   const label = sameDay ? fmtDmy(from) : `${fmtDmy(from)} — ${fmtDmy(to)}`;
@@ -52,20 +55,23 @@ export function periodMetadata(from: Date, to: Date): PeriodInfo {
   const f = startOfDay(from);
   const t = startOfDay(to);
 
-  let name = 'Произвольный период';
+  let name = 'Период';
   if (f.getTime() === today.getTime() && t.getTime() === today.getTime()) {
     name = 'Сегодня';
   } else if (t.getTime() === today.getTime()) {
-    const days = Math.round((today.getTime() - f.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-    if (days === 7) name = 'За 7 дней';
-    else if (days === 30) name = 'За 30 дней';
-    else {
-      const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      if (f.getTime() === firstOfMonth.getTime()) name = 'За месяц';
-    }
+    const back = Math.round((today.getTime() - f.getTime()) / (24 * 60 * 60 * 1000));
+    if (back === 6) name = '7 дней';
+    else if (back === 29) name = '30 дней';
   }
 
   return { from: from.toISOString(), to: to.toISOString(), label, name };
+}
+
+/** Default period when no URL params are present — last 7 days (today inclusive). */
+export function defaultPeriodRange(): { from: Date; to: Date } {
+  const today = startOfDay(new Date());
+  const from = new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
+  return { from, to: today };
 }
 
 function isActiveStatus(s: string): boolean {
@@ -87,9 +93,9 @@ function scheduledRangeConditions(from?: string, to?: string) {
 
 /** Aggregate activity stats for every driver (+ global averages) in the given period. */
 export async function getDriverStatsOverview(from?: string, to?: string): Promise<DriverStatsOverview> {
-  const now = new Date();
-  const periodFrom = from ? new Date(from) : new Date(now.getFullYear(), now.getMonth(), 1);
-  const periodTo = to ? new Date(to) : now;
+  const dflt = defaultPeriodRange();
+  const periodFrom = from ? new Date(from) : dflt.from;
+  const periodTo = to ? new Date(to) : dflt.to;
   const conditions = [isNotNull(orders.driverId), ...scheduledRangeConditions(from, to)];
 
   const rows = await db
@@ -147,6 +153,9 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
     byDriver.set(t.driverId, list);
   }
 
+  // Keep EVERY driver in the roster so the leaderboard matches /drivers — silent
+  // filtering ("куда делись водители?") destroys trust. Drivers with no orders
+  // in the chosen period get a zero row and sort to the bottom.
   const driverStats: DriverStat[] = allDrivers
     .map((d) => {
       const list = byDriver.get(d.id) ?? [];
@@ -159,13 +168,19 @@ export async function getDriverStatsOverview(from?: string, to?: string): Promis
         avg: averageDurations(list),
       };
     })
-    .filter((d) => d.orderCount > 0)
-    .sort((a, b) => b.orderCount - a.orderCount);
+    .sort((a, b) => {
+      if (a.orderCount === 0 && b.orderCount > 0) return 1;
+      if (b.orderCount === 0 && a.orderCount > 0) return -1;
+      return b.orderCount - a.orderCount;
+    });
+
+  const workingCount = driverStats.filter((d) => d.orderCount > 0).length;
 
   return {
     drivers: driverStats,
     global: {
-      driverCount: driverStats.length,
+      driverCount: workingCount,
+      totalDriverCount: allDrivers.length,
       orderCount: timelines.length,
       completedCount: timelines.filter((t) => t.completedAt != null).length,
       activeCount: activeOrders.length,

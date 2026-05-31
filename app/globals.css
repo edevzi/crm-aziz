@@ -123,38 +123,6 @@
     display: none;
   }
 
-  /* ─── Driver-stats: minimal animations (lightweight) ─── */
-
-  /* Single subtle entrance — used sparingly */
-  .ds-fade { animation: dsFade 0.22s ease-out both; }
-  @keyframes dsFade {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: none; }
-  }
-
-  /* Live status indicator (single small dot) */
-  .ds-live-dot { animation: dsLive 1.8s ease-in-out infinite; }
-  @keyframes dsLive {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-    70%      { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-  }
-
-  /* SVG gauge ring fill on mount (set --circ and --target inline) */
-  .ds-gauge { animation: dsGauge 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
-  @keyframes dsGauge {
-    from { stroke-dashoffset: var(--circ); }
-    to   { stroke-dashoffset: var(--target); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .ds-fade, .ds-gauge {
-      animation: none !important;
-      opacity: 1 !important;
-      transform: none !important;
-      stroke-dashoffset: var(--target) !important;
-    }
-    .ds-live-dot { animation: none !important; }
-  }
 }
 
 /* ── MOBILE RESPONSIVE OVERRIDES ── */
