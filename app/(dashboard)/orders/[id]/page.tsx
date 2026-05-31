@@ -47,14 +47,14 @@ export default async function OrderDetailPage({ params }: { params: { id: string
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
+      <div className="flex items-center gap-3 sm:gap-4">
+        <Button variant="outline" size="icon" asChild className="flex-shrink-0">
           <Link href="/orders"><ArrowLeft className="h-4 w-4" /></Link>
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">{dict.order} #{order.id}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-muted-foreground">{dict.manage_orders}</p>
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">{dict.order} #{order.id}</h1>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <p className="text-muted-foreground text-sm sm:text-base">{dict.manage_orders}</p>
             {dispatcher && (
               <span className="inline-flex items-center gap-1 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-0.5 rounded-full">
                 <Phone className="h-3 w-3" /> {'Диспетчер'}
@@ -65,7 +65,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
       </div>
 
       {order.isExternalVehicle ? (
-        <div className="bg-orange-50/50 border border-orange-200/60 p-6 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white/80 backdrop-blur-xl mb-8">
+        <div className="bg-orange-50/50 border border-orange-200/60 p-4 sm:p-6 rounded-2xl sm:rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white/80 backdrop-blur-xl mb-8">
           <div>
             <h3 className="text-lg font-bold text-orange-900">{'Заказ сторонней машины'}</h3>
             <p className="text-slate-500 text-sm mt-0.5">
@@ -77,21 +77,21 @@ export default async function OrderDetailPage({ params }: { params: { id: string
           </span>
         </div>
       ) : (
-        <Card className="border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl mb-8">
-          <CardContent className="p-8">
+        <Card className="border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl sm:rounded-3xl overflow-hidden bg-white/80 backdrop-blur-xl mb-8">
+          <CardContent className="p-3 sm:p-8">
             <OrderStatusUpdater orderId={order.id} currentStatus={order.status} dict={dict} />
           </CardContent>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* Client Card */}
         <Card className="border-0 shadow-sm ring-1 ring-slate-100 rounded-2xl overflow-hidden relative">
           <div className="absolute top-0 right-0 p-6 opacity-5 text-slate-900">
             <User className="w-24 h-24" />
           </div>
           <CardHeader className="bg-slate-50/50 border-b border-slate-100">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex flex-wrap items-center gap-2">
               {dict.client}
               {dispatcher && (
                 <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">{'Диспетчер'}</span>
@@ -155,13 +155,13 @@ export default async function OrderDetailPage({ params }: { params: { id: string
             {/* Address + Map link */}
             <div>
               <p className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-1">{dict.address}</p>
-              <div className="flex items-start gap-2">
-                <p className="font-semibold text-slate-800 flex-1">{order.address}</p>
+              <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+                <p className="font-semibold text-slate-800 flex-1 break-words">{order.address}</p>
                 <a
                   href={addressMapUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-shrink-0 inline-flex items-center gap-1.5 text-xs font-bold bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700 transition-colors shadow-sm"
+                  className="flex-shrink-0 inline-flex items-center gap-1.5 text-xs font-bold bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700 transition-colors shadow-sm self-start"
                 >
                   <MapPin className="h-3.5 w-3.5" />
                   {'Навигация'}
@@ -170,10 +170,10 @@ export default async function OrderDetailPage({ params }: { params: { id: string
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <p className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-1">{dict.scheduled_date}</p>
-                <p className="font-bold text-lg">{format(new Date(order.scheduledAt), 'dd.MM.yyyy')}</p>
+                <p className="font-bold text-base sm:text-lg">{format(new Date(order.scheduledAt), 'dd.MM.yyyy')}</p>
                 <p className="text-sm font-medium text-slate-500">{format(new Date(order.scheduledAt), 'HH:mm')}</p>
               </div>
               <div>
@@ -207,13 +207,13 @@ export default async function OrderDetailPage({ params }: { params: { id: string
 
             <div className="pt-4 border-t border-slate-100">
               <p className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-1">{dict.operator_note}</p>
-              <p className="font-semibold text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-100">{order.operatorNote || dict.no_notes}</p>
+              <p className="font-semibold text-slate-700 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100 break-words">{order.operatorNote || dict.no_notes}</p>
             </div>
             
             {order.photoUrl && (
               <div className="pt-4 border-t border-slate-100">
                 <p className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-2">Фото с места</p>
-                <OrderPhotoViewer photoUrl={order.photoUrl} />
+                <OrderPhotoViewer photoUrl={order.photoUrl} variant="preview" />
               </div>
             )}
           </CardContent>
@@ -228,19 +228,19 @@ export default async function OrderDetailPage({ params }: { params: { id: string
             <CardTitle>{dict.finance}</CardTitle>
           </CardHeader>
           <CardContent className="pt-6 relative z-10">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 items-start sm:items-center">
               <div>
                 <p className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-1">{dict.amount}</p>
-                <p className="font-extrabold text-4xl text-emerald-600">{order.paymentAmount.toLocaleString()} <span className="text-lg opacity-70">RUB</span></p>
+                <p className="font-extrabold text-2xl sm:text-4xl text-emerald-600">{order.paymentAmount.toLocaleString()} <span className="text-sm sm:text-lg opacity-70">RUB</span></p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-1">{dict.payment}</p>
-                <p className="font-bold text-xl capitalize text-slate-700">{dict[order.paymentType as keyof typeof dict] || order.paymentType}</p>
+                <p className="font-bold text-base sm:text-xl capitalize text-slate-700">{dict[order.paymentType as keyof typeof dict] || order.paymentType}</p>
               </div>
               {order.dispatcherFee ? (
                 <div>
                   <p className="text-xs uppercase tracking-wider font-bold text-slate-400 mb-1">{'Услуга диспетчера'}</p>
-                  <p className="font-bold text-xl text-indigo-600">{order.dispatcherFee.toLocaleString()} <span className="text-sm opacity-70">RUB</span></p>
+                  <p className="font-bold text-base sm:text-xl text-indigo-600">{order.dispatcherFee.toLocaleString()} <span className="text-sm opacity-70">RUB</span></p>
                 </div>
               ) : null}
               <div>

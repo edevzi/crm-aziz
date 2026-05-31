@@ -885,8 +885,14 @@ function AppInner() {
       } catch {}
     } catch (error: unknown) {
       console.error(error);
-      showAlert(t(locale, 'loginError'), t(locale, 'loadErrorRetry'));
+      // Only show error alert if this is NOT the first fetch after session restore.
+      // On app start, the fetch often fires before the network/API is fully ready,
+      // producing a spurious "login error" alert that confuses users.
+      if (initialFetchDone.current) {
+        showAlert(t(locale, 'loginError'), t(locale, 'loadErrorRetry'));
+      }
     } finally {
+      initialFetchDone.current = true;
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setLoading(false);
       setRefreshing(false);

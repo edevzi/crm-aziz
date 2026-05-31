@@ -155,7 +155,7 @@ export function OrdersTable({
                   <CompleteOrderButton orderId={order.id} />
                 )}
                 {order.photoUrl && (
-                  <OrderPhotoViewer photoUrl={order.photoUrl} />
+                  <OrderPhotoViewer photoUrl={order.photoUrl} variant="thumbnail" />
                 )}
               </div>
             </TableCell>

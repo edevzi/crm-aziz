@@ -10,7 +10,7 @@ export function PaymentStatusUpdater({ orderId, currentStatus, dict }: { orderId
   const statuses = ['pending', 'received', 'entered'];
 
   return (
-    <div className="flex gap-2 mt-4">
+    <div className="flex flex-wrap gap-2 mt-4">
       {statuses.map(status => (
         <Button
           key={status}
