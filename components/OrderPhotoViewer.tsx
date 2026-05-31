@@ -32,19 +32,16 @@ export function OrderPhotoViewer({ photoUrl }: { photoUrl: string }) {
           <DialogTitle>Фото с места выполнения заказа</DialogTitle>
         </DialogHeader>
         <div className="flex justify-center mt-2 sm:mt-4">
-          {photoUrl.startsWith('data:image') ? (
-            <img 
-              src={photoUrl} 
-              alt="Order photo" 
-              className="max-w-full max-h-[70vh] rounded-md object-contain shadow-sm border border-slate-200" 
-            />
-          ) : (
-            <img 
-              src={`data:image/jpeg;base64,${photoUrl}`} 
-              alt="Order photo" 
-              className="max-w-full max-h-[70vh] rounded-md object-contain shadow-sm border border-slate-200" 
-            />
-          )}
+          <img
+            src={
+              photoUrl.startsWith('http') ? photoUrl :
+              photoUrl.startsWith('data:image') ? photoUrl :
+              `data:image/jpeg;base64,${photoUrl}`
+            }
+            alt="Фото заказа"
+            className="max-w-full max-h-[70vh] rounded-md object-contain shadow-sm border border-slate-200"
+            loading="lazy"
+          />
         </div>
       </DialogContent>
     </Dialog>

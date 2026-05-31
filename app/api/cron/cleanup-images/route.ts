@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       .where(
         and(
           isNotNull(orders.photoUrl),
-          lt(orders.createdAt, thirtyDaysAgo)
+          lt(orders.updatedAt, thirtyDaysAgo)
         )
       );
 

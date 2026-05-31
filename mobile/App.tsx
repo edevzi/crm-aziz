@@ -971,14 +971,14 @@ function AppInner() {
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
-      quality: 0.8,
+      quality: 0.7,
     });
     if (!result.canceled && result.assets && result.assets.length > 0) {
       try {
         const manipResult = await ImageManipulator.manipulateAsync(
           result.assets[0].uri,
-          [{ resize: { width: 1024 } }],
-          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+          [{ resize: { width: 800 } }],
+          { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true }
         );
         if (manipResult.base64) {
           const base64Img = `data:image/jpeg;base64,${manipResult.base64}`;

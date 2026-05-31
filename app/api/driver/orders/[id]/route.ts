@@ -48,8 +48,8 @@ export async function PUT(
           try {
             const sharp = (await import('sharp')).default;
             buffer = await sharp(buffer)
-              .resize({ width: 1024, withoutEnlargement: true })
-              .jpeg({ quality: 60 })
+              .resize({ width: 800, withoutEnlargement: true })
+              .jpeg({ quality: 45 })
               .toBuffer();
           } catch (sharpErr) {
             console.error('Sharp compression failed, uploading raw buffer:', sharpErr);
