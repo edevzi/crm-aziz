@@ -105,10 +105,10 @@ export default async function DriverStatsDetailPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
         <Card className="border border-slate-200/60 shadow-sm rounded-2xl bg-white">
           <CardContent className="p-5 sm:p-6">
-            <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">
-              Путь заказа
+            <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+              Путь заказа · среднее время на этап
             </h2>
-            <JourneyBars durations={avg} />
+            <JourneyBars durations={avg} sampleCount={timelines.length} />
           </CardContent>
         </Card>
 

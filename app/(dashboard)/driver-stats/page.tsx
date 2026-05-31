@@ -88,10 +88,10 @@ export default async function DriverStatsPage({
         {/* Journey bars */}
         <Card className="border border-slate-200/60 shadow-sm rounded-2xl bg-white">
           <CardContent className="p-5 sm:p-6">
-            <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-4">
-              Путь заказа
+            <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+              Путь заказа · среднее время на этап
             </h2>
-            <JourneyBars durations={global.avg} />
+            <JourneyBars durations={global.avg} sampleCount={global.orderCount} />
           </CardContent>
         </Card>
 
