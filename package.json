@@ -14,7 +14,8 @@
     "db:clear-driver-orders": "node --env-file=.env --import tsx lib/clear-driver-orders.ts",
     "db:clean": "node --env-file=.env --import tsx lib/clean.ts",
     "db:add-events": "node --env-file=.env --import tsx lib/add-order-events.ts",
-    "db:seed-events": "node --env-file=.env --import tsx lib/seed-driver-events.ts"
+    "db:seed-events": "node --env-file=.env --import tsx lib/seed-driver-events.ts",
+    "db:seed-fuel-tank": "node --env-file=.env --import tsx lib/seed-fuel-tank.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3",

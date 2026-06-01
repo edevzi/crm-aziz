@@ -15,6 +15,8 @@ import { MetricCard } from '@/components/MetricCard';
 import { getCurrentUser } from '@/lib/auth';
 import { isOverdue } from '@/lib/utils';
 import { getDriverStatsOverview, formatDuration } from '@/lib/driver-stats';
+import { getBaseTankSummary } from '@/lib/fuel-tank';
+import { BaseTankCard } from '@/components/fuel/BaseTankCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -277,7 +279,10 @@ export default async function DashboardPage({
   const resolvedFromParam = fromParam || format(currentFrom, 'yyyy-MM-dd');
   const resolvedToParam = toParam || format(currentTo, 'yyyy-MM-dd');
 
-  const driverStats = await getDriverStatsOverview(resolvedFromParam, resolvedToParam);
+  const [driverStats, tankSummary] = await Promise.all([
+    getDriverStatsOverview(resolvedFromParam, resolvedToParam),
+    getBaseTankSummary(),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -341,6 +346,11 @@ export default async function DashboardPage({
         />
       </div>
 
+      {/* Fuel tank + driver stats shortcuts side-by-side on large screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-3 sm:gap-4">
+        <Link href="/fuel" className="block">
+          <BaseTankCard summary={tankSummary} variant="compact" />
+        </Link>
       {/* Driver statistics shortcut */}
       <Link href="/driver-stats" className="block">
         <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 shadow-lg shadow-purple-500/20 p-5 sm:p-6 hover:brightness-105 transition-all active:scale-[0.99]">
@@ -368,10 +378,11 @@ export default async function DashboardPage({
           </div>
         </div>
       </Link>
+      </div>
 
       <DashboardCharts
-        financeData={chartFinanceData} 
-        expensesByCategory={chartExpensesByCategory} 
+        financeData={chartFinanceData}
+        expensesByCategory={chartExpensesByCategory}
         dict={dict} 
         revenue={currentMetrics.revenue}
         expenses={currentMetrics.expenses}

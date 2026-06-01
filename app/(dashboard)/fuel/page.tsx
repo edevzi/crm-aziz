@@ -9,8 +9,10 @@ import { getCurrentUser } from '@/lib/auth';
 import { FuelForm } from '@/components/forms/FuelForm';
 import { GasStationRefillForm } from '@/components/forms/GasStationRefillForm';
 import { DriverFuelTracker } from '@/components/DriverFuelTracker';
-import { Card, CardContent } from '@/components/ui/card';
-import { Fuel, TrendingDown, TrendingUp } from 'lucide-react';
+import { BaseTankCard } from '@/components/fuel/BaseTankCard';
+import { TankDailyHistory } from '@/components/fuel/TankDailyHistory';
+import { TankMovements } from '@/components/fuel/TankMovements';
+import { getBaseTankSummary, getTankDailyHistory, getRecentTankMovements, BASE_TANK_CAPACITY_L } from '@/lib/fuel-tank';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,24 +40,25 @@ export default async function FuelPage() {
   .where(inArray(expenses.category, ['fuel', 'diesel']))
   .orderBy(desc(expenses.recordedAt));
 
-  // 3. Fetch gas station inbounds
-  const inbounds = await db.select().from(gasStationInbounds);
-
   // Apply operator restriction if applicable
   if (isOperator && user) {
     rawExpenses = rawExpenses.filter(e => e.operatorId === user.id);
   }
-
-  // Calculate Gas Station Balance
-  const totalInboundLiters = inbounds.reduce((acc, curr) => acc + curr.liters, 0);
-  const totalOutboundLiters = rawExpenses.reduce((acc, curr) => acc + (curr.liters || 0), 0);
-  const currentBalance = totalInboundLiters - totalOutboundLiters;
 
   // Cast categories correctly for frontend component
   const fuelExpenses = rawExpenses.map(e => ({
     ...e,
     category: e.category as 'fuel' | 'diesel'
   }));
+
+  // Tank data — current balance, daily history (14 days back), recent movements
+  const today = new Date();
+  const from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 13);
+  const [tank, days, movements] = await Promise.all([
+    getBaseTankSummary(),
+    getTankDailyHistory(from, today),
+    getRecentTankMovements(15),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -76,53 +79,30 @@ export default async function FuelPage() {
         </div>
       </div>
 
-      {/* Gas Station Balance Card */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="col-span-1 md:col-span-3 border-indigo-100 bg-gradient-to-br from-indigo-50 to-white shadow-sm overflow-hidden relative">
-          <div className="absolute right-0 top-0 text-indigo-100/50 transform translate-x-4 -translate-y-4">
-            <Fuel className="w-48 h-48" />
-          </div>
-          <CardContent className="p-6 relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-6">
-              <div className="h-16 w-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-600/30">
-                <Fuel className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-bold tracking-wider text-indigo-600/80 uppercase mb-1">
-                  Остаток на заправке
-                </p>
-                <div className="flex items-end gap-3">
-                  <h2 className="text-2xl sm:text-4xl font-black text-slate-900">
-                    {currentBalance.toLocaleString()} <span className="text-xl sm:text-2xl text-slate-500 font-bold">L</span>
-                  </h2>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex gap-8 px-6 py-4 bg-white/60 backdrop-blur-md rounded-2xl border border-white/40">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 mb-1 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3 text-green-500" /> Всего залито
-                </p>
-                <p className="text-lg font-bold text-slate-800">{totalInboundLiters.toLocaleString()} L</p>
-              </div>
-              <div className="w-px bg-slate-200"></div>
-              <div>
-                <p className="text-xs font-semibold text-slate-500 mb-1 flex items-center gap-1">
-                  <TrendingDown className="w-3 h-3 text-rose-500" /> Всего выдано
-                </p>
-                <p className="text-lg font-bold text-slate-800">{totalOutboundLiters.toLocaleString()} L</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Visual tank — 2 ton capacity */}
+      <BaseTankCard summary={tank} />
+
+      {/* Daily ledger + recent movements */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+        <div>
+          <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-3 px-1">
+            История по дням · 14 дней
+          </h2>
+          <TankDailyHistory days={days} capacityL={tank.capacityL} />
+        </div>
+        <div>
+          <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-3 px-1">
+            Последние движения
+          </h2>
+          <TankMovements items={movements} />
+        </div>
       </div>
 
       {/* Driver Fuel Tracker Component */}
-      <DriverFuelTracker 
-        dict={dict} 
-        drivers={drivers} 
-        expenses={fuelExpenses} 
+      <DriverFuelTracker
+        dict={dict}
+        drivers={drivers}
+        expenses={fuelExpenses}
       />
     </div>
   );
