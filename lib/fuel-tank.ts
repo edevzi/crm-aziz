@@ -31,10 +31,29 @@ export interface TankMovement {
   id: string; // `in-${id}` | `out-${expenseId}`
   type: 'inbound' | 'outbound';
   liters: number;
+  /** RUB cost — present on outbound (expense) rows. */
+  amountRub?: number | null;
   note: string | null;
   driverName?: string | null;
+  driverId?: number | null;
   operatorName?: string | null;
   recordedAt: Date;
+}
+
+export interface DriverFuelTotal {
+  driverId: number;
+  name: string;
+  vehiclePlate: string;
+  liters: number;
+  amountRub: number;
+  fillCount: number;
+}
+
+/** Strip internal seed markers like "[seed:base-tank]" from human-facing notes. */
+function cleanNote(note: string | null | undefined): string | null {
+  if (!note) return null;
+  const cleaned = note.replace(/\[seed:[^\]]+\]\s*/g, '').trim();
+  return cleaned.length ? cleaned : null;
 }
 
 function dayKey(d: Date): string {
@@ -165,8 +184,10 @@ export async function getRecentTankMovements(limit = 20): Promise<TankMovement[]
       .select({
         id: expenses.id,
         liters: expenses.liters,
+        amountRub: expenses.amountRub,
         note: expenses.note,
         recordedAt: expenses.recordedAt,
+        driverId: expenses.driverId,
         driverName: drivers.name,
         operatorName: users.name,
       })
@@ -183,7 +204,7 @@ export async function getRecentTankMovements(limit = 20): Promise<TankMovement[]
       id: `in-${r.id}`,
       type: 'inbound' as const,
       liters: r.liters || 0,
-      note: r.note,
+      note: cleanNote(r.note),
       operatorName: r.operatorName,
       recordedAt: r.recordedAt as Date,
     })),
@@ -193,7 +214,9 @@ export async function getRecentTankMovements(limit = 20): Promise<TankMovement[]
         id: `out-${r.id}`,
         type: 'outbound' as const,
         liters: r.liters || 0,
-        note: r.note,
+        amountRub: r.amountRub,
+        note: cleanNote(r.note),
+        driverId: r.driverId,
         driverName: r.driverName,
         operatorName: r.operatorName,
         recordedAt: r.recordedAt as Date,
@@ -203,6 +226,48 @@ export async function getRecentTankMovements(limit = 20): Promise<TankMovement[]
   return merged
     .sort((a, b) => (b.recordedAt?.getTime?.() ?? 0) - (a.recordedAt?.getTime?.() ?? 0))
     .slice(0, limit);
+}
+
+/** Per-driver totals from the base tank in [from, to]. */
+export async function getDriverFuelTotals(from: Date, to: Date): Promise<DriverFuelTotal[]> {
+  const start = new Date(from.getFullYear(), from.getMonth(), from.getDate()).getTime();
+  const end = new Date(to.getFullYear(), to.getMonth(), to.getDate()).getTime() + 24 * 60 * 60 * 1000 - 1;
+
+  const rows = await db
+    .select({
+      driverId: expenses.driverId,
+      liters: expenses.liters,
+      amountRub: expenses.amountRub,
+      recordedAt: expenses.recordedAt,
+      driverName: drivers.name,
+      vehiclePlate: drivers.vehiclePlate,
+    })
+    .from(expenses)
+    .leftJoin(drivers, eq(expenses.driverId, drivers.id))
+    .where(inArray(expenses.category, ['fuel', 'diesel']));
+
+  const byDriver = new Map<number, DriverFuelTotal>();
+  for (const r of rows) {
+    if (r.driverId == null) continue;
+    const t = (r.recordedAt as Date)?.getTime?.() ?? 0;
+    if (t < start || t > end) continue;
+    const liters = r.liters ?? 0;
+    if (liters <= 0) continue;
+    const existing = byDriver.get(r.driverId) ?? {
+      driverId: r.driverId,
+      name: r.driverName ?? 'Без имени',
+      vehiclePlate: r.vehiclePlate ?? '',
+      liters: 0,
+      amountRub: 0,
+      fillCount: 0,
+    };
+    existing.liters += liters;
+    existing.amountRub += r.amountRub ?? 0;
+    existing.fillCount += 1;
+    byDriver.set(r.driverId, existing);
+  }
+
+  return Array.from(byDriver.values()).sort((a, b) => b.liters - a.liters);
 }
 
 // drizzle's eq lives in 'drizzle-orm' — re-import lazily so this module stays tree-shake friendly.

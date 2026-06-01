@@ -12,7 +12,8 @@ import { DriverFuelTracker } from '@/components/DriverFuelTracker';
 import { BaseTankCard } from '@/components/fuel/BaseTankCard';
 import { TankDailyHistory } from '@/components/fuel/TankDailyHistory';
 import { TankMovements } from '@/components/fuel/TankMovements';
-import { getBaseTankSummary, getTankDailyHistory, getRecentTankMovements, BASE_TANK_CAPACITY_L } from '@/lib/fuel-tank';
+import { DriverFuelBreakdown } from '@/components/fuel/DriverFuelBreakdown';
+import { getBaseTankSummary, getTankDailyHistory, getRecentTankMovements, getDriverFuelTotals, BASE_TANK_CAPACITY_L } from '@/lib/fuel-tank';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,10 +55,11 @@ export default async function FuelPage() {
   // Tank data — current balance, daily history (14 days back), recent movements
   const today = new Date();
   const from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 13);
-  const [tank, days, movements] = await Promise.all([
+  const [tank, days, movements, driverTotals] = await Promise.all([
     getBaseTankSummary(),
     getTankDailyHistory(from, today),
     getRecentTankMovements(15),
+    getDriverFuelTotals(from, today),
   ]);
 
   return (
@@ -81,6 +83,14 @@ export default async function FuelPage() {
 
       {/* Visual tank — 2 ton capacity */}
       <BaseTankCard summary={tank} />
+
+      {/* Per-driver breakdown — who took how much fuel and what it cost */}
+      <div>
+        <h2 className="text-xs sm:text-sm font-extrabold text-slate-700 uppercase tracking-wider mb-3 px-1">
+          По водителям · 14 дней
+        </h2>
+        <DriverFuelBreakdown drivers={driverTotals} />
+      </div>
 
       {/* Daily ledger + recent movements */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
