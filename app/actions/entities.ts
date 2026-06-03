@@ -462,6 +462,9 @@ export async function createOrder(data: any) {
       isExternalVehicle,
       externalDriverName: isExternalVehicle ? data.externalDriverName : null,
       isClosed,
+      // Revenue is recognised on the date the payment is entered (external
+      // vehicles & directly-entered orders are revenue from creation).
+      closedAt: newPaymentStatus === 'entered' ? new Date() : null,
     }).returning();
 
     // Record creation as the first activity event (baseline for driver statistics)
@@ -667,6 +670,9 @@ export async function updateOrder(id: number, data: any) {
       isExternalVehicle,
       externalDriverName: isExternalVehicle ? data.externalDriverName : null,
       isClosed,
+      // Revenue is recognised on the date the payment is entered. Stamp it the
+      // first time the order becomes 'entered', keep the original date after.
+      closedAt: newPaymentStatus === 'entered' ? (order.closedAt ?? new Date()) : order.closedAt,
     }).where(eq(orders.id, id));
 
     // Record an operator-driven status change as an activity event (for driver statistics)

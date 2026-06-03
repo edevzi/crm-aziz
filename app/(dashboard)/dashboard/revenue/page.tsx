@@ -76,7 +76,9 @@ export default async function RevenueDetailPage({
 
   for (const order of allOrders) {
     if (isOperator && order.operatorId !== currentUserId) continue;
-    const orderDate = new Date(order.createdAt);
+    // Revenue is bucketed by the date the payment was entered (closedAt),
+    // falling back to createdAt for legacy orders not yet stamped.
+    const orderDate = order.closedAt ? new Date(order.closedAt) : new Date(order.createdAt);
 
     if (order.paymentStatus === 'entered') {
       const amt = order.paymentAmount;

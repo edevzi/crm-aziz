@@ -182,7 +182,9 @@ async function FinancePageContent({
         id: `order-${o.id}`,
         type: 'order',
         rawId: o.id,
-        date: new Date(o.createdAt),
+        // Income is recognised on the date the payment was entered (closedAt),
+        // falling back to createdAt for legacy orders not yet stamped.
+        date: o.closedAt ? new Date(o.closedAt) : new Date(o.createdAt),
         amount: o.paymentAmount,
         sourceKey: o.isExternalVehicle ? 'external_vehicle_rental' : 'client_payment',
         sourceLabel: o.isExternalVehicle
@@ -331,8 +333,8 @@ async function FinancePageContent({
 
     allOrders.forEach(order => {
       if (isOperator && order.operatorId !== currentUserId) return;
-      const orderDate = new Date(order.createdAt);
-      if (orderDate.getMonth() === date.getMonth() && orderDate.getFullYear() === date.getFullYear() && order.paymentStatus === 'entered') {
+      const revDate = order.closedAt ? new Date(order.closedAt) : new Date(order.createdAt);
+      if (revDate.getMonth() === date.getMonth() && revDate.getFullYear() === date.getFullYear() && order.paymentStatus === 'entered') {
         income += order.paymentAmount;
       }
     });

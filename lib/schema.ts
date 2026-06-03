@@ -77,6 +77,7 @@ export const orders = pgTable('orders', {
   referralName: text('referral_name'),
   referralPercent: integer('referral_percent'),
   isClosed: boolean('is_closed').default(false).notNull(),
+  closedAt: timestamp('closed_at'),
   operatorId: integer('operator_id').references(() => users.id),
   isExternalVehicle: boolean('is_external_vehicle').default(false).notNull(),
   externalDriverName: text('external_driver_name'),

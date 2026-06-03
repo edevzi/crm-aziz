@@ -118,6 +118,8 @@ export async function PUT(
         await db.update(orders).set({
           paymentStatus: 'entered',
           isClosed: true,
+          // Revenue is recognised on the date the payment is entered.
+          closedAt: completedOrder.closedAt ?? new Date(),
         }).where(eq(orders.id, orderId));
       }
     }

@@ -18,6 +18,9 @@ export async function updateOrderStatus(orderId: number, status: any) {
   if (status === 'completed' && previousStatus !== 'completed') {
     if (order.paymentType !== 'cash') {
       updateData.paymentStatus = 'entered';
+      // Revenue is recognised on the date the payment is entered, not when the
+      // order was created. Stamp it once so financial reports bucket by this date.
+      if (!order.closedAt) updateData.closedAt = new Date();
     }
     updateData.isClosed = true;
 
@@ -137,6 +140,8 @@ export async function updateOrderPayment(orderId: number, paymentStatus: any) {
       updateData.operatorId = user.id; // Or leave null if admin? Let's assign it anyway
     }
     updateData.isClosed = true;
+    // Revenue is recognised on the date the payment is entered.
+    if (!order.closedAt) updateData.closedAt = new Date();
   }
 
   await db.update(orders).set(updateData).where(eq(orders.id, orderId));

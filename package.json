@@ -16,7 +16,9 @@
     "db:add-events": "node --env-file=.env --import tsx lib/add-order-events.ts",
     "db:seed-events": "node --env-file=.env --import tsx lib/seed-driver-events.ts",
     "db:seed-fuel-tank": "node --env-file=.env --import tsx lib/seed-fuel-tank.ts",
-    "db:cleanup-seed-markers": "node --env-file=.env --import tsx lib/cleanup-seed-markers.ts"
+    "db:cleanup-seed-markers": "node --env-file=.env --import tsx lib/cleanup-seed-markers.ts",
+    "db:backfill-closed-at": "node --env-file=.env --import tsx lib/backfill-closed-at.ts",
+    "db:clean-keep-users": "node --env-file=.env --import tsx lib/clean-keep-users.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3",

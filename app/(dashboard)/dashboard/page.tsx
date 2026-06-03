@@ -113,16 +113,18 @@ export default async function DashboardPage({
       pendingConfirmation++;
     }
 
-    // Revenue
+    // Revenue — bucketed by the date the payment was entered (closedAt), not the
+    // order creation date. Falls back to createdAt for legacy orders not stamped.
     if (order.paymentStatus === 'entered') {
       const amt = order.paymentAmount;
       const isExt = order.isExternalVehicle;
-      if (isCurrent(orderDate)) {
+      const revDate = order.closedAt ? new Date(order.closedAt) : orderDate;
+      if (isCurrent(revDate)) {
         currentMetrics.revenue += amt;
         if (isExt) currentMetrics.revenueExternal += amt;
         else currentMetrics.revenueOwn += amt;
       }
-      if (isPrev(orderDate)) {
+      if (isPrev(revDate)) {
         prevMetrics.revenue += amt;
         if (isExt) prevMetrics.revenueExternal += amt;
         else prevMetrics.revenueOwn += amt;
@@ -246,8 +248,8 @@ export default async function DashboardPage({
 
     allOrders.forEach(order => {
       if (isOperator && order.operatorId !== currentUserId) return;
-      const orderDate = new Date(order.createdAt);
-      if (format(orderDate, 'yyyy-MM-dd') === targetDateStr && order.paymentStatus === 'entered') {
+      const revDate = order.closedAt ? new Date(order.closedAt) : new Date(order.createdAt);
+      if (format(revDate, 'yyyy-MM-dd') === targetDateStr && order.paymentStatus === 'entered') {
         income += order.paymentAmount;
       }
     });
