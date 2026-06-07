@@ -260,24 +260,14 @@ function hasBlockingWorkflow(focus: Order | null): boolean {
   return focus != null && (focus.status === 'in_progress' || focus.status === 'picked_up');
 }
 
-function canRunWorkflowOnOrder(order: Order, focus: Order | null): boolean {
-  if (!focus || focus.id === order.id) return true;
-  // Starting a trip (assigned -> in_progress) or picking up a container (container_placed -> picked_up)
-  // is blocked if there's already another order actively in progress or picked up.
-  if (order.status === 'assigned' || order.status === 'container_placed') {
-    if (focus.status === 'in_progress' || focus.status === 'picked_up') {
-      return false;
-    }
-  }
+// Parallel execution: a driver may run any number of orders at the same time,
+// so one order's workflow is NEVER gated by another. These stay as stable,
+// signature-compatible hooks in case per-order rules are needed later.
+function canRunWorkflowOnOrder(_order: Order, _focus: Order | null): boolean {
   return true;
 }
 
-function queueActionMode(order: Order, focus: Order | null): 'full' | 'accept_only' | 'locked' {
-  if (!focus || focus.id === order.id) return 'full';
-  if (order.status === 'new') return 'accept_only';
-  if ((focus.status === 'in_progress' || focus.status === 'picked_up') && order.status !== 'container_placed') {
-    return 'locked';
-  }
+function queueActionMode(_order: Order, _focus: Order | null): 'full' | 'accept_only' | 'locked' {
   return 'full';
 }
 
@@ -964,10 +954,6 @@ function AppInner() {
 
   const handlePickupContainer = (order: Order) => {
     if (updatingOrderId !== null) return;
-    if (!canRunWorkflowOnOrder(order, focusOrder)) {
-      showAlert(t(locale, 'lockedAction'), t(locale, 'finishCurrentFirst'));
-      return;
-    }
 
     Alert.alert(
       "Фото-отчет",
@@ -1314,11 +1300,6 @@ function AppInner() {
     }
   }, [computedFocusOrder, pinnedFocusId]);
 
-  const otherActiveOrders = useMemo(
-    () => sortQueueOrders(orders, focusOrder?.id ?? null),
-    [orders, focusOrder]
-  );
-
   const historyOrders = useMemo(
     () => orders.filter(o => o.status === 'completed'),
     [orders]
@@ -1424,31 +1405,13 @@ function AppInner() {
   };
 
   const runPrimaryAction = (order: Order) => {
+    // Each order advances independently — no cross-order gating (parallel mode).
     if (order.status === 'container_placed') {
       handlePickupContainer(order);
       return;
     }
     const next = getNextStatus(order.status);
     if (!next || updatingOrderId !== null) return;
-
-    const mode = queueActionMode(order, focusOrder);
-    if (mode === 'locked') {
-      showAlert(t(locale, 'lockedAction'), t(locale, 'finishCurrentFirst'));
-      return;
-    }
-    if (mode === 'accept_only' && next !== 'assigned') {
-      showAlert(t(locale, 'lockedAction'), t(locale, 'finishCurrentFirst'));
-      return;
-    }
-    if (!canRunWorkflowOnOrder(order, focusOrder) && next !== 'assigned') {
-      showAlert(t(locale, 'lockedAction'), t(locale, 'finishCurrentFirst'));
-      return;
-    }
-
-    if (pinnedFocusId == null) {
-      setPinnedFocusId(order.id);
-    }
-
     handleUpdateStatus(order.id, next);
   };
 
@@ -1587,6 +1550,49 @@ function AppInner() {
     );
   };
 
+  // A rich, self-contained card for an actively-worked order. Rendered once per
+  // in-progress / picked-up order so a driver can run several trips in parallel.
+  const renderHeroCard = (order: Order) => {
+    const pill = order.status === 'in_progress' ? 'В пути'
+      : order.status === 'picked_up' ? 'Оплата'
+      : order.status === 'container_placed' ? 'Контейнер'
+      : 'Назначен';
+    return (
+      <View key={order.id} style={styles.heroCard}>
+        <View style={styles.heroTop}>
+          <View style={styles.heroLabelPill}><Text style={styles.heroLabelText}>{pill}</Text></View>
+          {renderStatusBadge(order.status)}
+        </View>
+        {renderStepProgress(order.status)}
+        {order.status === 'container_placed' && (
+          <View style={{ marginTop: 8 }}><ContainerTimer updatedAt={order.updatedAt} /></View>
+        )}
+        <View style={styles.heroTimeBlock}>
+          <Clock size={14} color="#1A73E8" />
+          <Text style={styles.heroTimeText}>{formatDate(order.scheduledAt)}</Text>
+        </View>
+        <Text style={styles.heroAddr}>{formatAddressDisplay(order.address, locale)}</Text>
+        <View style={styles.heroActionsRow}>
+          <TouchableOpacity style={styles.heroNavBtn} onPress={() => openNavigation(order)} activeOpacity={0.8}>
+            <Navigation size={16} color="#FFF" /><Text style={styles.heroNavText}>Навигация</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.heroCallBtn} onPress={() => callClient(order.clientPhone)} activeOpacity={0.8}>
+            <Phone size={16} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.heroInfoGrid}>
+          <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Клиент</Text><Text style={styles.heroInfoVal}>{order.clientName}</Text></View>
+          <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Оплата</Text><Text style={styles.heroInfoVal}>{order.paymentAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text></View>
+          <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Контейнер</Text><Text style={styles.heroInfoVal}>{order.containerSizeM3} м³</Text></View>
+        </View>
+        {renderPrimaryButton(order, true)}
+        <TouchableOpacity style={{ marginTop: 8, alignItems: 'center', padding: 6 }} onPress={() => openOrder(order)} activeOpacity={0.6}>
+          <Text style={{ fontSize: 13, color: '#1A73E8', fontWeight: '600' }}>{t(locale, 'openOrder')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   // ══════════════════════ AUTH ══════════════════════
   if (!isLoggedIn) {
     return (
@@ -1684,13 +1690,15 @@ function AppInner() {
             <View style={{ paddingHorizontal: 16 }}>
               {(() => {
                 const homeOrders = activeOrders;
-                const overdueContainers = homeOrders.filter(o => { if (o.status !== 'container_placed') return false; const start = new Date(o.updatedAt).getTime(); if (isNaN(start)) return false; return (Date.now() - start) >= 2 * 60 * 60 * 1000; });
-                const activeContainers = homeOrders.filter(o => { if (o.status !== 'container_placed') return false; const start = new Date(o.updatedAt).getTime(); if (isNaN(start)) return false; return (Date.now() - start) < 2 * 60 * 60 * 1000; });
-                const newOrders = homeOrders.filter(o => o.status === 'new');
-                const assignedOrders = homeOrders.filter(o => o.status === 'assigned');
-                const activeTripOrder = homeOrders.find(o => o.status === 'in_progress' || o.status === 'picked_up') || (assignedOrders.length > 0 ? assignedOrders.sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0] : null);
-                const nextOrders = assignedOrders.filter(o => o.id !== activeTripOrder?.id);
-                const hasAnyOrders = overdueContainers.length > 0 || activeTripOrder != null || activeContainers.length > 0 || newOrders.length > 0;
+                const bySchedule = (a: Order, b: Order) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+                const isOverdueContainer = (o: Order) => { if (o.status !== 'container_placed') return false; const start = new Date(o.updatedAt).getTime(); if (isNaN(start)) return false; return (Date.now() - start) >= 2 * 60 * 60 * 1000; };
+                const overdueContainers = homeOrders.filter(isOverdueContainer).sort(bySchedule);
+                const activeContainers = homeOrders.filter(o => o.status === 'container_placed' && !isOverdueContainer(o)).sort(bySchedule);
+                // Parallel mode: every in-progress / picked-up order is its own active trip.
+                const tripOrders = homeOrders.filter(o => o.status === 'in_progress' || o.status === 'picked_up').sort(bySchedule);
+                const newOrders = homeOrders.filter(o => o.status === 'new').sort(bySchedule);
+                const assignedOrders = homeOrders.filter(o => o.status === 'assigned').sort(bySchedule);
+                const hasAnyOrders = homeOrders.length > 0;
 
                 if (!hasAnyOrders) return (
                   <View style={styles.emptyState}><CheckCircle size={48} color="#43A047" /><Text style={styles.emptyTitle}>{t(locale, 'allDone')}</Text><Text style={styles.emptySub}>{t(locale, 'allDoneSub')}</Text></View>
@@ -1708,45 +1716,16 @@ function AppInner() {
                       </View>
                     )}
 
-                    {activeTripOrder && (
+                    {tripOrders.length > 0 && (
                       <View style={{ marginTop: 4 }}>
-                        <Text style={styles.secTitle}>Текущий заказ</Text>
-                        <View style={styles.heroCard}>
-                          <View style={styles.heroTop}>
-                            <View style={styles.heroLabelPill}><Text style={styles.heroLabelText}>{activeTripOrder.status === 'in_progress' ? 'В пути' : 'Назначен'}</Text></View>
-                            {renderStatusBadge(activeTripOrder.status)}
-                          </View>
-                          {renderStepProgress(activeTripOrder.status)}
-                          <View style={styles.heroTimeBlock}>
-                            <Clock size={14} color="#1A73E8" />
-                            <Text style={styles.heroTimeText}>{formatDate(activeTripOrder.scheduledAt)}</Text>
-                          </View>
-                          <Text style={styles.heroAddr}>{formatAddressDisplay(activeTripOrder.address, locale)}</Text>
-                          <View style={styles.heroActionsRow}>
-                            <TouchableOpacity style={styles.heroNavBtn} onPress={() => openNavigation(activeTripOrder)} activeOpacity={0.8}>
-                              <Navigation size={16} color="#FFF" /><Text style={styles.heroNavText}>Навигация</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.heroCallBtn} onPress={() => callClient(activeTripOrder.clientPhone)} activeOpacity={0.8}>
-                              <Phone size={16} color="#FFF" />
-                            </TouchableOpacity>
-                          </View>
-                          <View style={styles.heroInfoGrid}>
-                            <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Клиент</Text><Text style={styles.heroInfoVal}>{activeTripOrder.clientName}</Text></View>
-                            <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Оплата</Text><Text style={styles.heroInfoVal}>{activeTripOrder.paymentAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽</Text></View>
-                            <View style={styles.heroInfoItem}><Text style={styles.heroInfoLabel}>Контейнер</Text><Text style={styles.heroInfoVal}>{activeTripOrder.containerSizeM3} м³</Text></View>
-                          </View>
-                          {activeTripOrder.status === 'assigned' && <Text style={styles.heroHint}>{t(locale, 'earlyTripHint')}</Text>}
-                          {renderPrimaryButton(activeTripOrder, true)}
-                          <TouchableOpacity style={{ marginTop: 8, alignItems: 'center', padding: 6 }} onPress={() => openOrder(activeTripOrder)} activeOpacity={0.6}>
-                            <Text style={{ fontSize: 13, color: '#1A73E8', fontWeight: '600' }}>{t(locale, 'openOrder')}</Text>
-                          </TouchableOpacity>
-                        </View>
+                        <Text style={styles.secTitle}>{tripOrders.length > 1 ? `Текущие заказы (${tripOrders.length})` : 'Текущий заказ'}</Text>
+                        <View style={{ gap: 12 }}>{tripOrders.map(o => renderHeroCard(o))}</View>
                       </View>
                     )}
 
-                    {activeContainers.length > 0 && <View><Text style={[styles.secTitle, { color: '#EF6C00' }]}>Контейнеры</Text>{activeContainers.map(o => renderCompactCard(o))}</View>}
-                    {newOrders.length > 0 && <View><Text style={[styles.secTitle, { color: '#1A73E8' }]}>Новые</Text>{newOrders.map(o => renderCompactCard(o))}</View>}
-                    {nextOrders.length > 0 && <View><Text style={styles.secTitle}>Следующие</Text>{nextOrders.map((o, idx) => renderCompactCard(o, idx + 2))}</View>}
+                    {activeContainers.length > 0 && <View><Text style={[styles.secTitle, { color: '#EF6C00' }]}>Контейнеры ({activeContainers.length})</Text>{activeContainers.map(o => renderCompactCard(o))}</View>}
+                    {newOrders.length > 0 && <View><Text style={[styles.secTitle, { color: '#1A73E8' }]}>Новые ({newOrders.length})</Text>{newOrders.map(o => renderCompactCard(o))}</View>}
+                    {assignedOrders.length > 0 && <View><Text style={[styles.secTitle, { color: '#F59E0B' }]}>Назначенные ({assignedOrders.length})</Text>{assignedOrders.map(o => renderCompactCard(o))}</View>}
                   </View>
                 );
               })()}
