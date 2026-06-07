@@ -13,6 +13,9 @@ import { notFound } from 'next/navigation';
 import { OrderStatusUpdater } from '@/components/OrderStatusUpdater';
 import { PaymentStatusUpdater } from '@/components/PaymentStatusUpdater';
 import { OrderPhotoViewer } from '@/components/OrderPhotoViewer';
+import { OrderForm } from '@/components/forms/OrderForm';
+import { DeleteOrderButton } from '@/components/DeleteOrderButton';
+import { getClients, getDrivers, getDispatchers, getOrders } from '@/lib/data';
 
 
 
@@ -42,25 +45,40 @@ export default async function OrderDetailPage({ params }: { params: { id: string
 
   const { order, client, driver, dispatcher, operator } = orderData;
 
+  // Data needed for the inline edit form (clients/drivers/dispatchers + active orders
+  // for the driver-availability check).
+  const [allClients, allDrivers, allDispatchers, activeOrders] = await Promise.all([
+    getClients(),
+    getDrivers(),
+    getDispatchers(),
+    getOrders('active', ''),
+  ]);
+
   const addressMapUrl = order.mapUrl ||
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3 sm:gap-4">
-        <Button variant="outline" size="icon" asChild className="flex-shrink-0">
-          <Link href="/orders"><ArrowLeft className="h-4 w-4" /></Link>
-        </Button>
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">{dict.order} #{order.id}</h1>
-          <div className="flex flex-wrap items-center gap-2 mt-1">
-            <p className="text-muted-foreground text-sm sm:text-base">{dict.manage_orders}</p>
-            {dispatcher && (
-              <span className="inline-flex items-center gap-1 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-0.5 rounded-full">
-                <Phone className="h-3 w-3" /> {'Диспетчер'}
-              </span>
-            )}
+      <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <Button variant="outline" size="icon" asChild className="flex-shrink-0">
+            <Link href="/orders"><ArrowLeft className="h-4 w-4" /></Link>
+          </Button>
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">{dict.order} #{order.id}</h1>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <p className="text-muted-foreground text-sm sm:text-base">{dict.manage_orders}</p>
+              {dispatcher && (
+                <span className="inline-flex items-center gap-1 text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-0.5 rounded-full">
+                  <Phone className="h-3 w-3" /> {'Диспетчер'}
+                </span>
+              )}
+            </div>
           </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <OrderForm dict={dict} order={order} clients={allClients} drivers={allDrivers} dispatchers={allDispatchers} activeOrders={activeOrders} />
+          <DeleteOrderButton orderId={order.id} variant="full" redirectTo="/orders" />
         </div>
       </div>
 

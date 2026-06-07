@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { Table, TableBody, TableCell, SortableTableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TableRowLink } from '@/components/TableRowLink';
 import { OrderForm } from '@/components/forms/OrderForm';
+import { DeleteOrderButton } from '@/components/DeleteOrderButton';
 import { ConfirmPaymentButton } from '@/components/ConfirmPaymentButton';
 import { CompleteOrderButton } from '@/components/CompleteOrderButton';
 import { OrderPhotoViewer } from '@/components/OrderPhotoViewer';
@@ -87,7 +88,7 @@ export function OrdersTable({
           <SortableTableHead sortKey="amount" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={toggleSort} className="text-right justify-end w-[120px]">
             {dict.amount}
           </SortableTableHead>
-          <SortableTableHead sortKey="" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={() => {}} className="w-[60px] pr-6"></SortableTableHead>
+          <SortableTableHead sortKey="" currentSortKey={sortKey} currentSortDirection={sortDirection} onSort={() => {}} className="w-[100px] pr-6"></SortableTableHead>
         </TableRow>
       </TableHeader>
       <TableBody className="divide-y divide-slate-100/60">
@@ -182,8 +183,9 @@ export function OrdersTable({
               <div className="font-black text-slate-800 text-sm">{order.paymentAmount.toLocaleString()}</div>
               <div className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5">RUB</div>
             </TableCell>
-            <TableCell className="text-right flex items-center justify-end pr-6 py-4 opacity-100 group-hover:opacity-100 transition-opacity">
+            <TableCell className="text-right flex items-center justify-end gap-1 pr-6 py-4 opacity-100 group-hover:opacity-100 transition-opacity">
               <OrderForm dict={dict} order={order} clients={clients} drivers={drivers} dispatchers={dispatchers} activeOrders={activeOrders} />
+              <DeleteOrderButton orderId={order.id} />
             </TableCell>
           </TableRowLink>
         ))}

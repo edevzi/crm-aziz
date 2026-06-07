@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { orders, warehouseTransactions, expenses } from '@/lib/schema';
+import { orders, warehouseTransactions, expenses, orderEvents } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { getCurrentUser } from '@/lib/auth';
@@ -208,4 +208,46 @@ export async function updateOrderPayment(orderId: number, paymentStatus: any) {
   revalidatePath(`/dashboard`);
   revalidatePath(`/finance`);
   revalidatePath(`/warehouse`);
+}
+
+/**
+ * Permanently delete an order. Available to logged-in operators & admins.
+ * Cleans up dependent rows first to satisfy FK constraints:
+ *   - order_events (orderId is NOT NULL → must be removed)
+ *   - expenses tied to this order (auto-generated dispatcher/driver/referral fees)
+ *   - warehouse_transactions tied to this order (auto-generated inbound)
+ */
+export async function deleteOrder(orderId: number) {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== 'operator' && user.role !== 'admin')) {
+    return { success: false, error: 'Нет доступа / Ruxsat yo‘q' };
+  }
+
+  try {
+    const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
+    if (!order) {
+      return { success: false, error: 'Заказ не найден / Buyurtma topilmadi' };
+    }
+
+    // Remove dependent records first (FK-safe order).
+    await db.delete(orderEvents).where(eq(orderEvents.orderId, orderId));
+    await db.delete(expenses).where(eq(expenses.orderId, orderId));
+    await db.delete(warehouseTransactions).where(eq(warehouseTransactions.orderId, orderId));
+
+    await db.delete(orders).where(eq(orders.id, orderId));
+
+    revalidateTag('orders');
+    revalidateTag('warehouse');
+    revalidateTag('expenses');
+    revalidatePath('/orders');
+    revalidatePath(`/orders/${orderId}`);
+    revalidatePath('/dashboard');
+    revalidatePath('/finance');
+    revalidatePath('/warehouse');
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error deleting order:', error);
+    return { success: false, error: error.message || 'Ошибка при удалении заказа' };
+  }
 }

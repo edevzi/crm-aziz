@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from 'next/navigation';
+import { Toaster } from "sonner";
 import { SidebarWrapper } from "@/components/layout/SidebarWrapper";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -18,6 +19,7 @@ export default async function DashboardLayout({
   return (
     <SidebarWrapper lang={lang} userRole={user.role}>
       {children}
+      <Toaster position="top-center" richColors closeButton />
     </SidebarWrapper>
   );
 }
