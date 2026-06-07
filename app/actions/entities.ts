@@ -407,23 +407,9 @@ export async function createOrder(data: any) {
 
     const newPaymentStatus = isExternalVehicle ? 'entered' : (data.paymentStatus || 'pending');
     const dispatcherFee = isExternalVehicle ? null : (data.dispatcherFee ? parseInt(String(data.dispatcherFee).replace(/\D/g, '')) : null);
-    
-    // --- Driver Availability Check ---
-    const parsedScheduledAt = parseDate(data.scheduledAt);
-    if (!isExternalVehicle && data.driverId) {
-      const driverIdInt = parseInt(data.driverId);
-      const scheduledTime = parsedScheduledAt.getTime();
-      const BUFFER = 3 * 60 * 60 * 1000;
-      
-      const driverActiveOrders = await db.select().from(orders).where(eq(orders.driverId, driverIdInt));
-      for (const ao of driverActiveOrders) {
-        if (ao.status === 'completed') continue;
-        const aoTime = new Date(ao.scheduledAt).getTime();
-        if (Math.abs(aoTime - scheduledTime) <= BUFFER) {
-          return { success: false, error: "Ошибка: Водитель занят в это время (±3 часа)! Пожалуйста, выберите другое время или водителя." };
-        }
-      }
-    }
+
+    // Note: a driver may now have multiple orders at the same time — no
+    // availability/time-conflict check is performed.
 
     const user = await getCurrentUser();
     const status = isExternalVehicle ? 'completed' : (data.status || 'new');
@@ -615,22 +601,8 @@ export async function updateOrder(id: number, data: any) {
       return { success: false, error: "Заказ не найден / Buyurtma topilmadi" };
     }
 
-    // --- Driver Availability Check ---
-    const parsedScheduledAt = parseDate(data.scheduledAt);
-    if (!isExternalVehicle && data.driverId) {
-      const driverIdInt = parseInt(data.driverId);
-      const scheduledTime = parsedScheduledAt.getTime();
-      const BUFFER = 3 * 60 * 60 * 1000;
-      
-      const driverActiveOrders = await db.select().from(orders).where(eq(orders.driverId, driverIdInt));
-      for (const ao of driverActiveOrders) {
-        if (ao.status === 'completed' || ao.id === id) continue;
-        const aoTime = new Date(ao.scheduledAt).getTime();
-        if (Math.abs(aoTime - scheduledTime) <= BUFFER) {
-          return { success: false, error: "Ошибка: Водитель занят в это время (±3 часа)! Пожалуйста, выберите другое время или водителя." };
-        }
-      }
-    }
+    // Note: a driver may now have multiple orders at the same time — no
+    // availability/time-conflict check is performed.
 
     const previousPaymentStatus = order.paymentStatus;
     const previousStatus = order.status;

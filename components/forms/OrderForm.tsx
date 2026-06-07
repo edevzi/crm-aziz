@@ -190,53 +190,14 @@ export function OrderForm({ dict, order, clients, drivers, dispatchers, activeOr
   const clientOptions     = clients.map(c => ({ value: String(c.id), label: c.name, sub: c.phone }));
   const dispatcherOptions = dispatchers.map(d => ({ value: String(d.id), label: d.name, sub: d.phone }));
   
-  // Calculate driver availability
-  const isDriverBusy = (dId: number) => {
-    const scheduledAtStr = `${form.scheduledDate} ${form.scheduledTime}`.trim();
-    if (!scheduledAtStr) return false;
-    
-    const match = scheduledAtStr.match(/^(\d{1,2})[\.\/](\d{1,2})[\.\/](\d{4})(?:\s+(\d{1,2}):(\d{1,2}))?$/);
-    let selectedTime = NaN;
-    if (match) {
-      const day = parseInt(match[1], 10);
-      const month = parseInt(match[2], 10) - 1;
-      const year = parseInt(match[3], 10);
-      const hour = match[4] ? parseInt(match[4], 10) : 0;
-      const minute = match[5] ? parseInt(match[5], 10) : 0;
-      selectedTime = new Date(year, month, day, hour, minute).getTime();
-    } else {
-      selectedTime = new Date(scheduledAtStr).getTime();
-    }
-
-    if (isNaN(selectedTime)) return false;
-
-    // Buffer: 3 hours in milliseconds
-    const BUFFER = 3 * 60 * 60 * 1000;
-
-    for (const ao of activeOrders) {
-      if (ao.order.driverId !== dId) continue;
-      // Skip the current order being edited
-      if (order && ao.order.id === order.id) continue;
-      
-      const orderTime = new Date(ao.order.scheduledAt).getTime();
-      if (Math.abs(orderTime - selectedTime) <= BUFFER) {
-        return true; // Conflict found
-      }
-    }
-    return false;
-  };
-
+  // A driver may have multiple orders at the same time — no availability gating.
   const driverOptions     = [
     { value: 'none', label: dict.unassigned || 'Не назначен' },
-    ...drivers.map(d => {
-      const busy = isDriverBusy(d.id);
-      return { 
-        value: String(d.id), 
-        label: d.name, 
-        sub: d.vehiclePlate,
-        disabled: busy 
-      };
-    }),
+    ...drivers.map(d => ({
+      value: String(d.id),
+      label: d.name,
+      sub: d.vehiclePlate,
+    })),
   ];
   const isDispatcher = form.clientCategory === 'dispatcher';
 

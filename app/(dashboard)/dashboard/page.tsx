@@ -1,5 +1,5 @@
 import React from 'react';
-import { getDashboardData, getFinanceData, getClients, getDrivers, getSafeData } from '@/lib/data';
+import { getDashboardData, getFinanceData, getClients, getDrivers, getSafeData, getWarehouseData } from '@/lib/data';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -40,13 +40,14 @@ export default async function DashboardPage({
   const lang: string = 'ru';
   const dict = getDictionary(lang);
 
-  const [allOrders, { allExpenses }, allClients, allDrivers, user, safeData] = await Promise.all([
+  const [allOrders, { allExpenses }, allClients, allDrivers, user, safeData, { allTransactions }] = await Promise.all([
     getDashboardData(),
     getFinanceData(),
     getClients(),
     getDrivers(),
     getCurrentUser(),
-    getSafeData()
+    getSafeData(),
+    getWarehouseData()
   ]);
   const isOperator = user?.role === 'operator';
   const currentUserId = user?.id;
@@ -143,16 +144,20 @@ export default async function DashboardPage({
       }
     }
 
-    // Utilization Volume
-    if (order.status === 'completed') {
-      if (isCurrent(orderDate)) currentMetrics.utilizationM3 += (order.containerSizeM3 || 0);
-      if (isPrev(orderDate)) prevMetrics.utilizationM3 += (order.containerSizeM3 || 0);
-    }
-
     // Active & Pending status counts for quick links (ignoring date)
     // Operators might want to see all active orders so they can pick them up.
     if (order.paymentStatus === 'pending') pendingPayments++;
     if (!order.isClosed && order.status !== 'completed') activeOrders++;
+  }
+
+  // Свалка (utilization) volume = OUTBOUND warehouse volume (what was actually
+  // taken to the dump), not the inbound volume received from orders.
+  for (const tx of allTransactions || []) {
+    if (tx.type !== 'outbound') continue;
+    if (isOperator && tx.operatorId !== currentUserId) continue;
+    const txDate = new Date(tx.recordedAt);
+    if (isCurrent(txDate)) currentMetrics.utilizationM3 += (tx.volumeM3 || 0);
+    if (isPrev(txDate)) prevMetrics.utilizationM3 += (tx.volumeM3 || 0);
   }
 
   // Warehouse incomes removed from revenue tracking

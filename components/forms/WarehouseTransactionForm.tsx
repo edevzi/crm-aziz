@@ -8,13 +8,15 @@ import { FormattedNumberInput } from '@/components/ui/FormattedNumberInput';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { addWarehouseTransaction } from '@/app/actions/entities';
-import { Plus, ArrowDownToLine, ArrowUpFromLine, Truck, Banknote, FileText } from 'lucide-react';
+import { Plus, ArrowUpFromLine, Truck, FileText } from 'lucide-react';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 
 export function WarehouseTransactionForm({ dict, drivers = [] }: { dict: any, drivers?: any[] }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [type, setType] = useState<'inbound' | 'outbound'>('outbound');
+  // Warehouse only tracks outbound (Расход) — inbound accrues automatically from
+  // completed orders, so manual inbound entry was removed per request.
+  const type = 'outbound' as const;
   const [containerSizeM3, setContainerSizeM3] = useState('');
   const [containerCount, setContainerCount] = useState('1');
   const [note, setNote] = useState('');
@@ -85,32 +87,10 @@ export function WarehouseTransactionForm({ dict, drivers = [] }: { dict: any, dr
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* Type toggle */}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setType('inbound')}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${
-                type === 'inbound'
-                  ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}
-            >
-              <ArrowDownToLine className="h-4 w-4" />
-              Приход
-            </button>
-            <button
-              type="button"
-              onClick={() => setType('outbound')}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all ${
-                type === 'outbound'
-                  ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}
-            >
-              <ArrowUpFromLine className="h-4 w-4" />
-              Расход
-            </button>
+          {/* Outbound-only banner */}
+          <div className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-rose-500 text-white shadow-md shadow-rose-500/30">
+            <ArrowUpFromLine className="h-4 w-4" />
+            Расход
           </div>
 
           {/* Container size + count */}

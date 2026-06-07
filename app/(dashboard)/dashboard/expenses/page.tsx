@@ -1,5 +1,5 @@
 import React from 'react';
-import { getDashboardData, getFinanceData, getDispatchers, getDrivers } from '@/lib/data';
+import { getDashboardData, getFinanceData, getDispatchers, getDrivers, getWarehouseData } from '@/lib/data';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -33,12 +33,13 @@ export default async function ExpensesDetailPage({
   const lang: string = 'ru';
   const dict = getDictionary(lang);
 
-  const [allOrders, { allExpenses, allGasStationInbounds }, user, allDispatchers, allDrivers] = await Promise.all([
+  const [allOrders, { allExpenses, allGasStationInbounds }, user, allDispatchers, allDrivers, { allTransactions }] = await Promise.all([
     getDashboardData(),
     getFinanceData(),
     getCurrentUser(),
     getDispatchers(),
-    getDrivers()
+    getDrivers(),
+    getWarehouseData()
   ]);
   
   const ordersMap = new Map(allOrders.map(o => [o.id, o]));
@@ -176,10 +177,16 @@ export default async function ExpensesDetailPage({
         prevMetrics.dispatcherOrders++;
       }
     }
-    if (order.status === 'completed') {
-      if (isCurrent(orderDate)) currentMetrics.utilizationM3 += (order.containerSizeM3 || 0);
-      if (isPrev(orderDate)) prevMetrics.utilizationM3 += (order.containerSizeM3 || 0);
-    }
+  }
+
+  // Свалка (utilization) volume = OUTBOUND warehouse volume (what was actually
+  // taken to the dump), not the inbound volume received from orders.
+  for (const tx of allTransactions || []) {
+    if (tx.type !== 'outbound') continue;
+    if (isOperator && tx.operatorId !== currentUserId) continue;
+    const txDate = new Date(tx.recordedAt);
+    if (isCurrent(txDate)) currentMetrics.utilizationM3 += (tx.volumeM3 || 0);
+    if (isPrev(txDate)) prevMetrics.utilizationM3 += (tx.volumeM3 || 0);
   }
 
 

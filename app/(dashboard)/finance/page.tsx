@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { getFinanceData, getClients, getDispatchers, getDashboardData, getDrivers, getSafeData } from '@/lib/data';
+import { getFinanceData, getClients, getDispatchers, getDashboardData, getDrivers, getSafeData, getWarehouseData } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
@@ -81,11 +81,12 @@ async function FinancePageContent({
   allDispatchers: any[],
   user: any,
 }) {
-  const [allOrders, { allExpenses }, allClients, safeData] = await Promise.all([
+  const [allOrders, { allExpenses }, allClients, safeData, { allTransactions }] = await Promise.all([
     getDashboardData(),
     getFinanceData(),
     getClients(),
-    getSafeData()
+    getSafeData(),
+    getWarehouseData()
   ]);
 
   const ordersMap = new Map(allOrders.map(o => [o.id, o]));
@@ -292,10 +293,16 @@ async function FinancePageContent({
       if (isCurrent(orderDate)) currentMetrics.dispatcherOrders++;
       if (isPrev(orderDate)) prevMetrics.dispatcherOrders++;
     }
-    if (order.status === 'completed') {
-      if (isCurrent(orderDate)) currentMetrics.utilizationM3 += (order.containerSizeM3 || 0);
-      if (isPrev(orderDate)) prevMetrics.utilizationM3 += (order.containerSizeM3 || 0);
-    }
+  }
+
+  // Свалка (utilization) volume = OUTBOUND warehouse volume (what was actually
+  // taken to the dump), not the inbound volume received from orders.
+  for (const tx of allTransactions || []) {
+    if (tx.type !== 'outbound') continue;
+    if (isOperator && tx.operatorId !== currentUserId) continue;
+    const txDate = new Date(tx.recordedAt);
+    if (isCurrent(txDate)) currentMetrics.utilizationM3 += (tx.volumeM3 || 0);
+    if (isPrev(txDate)) prevMetrics.utilizationM3 += (tx.volumeM3 || 0);
   }
 
   for (const e of allExpenses) {
