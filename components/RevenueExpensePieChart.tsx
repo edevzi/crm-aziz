@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -18,6 +19,11 @@ export function RevenueExpensePieChart({
   dict: any
 }) {
   const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  const tooltipStyle = isDark
+    ? { backgroundColor: 'rgba(17,24,39,0.96)', borderRadius: '1rem', border: '1px solid rgba(148,163,184,0.18)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)', padding: '12px' }
+    : { backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '1rem', border: '1px solid #f1f5f9', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)', padding: '12px' };
 
   useEffect(() => {
     setMounted(true);
@@ -25,7 +31,7 @@ export function RevenueExpensePieChart({
 
   if (!mounted) {
     return (
-      <Card className="border border-white shadow-xl shadow-slate-200/40 rounded-3xl overflow-hidden bg-white/70 backdrop-blur-2xl animate-pulse h-[350px]" />
+      <Card className="border border-border/70 shadow-xl shadow-slate-200/40 dark:shadow-black/30 rounded-3xl overflow-hidden bg-card/70 backdrop-blur-2xl animate-pulse h-[350px]" />
     );
   }
 
@@ -40,8 +46,8 @@ export function RevenueExpensePieChart({
   const profitPct = total > 0 ? Math.round((profitVal / total) * 100) : 0;
 
   return (
-    <Card className="border border-white shadow-xl shadow-slate-200/40 rounded-3xl overflow-hidden bg-white/70 backdrop-blur-2xl">
-      <CardHeader className="bg-white/40 border-b border-white/50 px-6 py-5">
+    <Card className="border border-border/70 shadow-xl shadow-slate-200/40 dark:shadow-black/30 rounded-3xl overflow-hidden bg-card/70 backdrop-blur-2xl">
+      <CardHeader className="bg-muted/30 border-b border-border/60 px-6 py-5">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
             <div className="h-3 w-3 rounded-full bg-emerald-500" />
@@ -79,8 +85,8 @@ export function RevenueExpensePieChart({
                 </Pie>
                 <Tooltip 
                   wrapperStyle={{ zIndex: 50 }}
-                  contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '1rem', border: '1px solid #f1f5f9', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', padding: '12px' }}
-                  itemStyle={{ fontWeight: '700', fontSize: '13px', color: '#0f172a' }}
+                  contentStyle={tooltipStyle}
+                  itemStyle={{ fontWeight: '700', fontSize: '13px', color: isDark ? '#e2e8f0' : '#0f172a' }}
                   formatter={(value: number, name: string) => {
                     const isExpense = name === ('Расходы');
                     const pct = isExpense ? expensePct : profitPct;
@@ -100,7 +106,7 @@ export function RevenueExpensePieChart({
           {data.map((entry) => {
             const pct = entry.name === ('Расходы') ? expensePct : profitPct;
             return (
-              <div key={entry.name} className="flex items-center justify-between min-w-0 bg-white/50 p-2 rounded-lg border border-slate-100 shadow-sm">
+              <div key={entry.name} className="flex items-center justify-between min-w-0 bg-muted/40 p-2 rounded-lg border border-border/60 shadow-sm">
                 <div className="flex items-center gap-2 overflow-hidden">
                   <span className="h-3 w-3 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: entry.color }} />
                   <span className="text-slate-700 font-bold truncate capitalize">{entry.name}</span>

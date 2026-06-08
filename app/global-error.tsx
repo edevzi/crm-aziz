@@ -18,6 +18,34 @@ export default function GlobalError({
   useEffect(() => {
     // Surface the real error in the console / monitoring.
     console.error('GlobalError:', error);
+    try {
+      fetch('/api/client-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source: 'global',
+          name: error?.name,
+          message: error?.message,
+          stack: error?.stack,
+          digest: error?.digest,
+          url: typeof location !== 'undefined' ? location.href : '',
+          ua: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch { /* ignore */ }
+    // Stale JS chunks after a deploy (common on cached mobile pages) → ChunkLoadError.
+    // Recover automatically with one hard reload to fetch the fresh build.
+    const text = `${error?.name ?? ''} ${error?.message ?? ''}`;
+    const isChunkError = /ChunkLoadError|Loading chunk|Loading CSS chunk|Failed to fetch dynamically imported module|error loading dynamically imported module|importing a module script failed/i.test(text);
+    if (isChunkError && typeof window !== 'undefined') {
+      const KEY = 'vg:chunk-reload';
+      const last = Number(sessionStorage.getItem(KEY) || '0');
+      if (Date.now() - last > 10000) {
+        sessionStorage.setItem(KEY, String(Date.now()));
+        window.location.reload();
+      }
+    }
   }, [error]);
 
   return (
@@ -68,7 +96,7 @@ export default function GlobalError({
             помогает.
           </p>
           <button
-            onClick={() => reset()}
+            onClick={() => { if (typeof window !== 'undefined') window.location.reload(); else reset(); }}
             style={{
               width: '100%',
               padding: '12px 16px',

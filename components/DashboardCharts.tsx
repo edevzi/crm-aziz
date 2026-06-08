@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -26,6 +27,14 @@ export function DashboardCharts({
   lang?: string
 }) {
   const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  const gridStroke = isDark ? 'rgba(148,163,184,0.14)' : '#e2e8f0';
+  const axisStroke = isDark ? '#64748b' : '#64748b';
+  const tooltipStyle = isDark
+    ? { backgroundColor: 'rgba(17,24,39,0.96)', borderRadius: '1rem', border: '1px solid rgba(148,163,184,0.18)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)', padding: '12px' }
+    : { backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '1rem', border: '1px solid #f1f5f9', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)', padding: '12px' };
+  const tooltipLabelColor = isDark ? '#e2e8f0' : '#0f172a';
 
   useEffect(() => {
     setMounted(true);
@@ -34,16 +43,16 @@ export function DashboardCharts({
   if (!mounted) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[350px]">
-        <Card className="lg:col-span-2 border-0 shadow-sm ring-1 ring-slate-100 rounded-3xl bg-white/50 animate-pulse" />
-        <Card className="border-0 shadow-sm ring-1 ring-slate-100 rounded-3xl bg-white/50 animate-pulse" />
+        <Card className="lg:col-span-2 rounded-3xl bg-muted/40 animate-pulse" />
+        <Card className="rounded-3xl bg-muted/40 animate-pulse" />
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <Card className="lg:col-span-2 border border-white shadow-xl shadow-slate-200/40 rounded-3xl overflow-hidden bg-white/70 backdrop-blur-2xl">
-        <CardHeader className="bg-white/40 border-b border-white/50 px-6 py-5">
+      <Card className="lg:col-span-2 border border-border/70 shadow-xl shadow-slate-200/40 dark:shadow-black/30 rounded-3xl overflow-hidden bg-card/70 backdrop-blur-2xl">
+        <CardHeader className="bg-muted/30 border-b border-border/60 px-6 py-5">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
               <div className="h-3 w-3 rounded-full bg-blue-500" />
@@ -67,12 +76,12 @@ export function DashboardCharts({
                     <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} dy={10} />
-                <YAxis stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => `${val >= 1000 ? (val / 1000) + 'k' : val}`} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '1rem', border: '1px solid #f1f5f9', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', padding: '12px' }}
-                  labelStyle={{ fontWeight: '800', color: '#0f172a', marginBottom: '4px' }}
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
+                <XAxis dataKey="date" stroke={axisStroke} fontSize={11} tickLine={false} axisLine={false} dy={10} />
+                <YAxis stroke={axisStroke} fontSize={11} tickLine={false} axisLine={false} tickFormatter={(val) => `${val >= 1000 ? (val / 1000) + 'k' : val}`} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  labelStyle={{ fontWeight: '800', color: tooltipLabelColor, marginBottom: '4px' }}
                   itemStyle={{ fontWeight: '600', fontSize: '13px' }}
                 />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px', fontSize: '12px', fontWeight: '600' }} />

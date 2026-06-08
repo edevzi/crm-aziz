@@ -2,7 +2,7 @@
   "expo": {
     "name": "VG Driver",
     "slug": "driver-crm",
-    "version": "1.0.7",
+    "version": "1.0.9",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
@@ -30,7 +30,7 @@
       }
     },
     "android": {
-      "versionCode": 8,
+      "versionCode": 10,
       "package": "com.driver.crm",
       "permissions": [
         "ACCESS_COARSE_LOCATION",

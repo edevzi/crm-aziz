@@ -23,6 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import { getDictionary } from "@/lib/dictionaries";
 import { RefreshDataButton } from "@/components/RefreshDataButton";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export function MobileSidebar({ lang = 'ru', userRole }: { lang?: string, userRole?: string }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,11 +54,11 @@ export function MobileSidebar({ lang = 'ru', userRole }: { lang?: string, userRo
   return (
     <>
       {/* Mobile Top Header */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-slate-200/60 shadow-sm z-[70] md:hidden flex items-center justify-between px-4 backdrop-blur-md bg-white/80">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-card/80 border-b border-slate-200/60 dark:border-border shadow-sm z-[70] md:hidden flex items-center justify-between px-4 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsOpen(true)}
-            className="p-2 -ml-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none"
+            className="p-2 -ml-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors focus:outline-none"
             aria-label="Toggle Menu"
           >
             <Menu className="h-6 w-6" />
@@ -67,12 +68,15 @@ export function MobileSidebar({ lang = 'ru', userRole }: { lang?: string, userRo
             <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center mr-2.5 shadow-md shadow-primary/25">
               <Warehouse className="h-4.5 w-4.5 text-white" />
             </div>
-            <span className="font-bold text-lg tracking-tight text-slate-800">Adminka</span>
+            <span className="font-bold text-lg tracking-tight text-slate-800 dark:text-white">Adminka</span>
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 scale-90 origin-right">
-          <RefreshDataButton lang={lang} compact />
+        <div className="flex items-center gap-1">
+          <ThemeToggle variant="light" collapsed className="!px-2 !py-2" />
+          <div className="scale-90 origin-right">
+            <RefreshDataButton lang={lang} compact />
+          </div>
         </div>
       </header>
 

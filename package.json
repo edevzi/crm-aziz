@@ -18,7 +18,8 @@
     "db:seed-fuel-tank": "node --env-file=.env --import tsx lib/seed-fuel-tank.ts",
     "db:cleanup-seed-markers": "node --env-file=.env --import tsx lib/cleanup-seed-markers.ts",
     "db:backfill-closed-at": "node --env-file=.env --import tsx lib/backfill-closed-at.ts",
-    "db:clean-keep-users": "node --env-file=.env --import tsx lib/clean-keep-users.ts"
+    "db:clean-keep-users": "node --env-file=.env --import tsx lib/clean-keep-users.ts",
+    "db:clean-keep-drivers-users": "node --env-file=.env --import tsx lib/clean-keep-drivers-users.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.3",
@@ -41,6 +42,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.379.0",
     "next": "14.2.3",
+    "next-themes": "^0.4.6",
     "react": "^18",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18",

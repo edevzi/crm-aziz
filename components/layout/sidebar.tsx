@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDictionary } from "@/lib/dictionaries";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export function Sidebar({ 
   lang = 'ru', 
@@ -121,7 +122,8 @@ export function Sidebar({
       </nav>
 
       {/* Bottom */}
-      <div className={cn("px-3 py-4 border-t border-white/5 flex-shrink-0", isCollapsed && "px-2")}>
+      <div className={cn("px-3 py-4 border-t border-white/5 flex-shrink-0 space-y-0.5", isCollapsed && "px-2")}>
+        <ThemeToggle variant="dark" collapsed={isCollapsed} />
         <button
           onClick={async () => {
             await fetch('/api/auth/logout', { method: 'POST' });

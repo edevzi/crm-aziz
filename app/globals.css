@@ -4,35 +4,73 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 222 47% 8%;
+    --background: 220 24% 97%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 8%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 8%;
+    --popover-foreground: 222 47% 11%;
 
     --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 220 14% 94%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 220 16% 95%;
+    --secondary-foreground: 222 47% 14%;
 
-    --muted: 220 14% 94%;
+    --muted: 220 16% 95%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 220 14% 92%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 221 83% 96%;
+    --accent-foreground: 221 83% 40%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --info: 221 83% 53%;
+
+    --border: 220 16% 90%;
+    --input: 220 16% 90%;
     --ring: 221 83% 53%;
 
-    --radius: 0.75rem;
+    --radius: 0.85rem;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 213 31% 94%;
+
+    --card: 222 41% 9%;
+    --card-foreground: 213 31% 94%;
+
+    --popover: 222 41% 9%;
+    --popover-foreground: 213 31% 94%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 8%;
+
+    --secondary: 217 33% 16%;
+    --secondary-foreground: 213 31% 94%;
+
+    --muted: 217 33% 15%;
+    --muted-foreground: 217 18% 62%;
+
+    --accent: 217 60% 18%;
+    --accent-foreground: 213 90% 80%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 64% 45%;
+    --warning: 38 92% 55%;
+    --info: 217 91% 60%;
+
+    --border: 217 33% 19%;
+    --input: 217 33% 20%;
+    --ring: 217 91% 60%;
   }
 }
 
@@ -47,16 +85,28 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Smooth theme transition — colors only, no layout thrash */
+  body,
+  body * {
+    transition-property: background-color, border-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  /* Don't transition elements that animate on their own */
+  body *:where([class*="animate-"], .shimmer, svg, [role="progressbar"]) {
+    transition-property: none;
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 7px;
+    height: 7px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
+    background: hsl(var(--muted-foreground) / 0.3);
     border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
@@ -65,56 +115,102 @@
 }
 
 @layer utilities {
-  /* Glass morphism */
+  /* Glass morphism — theme aware */
   .glass {
-    background: rgba(255, 255, 255, 0.7);
+    background: hsl(var(--card) / 0.7);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid hsl(var(--border) / 0.6);
   }
 
-  /* Gradient backgrounds */
+  /* Mesh / ambient page background — light */
   .bg-mesh {
-    background-color: #f8fafc;
+    background-color: hsl(var(--background));
     background-image:
-      radial-gradient(at 40% 20%, hsla(221, 83%, 96%, 0.8) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, hsla(189, 83%, 96%, 0.5) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, hsla(200, 83%, 96%, 0.4) 0px, transparent 50%);
+      radial-gradient(at 40% 18%, hsla(221, 83%, 90%, 0.55) 0px, transparent 50%),
+      radial-gradient(at 82% 0%, hsla(189, 83%, 90%, 0.35) 0px, transparent 50%),
+      radial-gradient(at 0% 55%, hsla(255, 83%, 92%, 0.30) 0px, transparent 50%);
+  }
+  .dark .bg-mesh {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(at 40% 18%, hsla(221, 70%, 30%, 0.22) 0px, transparent 50%),
+      radial-gradient(at 82% 0%, hsla(189, 70%, 30%, 0.16) 0px, transparent 50%),
+      radial-gradient(at 0% 55%, hsla(255, 70%, 35%, 0.18) 0px, transparent 50%);
   }
 
-  /* Shimmer animation for skeleton loading */
+  /* Shimmer skeleton */
   .shimmer {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted-foreground) / 0.12) 50%,
+      hsl(var(--muted)) 75%
+    );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
-
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
   }
 
-  /* Fade in animation */
+  /* ── Motion primitives ── */
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
-
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Slide up */
   .animate-slide-up {
-    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: slideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
-
   @keyframes slideUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Hide scrollbar but keep scroll */
+  .animate-scale-in {
+    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  /* Stagger children: add .stagger to a parent; children fade in sequentially */
+  .stagger > * {
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .stagger > *:nth-child(1)  { animation-delay: 0.02s; }
+  .stagger > *:nth-child(2)  { animation-delay: 0.06s; }
+  .stagger > *:nth-child(3)  { animation-delay: 0.10s; }
+  .stagger > *:nth-child(4)  { animation-delay: 0.14s; }
+  .stagger > *:nth-child(5)  { animation-delay: 0.18s; }
+  .stagger > *:nth-child(6)  { animation-delay: 0.22s; }
+  .stagger > *:nth-child(7)  { animation-delay: 0.26s; }
+  .stagger > *:nth-child(8)  { animation-delay: 0.30s; }
+  .stagger > *:nth-child(9)  { animation-delay: 0.34s; }
+  .stagger > *:nth-child(10) { animation-delay: 0.38s; }
+  .stagger > *:nth-child(11) { animation-delay: 0.42s; }
+  .stagger > *:nth-child(12) { animation-delay: 0.46s; }
+
+  /* Interactive helpers */
+  .hover-lift {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
+  .press {
+    transition: transform 0.12s ease;
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -122,15 +218,85 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+}
 
+/* ──────────────────────────────────────────────────────────────
+   DARK-MODE COMPATIBILITY LAYER
+   Many pages use hardcoded light-only utilities (bg-white, slate
+   text/borders). These rules remap the SOLID variants to theme
+   tokens in dark mode so every page is dark-ready without rewriting
+   each one. Translucent variants (bg-white/10 …) are left alone —
+   they read fine as overlays.
+   ────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .dark .bg-white { background-color: hsl(var(--card)); }
+  .dark .bg-slate-50 { background-color: hsl(var(--muted) / 0.5); }
+  .dark .bg-slate-100 { background-color: hsl(var(--muted)); }
+  .dark .bg-gray-50 { background-color: hsl(var(--muted) / 0.5); }
+  .dark .bg-gray-100 { background-color: hsl(var(--muted)); }
+
+  .dark .text-slate-900 { color: hsl(var(--foreground)); }
+  .dark .text-slate-800 { color: hsl(var(--foreground)); }
+  .dark .text-slate-700 { color: hsl(var(--foreground) / 0.92); }
+  .dark .text-slate-600 { color: hsl(var(--muted-foreground)); }
+  .dark .text-slate-500 { color: hsl(var(--muted-foreground)); }
+  .dark .text-slate-400 { color: hsl(var(--muted-foreground) / 0.85); }
+  .dark .text-gray-900 { color: hsl(var(--foreground)); }
+  .dark .text-gray-800 { color: hsl(var(--foreground)); }
+  .dark .text-gray-700 { color: hsl(var(--foreground) / 0.92); }
+  .dark .text-gray-600 { color: hsl(var(--muted-foreground)); }
+  .dark .text-gray-500 { color: hsl(var(--muted-foreground)); }
+
+  .dark .border-slate-200 { border-color: hsl(var(--border)); }
+  .dark .border-slate-100 { border-color: hsl(var(--border) / 0.7); }
+  .dark .border-gray-200 { border-color: hsl(var(--border)); }
+  .dark .border-gray-100 { border-color: hsl(var(--border) / 0.7); }
+
+  /* Translucent white PANELS (40–90%) → card surface. The low alphas
+     (5/10/15/20) are overlays on dark surfaces and are left untouched. */
+  .dark .bg-white\/40 { background-color: hsl(var(--card) / 0.45); }
+  .dark .bg-white\/50 { background-color: hsl(var(--card) / 0.55); }
+  .dark .bg-white\/60 { background-color: hsl(var(--card) / 0.65); }
+  .dark .bg-white\/70 { background-color: hsl(var(--card) / 0.75); }
+  .dark .bg-white\/80 { background-color: hsl(var(--card) / 0.85); }
+  .dark .bg-white\/90 { background-color: hsl(var(--card) / 0.92); }
+
+  /* Translucent slate tints → muted surface */
+  .dark .bg-slate-50\/20 { background-color: hsl(var(--muted) / 0.25); }
+  .dark .bg-slate-50\/30 { background-color: hsl(var(--muted) / 0.30); }
+  .dark .bg-slate-50\/40 { background-color: hsl(var(--muted) / 0.40); }
+  .dark .bg-slate-50\/50 { background-color: hsl(var(--muted) / 0.45); }
+  .dark .bg-slate-50\/60 { background-color: hsl(var(--muted) / 0.55); }
+  .dark .bg-slate-50\/80 { background-color: hsl(var(--muted) / 0.60); }
+  .dark .bg-slate-50\/90 { background-color: hsl(var(--muted) / 0.65); }
+  .dark .bg-slate-100\/80 { background-color: hsl(var(--muted) / 0.75); }
+
+  /* Soft tinted highlight blocks — keep the hue, drop the brightness */
+  .dark .bg-blue-50 { background-color: hsl(221 60% 20% / 0.45); }
+  .dark .bg-green-50 { background-color: hsl(142 50% 20% / 0.40); }
+  .dark .bg-amber-50,
+  .dark .bg-yellow-50 { background-color: hsl(38 60% 22% / 0.40); }
+  .dark .bg-red-50,
+  .dark .bg-rose-50 { background-color: hsl(0 60% 24% / 0.40); }
+  .dark .bg-indigo-50 { background-color: hsl(243 55% 24% / 0.40); }
+  .dark .bg-violet-50,
+  .dark .bg-purple-50 { background-color: hsl(262 55% 24% / 0.40); }
+  .dark .bg-emerald-50 { background-color: hsl(160 55% 18% / 0.40); }
+}
+
+/* ── REDUCED MOTION ── respect user preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── MOBILE RESPONSIVE OVERRIDES ── */
-
-/*
- * Prevent iOS Safari from zooming on input focus.
- * Safari zooms when font-size < 16px — this forces 16px on all touch screens.
- */
 @media (max-width: 767px) {
   input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
   select,
@@ -140,40 +306,20 @@
 }
 
 @media (max-width: 639px) {
-  /* Page titles: smaller on mobile */
   h1.text-3xl {
     font-size: 1.375rem;
     line-height: 1.75rem;
   }
-
-  /* Page header icons */
-  .h-14.w-14 {
-    height: 2.75rem;
-    width: 2.75rem;
-  }
-  .h-12.w-12 {
-    height: 2.5rem;
-    width: 2.5rem;
-  }
-
-  /* Tables: always enable horizontal scroll on mobile */
-  table {
-    min-width: 600px;
-  }
-
-  /* Cards: slightly less aggressive rounding on small screens */
-  .rounded-3xl {
-    border-radius: 1rem;
-  }
-
-  /* Large metric numbers: scale down so they don't overflow cards */
+  .h-14.w-14 { height: 2.75rem; width: 2.75rem; }
+  .h-12.w-12 { height: 2.5rem; width: 2.5rem; }
+  table { min-width: 600px; }
+  .rounded-3xl { border-radius: 1rem; }
   .metric-value {
     font-size: 1.5rem !important;
     line-height: 2rem !important;
   }
 }
 
-/* Make buttons and links easier to tap on touch screens */
 @media (hover: none) and (pointer: coarse) {
   button, a, [role="button"] {
     -webkit-tap-highlight-color: transparent;

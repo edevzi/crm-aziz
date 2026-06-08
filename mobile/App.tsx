@@ -481,6 +481,7 @@ function AppInner() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [navModalOrder, setNavModalOrder] = useState<Order | null>(null);
+  const [updateInfo, setUpdateInfo] = useState<{ versionName: string } | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(startOfDay(new Date()));
   const [displayedMonth, setDisplayedMonth] = useState<Date>(() => startOfDay(new Date()));
@@ -774,6 +775,25 @@ function AppInner() {
     }
   }, [isLoggedIn, driver]);
 
+  // Check for a newer app version (served by the CRM) and prompt the driver to update via Google Play.
+  useEffect(() => {
+    if (!isLoggedIn || !driver) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${getApiUrl()}/app-version?t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const latestCode = Number(data?.android?.latestVersionCode);
+        const currentCode = Number(Constants.expoConfig?.android?.versionCode ?? 0);
+        if (!cancelled && latestCode && currentCode && latestCode > currentCode) {
+          setUpdateInfo({ versionName: String(data?.android?.latestVersionName ?? '') });
+        }
+      } catch { /* ignore network errors */ }
+    })();
+    return () => { cancelled = true; };
+  }, [isLoggedIn, driver, getApiUrl]);
+
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Notification tapped:', response);
@@ -939,6 +959,7 @@ function AppInner() {
         throw new Error(errMsg);
       }
 
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setOrders(prev => prev.map(o => (o.id === orderId ? { ...o, status: newStatus } : o)));
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(prev => (prev ? { ...prev, status: newStatus } : null));
@@ -1034,6 +1055,7 @@ function AppInner() {
 
       if (!response.ok) throw new Error("Не удалось обновить статус заказа");
 
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setOrders(prev =>
         prev.map(o =>
           o.id === order.id
@@ -1086,6 +1108,7 @@ function AppInner() {
 
       if (!response.ok) throw new Error("Не удалось подтвердить оплату");
 
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setOrders(prev =>
         prev.map(o => (o.id === order.id ? { ...o, paymentStatus: 'received' } : o))
       );
@@ -1116,6 +1139,7 @@ function AppInner() {
 
       if (!response.ok) throw new Error("Не удалось завершить заказ");
 
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setOrders(prev =>
         prev.map(o => (o.id === order.id ? { ...o, status: 'completed' } : o))
       );
@@ -1690,7 +1714,7 @@ function AppInner() {
             <View style={{ paddingHorizontal: 16 }}>
               {(() => {
                 const homeOrders = activeOrders;
-                const bySchedule = (a: Order, b: Order) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+                const bySchedule = (a: Order, b: Order) => (new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()) || (a.id - b.id);
                 const isOverdueContainer = (o: Order) => { if (o.status !== 'container_placed') return false; const start = new Date(o.updatedAt).getTime(); if (isNaN(start)) return false; return (Date.now() - start) >= 2 * 60 * 60 * 1000; };
                 const overdueContainers = homeOrders.filter(isOverdueContainer).sort(bySchedule);
                 const activeContainers = homeOrders.filter(o => o.status === 'container_placed' && !isOverdueContainer(o)).sort(bySchedule);
@@ -1961,6 +1985,24 @@ function AppInner() {
             </View>
           </View>
         </Pressable>
+      </Modal>
+
+      <Modal animationType="fade" transparent visible={!!updateInfo} onRequestClose={() => setUpdateInfo(null)}>
+        <View style={styles.alertOverlay}>
+          <View style={styles.alertBox}>
+            <RefreshCw size={40} color="#1A73E8" style={{ marginBottom: 14 }} />
+            <Text style={styles.alertTitle}>Доступно обновление</Text>
+            <Text style={styles.alertMessage}>Вышла новая версия приложения{updateInfo?.versionName ? ` (${updateInfo.versionName})` : ''}. Пожалуйста, обновите приложение, чтобы продолжить работу без проблем.</Text>
+            <View style={{ width: '100%', gap: 10, marginTop: 16 }}>
+              <TouchableOpacity style={[styles.alertBtnPrimary, { backgroundColor: '#1A73E8' }]} onPress={() => { Linking.openURL('market://details?id=com.driver.crm').catch(() => Linking.openURL('https://play.google.com/store/apps/details?id=com.driver.crm').catch(() => {})); }}>
+                <Text style={{ color: '#FFF', fontSize: 15, fontWeight: '600' }}>Обновить</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ paddingVertical: 12, alignItems: 'center' }} onPress={() => setUpdateInfo(null)}>
+                <Text style={{ color: '#9E9E9E', fontSize: 15, fontWeight: '600' }}>Позже</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );

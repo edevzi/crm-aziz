@@ -6,13 +6,14 @@ import { MobileSidebar } from './mobile-sidebar';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { RefreshDataButton } from '@/components/RefreshDataButton';
+import { PageTransition } from './PageTransition';
 
-export function SidebarWrapper({ 
-  lang, 
+export function SidebarWrapper({
+  lang,
   userRole,
-  children 
-}: { 
-  lang: string; 
+  children
+}: {
+  lang: string;
   userRole?: string;
   children: React.ReactNode;
 }) {
@@ -53,8 +54,8 @@ export function SidebarWrapper({
 
   return (
     <div className="h-full relative bg-mesh min-h-screen font-sans antialiased">
-      <div className="absolute top-0 left-0 right-0 h-72 bg-gradient-to-b from-blue-50/40 to-transparent pointer-events-none z-0" />
-      
+      <div className="absolute top-0 left-0 right-0 h-72 bg-gradient-to-b from-primary/[0.07] to-transparent pointer-events-none z-0" />
+
       {/* Mobile Sidebar & Header */}
       <MobileSidebar lang={lang} userRole={userRole} />
 
@@ -64,16 +65,17 @@ export function SidebarWrapper({
         isCollapsed ? "md:w-20" : "md:w-64"
       )}>
         <Sidebar lang={lang} isCollapsed={isCollapsed} userRole={userRole} />
-        
+
         {/* Toggle Collapse Button */}
         <button
           onClick={toggleCollapse}
-          className="absolute -right-3 top-6 h-6 w-6 rounded-full border border-slate-700 bg-[#0B0F19] text-white flex items-center justify-center hover:bg-slate-800 shadow-md cursor-pointer transition-transform duration-200 z-[90]"
+          aria-label={isCollapsed ? 'Развернуть меню' : 'Свернуть меню'}
+          className="absolute -right-3 top-6 h-6 w-6 rounded-full border border-slate-700 bg-[#0B0F19] text-white flex items-center justify-center hover:bg-slate-800 hover:scale-110 active:scale-95 shadow-md cursor-pointer transition-all duration-200 z-[90]"
         >
           {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
         </button>
       </div>
-      
+
       <main className={cn(
         "h-full relative z-10 pt-16 md:pt-0 transition-all duration-300 ease-in-out",
         isCollapsed ? "md:pl-20" : "md:pl-64"
@@ -82,7 +84,7 @@ export function SidebarWrapper({
           <div className="hidden md:flex justify-end mb-4">
             <RefreshDataButton lang={lang} />
           </div>
-          {children}
+          <PageTransition>{children}</PageTransition>
         </div>
       </main>
     </div>

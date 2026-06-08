@@ -1,0 +1,8 @@
+# Mobile app (Expo) is built/deployed separately via EAS — not part of the CRM web deploy.
+mobile
+
+# Never ship secrets / build artifacts to Vercel.
+play-service-account.json
+**/play-service-account.json
+*.aab
+*.keystore
